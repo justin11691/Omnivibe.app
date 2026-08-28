@@ -1,0 +1,8 @@
+node_modules/
+.dev.vars
+.wrangler/
+scratch/
+.agents/
+subagent_metadata/
+test-results/
+playwright-report/

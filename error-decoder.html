@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Primary SEO Meta Tags -->
+    <title>Free OBD2 & Appliance Error Code Decoder | OmniGuide</title>
+    <meta name="description" content="Instantly decode check engine lights (OBD2) or appliance error codes. Get a free diagnosis and step-by-step repair guide to fix it yourself.">
+    <meta name="keywords" content="OBD2 code reader, check engine light code, appliance error code, washing machine error code, free diagnostic tool, OmniGuide">
+    <link rel="canonical" href="https://www.omnivibe.app/error-decoder">
+    <meta name="theme-color" content="#0F172A">
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/index.css">
+
+    <!-- Icons -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.344.0/dist/umd/lucide.min.js" defer></script>
+</head>
+<body>
+    <header class="nav-header">
+        <div class="container nav-container">
+            <a href="/" class="wordmark" style="text-decoration: none;">OmniGuide.</a>
+            <nav class="nav-controls" aria-label="Main navigation">
+                <a href="/" class="btn ghost small" style="text-decoration: none;">
+                    <i data-lucide="home" style="width:16px;height:16px;margin-right:4px;vertical-align:middle;"></i>Back to Home
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container" style="max-width: 800px; padding-top: 4rem;">
+        <section class="hero" style="padding: 2rem 0;">
+            <h1 style="font-size: 2.5rem;">Free Error Code Decoder</h1>
+            <p>Got a Check Engine light or a flashing appliance code? Enter it below to instantly decode what's wrong.</p>
+
+            <div class="glass-card" style="margin-top: 2rem; padding: 2rem; text-align: left;">
+                <div class="input-group">
+                    <label for="device-context">What is it? (Optional)</label>
+                    <input type="text" id="device-context" placeholder="e.g. 2015 Honda Civic or Whirlpool Cabrio Washer">
+                </div>
+                <div class="input-group mt-2">
+                    <label for="error-code">Error Code</label>
+                    <input type="text" id="error-code" placeholder="e.g. P0171 or uL" style="font-size: 1.2rem; font-weight: bold;">
+                </div>
+                <button class="btn primary full-width mt-4" id="btn-decode" onclick="decodeError()">
+                    <i data-lucide="search"></i> Decode Error Free
+                </button>
+            </div>
+        </section>
+
+        <!-- Loading State -->
+        <div id="loading-state" class="state-container" style="display: none;">
+            <i data-lucide="loader-2" class="spin icon-large text-accent"></i>
+            <h3>Decoding...</h3>
+        </div>
+
+        <!-- Error State -->
+        <div id="error-state" class="alert error" style="display: none;"></div>
+
+        <!-- Results Section -->
+        <section id="results-section" style="display: none; margin-top: 2rem;">
+            <div class="glass-card" style="border-left: 4px solid var(--accent-color);">
+                <h3><i data-lucide="info"></i> Diagnosis</h3>
+                <p id="res-explanation" style="font-size: 1.1rem; line-height: 1.6;"></p>
+                
+                <div class="mt-4" style="background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: var(--radius-md);">
+                    <h4>Ready to fix it?</h4>
+                    <p class="small muted mb-2">We've prepared the exact prompt to generate your step-by-step repair guide, tools, and parts list.</p>
+                    <button class="btn primary" onclick="goToGenerator()" id="btn-fix-it">
+                        Generate Repair Guide <i data-lucide="arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        let currentSuggestedPrompt = "";
+
+        async function decodeError() {
+            const errorCode = document.getElementById('error-code').value.trim();
+            const deviceContext = document.getElementById('device-context').value.trim();
+
+            if (!errorCode) {
+                showError('Please enter an error code.');
+                return;
+            }
+
+            document.getElementById('error-state').style.display = 'none';
+            document.getElementById('results-section').style.display = 'none';
+            document.getElementById('loading-state').style.display = 'flex';
+
+            try {
+                const res = await fetch('/api/v1/decode-error', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ errorCode, deviceContext })
+                });
+                
+                const data = await res.json();
+                document.getElementById('loading-state').style.display = 'none';
+
+                if (!res.ok) {
+                    showError(data.error || 'Failed to decode error.');
+                    return;
+                }
+
+                document.getElementById('res-explanation').textContent = data.explanation;
+                currentSuggestedPrompt = data.suggestedPrompt;
+                document.getElementById('results-section').style.display = 'block';
+
+            } catch (err) {
+                document.getElementById('loading-state').style.display = 'none';
+                showError('Network error connecting to the decoder API.');
+            }
+        }
+
+        function showError(msg) {
+            const errEl = document.getElementById('error-state');
+            errEl.textContent = msg;
+            errEl.style.display = 'block';
+        }
+
+        function goToGenerator() {
+            if (currentSuggestedPrompt) {
+                // Redirect to main page and pass the prompt in URL hash or query
+                window.location.href = '/?prompt=' + encodeURIComponent(currentSuggestedPrompt);
+            } else {
+                window.location.href = '/';
+            }
+        }
+
+        // Initialize icons
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        });
+    </script>
+</body>
+</html>

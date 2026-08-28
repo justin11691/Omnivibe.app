@@ -1,0 +1,702 @@
+[
+  {
+    "slug": "whirlpool-cabrio-ul-error",
+    "title": "How to Fix Whirlpool Cabrio Washer uL Error",
+    "category": "Appliance Repair",
+    "promptStr": "Whirlpool Cabrio Washer uL error code fix",
+    "keywords": "whirlpool cabrio washer ul, ul error code washer, unbalanced load cabrio"
+  },
+  {
+    "slug": "lg-fridge-not-cooling",
+    "title": "LG Refrigerator Not Cooling: Quick DIY Fixes",
+    "category": "Appliance Repair",
+    "promptStr": "LG refrigerator not cooling linear compressor",
+    "keywords": "lg fridge not cooling, lg linear compressor error, refrigerator fan noise"
+  },
+  {
+    "slug": "dryer-not-heating",
+    "title": "Why Is My Clothes Dryer Not Heating?",
+    "category": "Appliance Repair",
+    "promptStr": "Clothes dryer tumbles but not heating heating element replacement",
+    "keywords": "dryer not heating, dryer heating element, clothes dryer cold, dry cycle cold"
+  },
+  {
+    "slug": "samsung-washer-5c-error",
+    "title": "Samsung Washer 5C / 5E Drain Error Code",
+    "category": "Appliance Repair",
+    "promptStr": "Samsung Washer 5C / 5E drain error code fix",
+    "keywords": "samsung washer 5c error, samsung washer 5e code, washing machine not draining"
+  },
+  {
+    "slug": "ge-dishwasher-not-draining",
+    "title": "GE Dishwasher Not Draining Troubleshooting",
+    "category": "Appliance Repair",
+    "promptStr": "GE Dishwasher not draining water in bottom",
+    "keywords": "ge dishwasher not draining, dishwasher pool of water, unclog ge dishwasher"
+  },
+  {
+    "slug": "maytag-dryer-squeaking",
+    "title": "Maytag Dryer Squeaking or Grinding Noise",
+    "category": "Appliance Repair",
+    "promptStr": "Maytag dryer squeaking drum rollers pulley",
+    "keywords": "maytag dryer squeaking, squealing dryer drum, replace dryer rollers"
+  },
+  {
+    "slug": "whirlpool-washer-lid-lock",
+    "title": "Whirlpool Washer Lid Lock Red Light Flashing",
+    "category": "Appliance Repair",
+    "promptStr": "Whirlpool washer lid lock red light flashing switch fix",
+    "keywords": "whirlpool lid lock flashing, washer won't spin lid lock, lid latch replacement"
+  },
+  {
+    "slug": "samsung-fridge-ice-maker-frozen",
+    "title": "Samsung Refrigerator Ice Maker Frozen Over",
+    "category": "Appliance Repair",
+    "promptStr": "Samsung refrigerator ice maker frozen over fan noise",
+    "keywords": "samsung ice maker frozen, defroster ice maker samsung, ice dispenser stuck"
+  },
+  {
+    "slug": "kitchenaid-dishwasher-clean-light-flashing",
+    "title": "KitchenAid Dishwasher Clean Light Flashing 7 Times",
+    "category": "Appliance Repair",
+    "promptStr": "KitchenAid dishwasher clean light flashing 7 times heater fix",
+    "keywords": "kitchenaid clean light flashing, dishwasher reset clean light, 7-1 code"
+  },
+  {
+    "slug": "frigidaire-gallery-oven-f10-error",
+    "title": "Frigidaire Gallery Oven F10 Error (Runaway Temp)",
+    "category": "Appliance Repair",
+    "promptStr": "Frigidaire Gallery oven F10 error code temp sensor",
+    "keywords": "frigidaire f10 error, oven runaway temperature, replace oven RTD sensor"
+  },
+  {
+    "slug": "kenmore-elite-dryer-af-code",
+    "title": "Kenmore Elite Dryer AF Code (Airflow Blocked)",
+    "category": "Appliance Repair",
+    "promptStr": "Kenmore Elite dryer AF code lint filter clean",
+    "keywords": "kenmore af code, dryer airflow blocked, clean dryer vent line"
+  },
+  {
+    "slug": "bosch-dishwasher-e15-error",
+    "title": "Bosch Dishwasher E15 Error Code (Water in Base)",
+    "category": "Appliance Repair",
+    "promptStr": "Bosch dishwasher E15 error code leak detection",
+    "keywords": "bosch e15 error, water in dishwasher bottom tray, tilt bosch dishwasher"
+  },
+  {
+    "slug": "lg-washer-oe-error",
+    "title": "LG Washer OE Error Code (Drain Failure)",
+    "category": "Appliance Repair",
+    "promptStr": "LG washer OE error code drain pump cleanout",
+    "keywords": "lg washer oe code, washing machine won't drain, drain pump filter clog"
+  },
+  {
+    "slug": "whirlpool-fridge-clicking",
+    "title": "Whirlpool Refrigerator Clicking Noise",
+    "category": "Appliance Repair",
+    "promptStr": "Whirlpool refrigerator clicking noise relay capacitor",
+    "keywords": "whirlpool fridge clicking, start relay capacitor replacement, fridge warm"
+  },
+  {
+    "slug": "maytag-washer-ld-code",
+    "title": "Maytag Washer LD Code (Long Drain)",
+    "category": "Appliance Repair",
+    "promptStr": "Maytag washer LD code long drain fix",
+    "keywords": "maytag washer ld code, long drain error, washer drain pump blockage"
+  },
+  {
+    "slug": "ge-dryer-squeaking",
+    "title": "GE Dryer Squeaking / Drum Glides Worn",
+    "category": "Appliance Repair",
+    "promptStr": "GE dryer squeaking drum front bearing glides",
+    "keywords": "ge dryer squeaking, front bearing kit ge dryer, replace dryer slides"
+  },
+  {
+    "slug": "samsung-dryer-he-error",
+    "title": "Samsung Dryer HE Error Code (Heating Error)",
+    "category": "Appliance Repair",
+    "promptStr": "Samsung dryer HE error code thermistor heater",
+    "keywords": "samsung dryer he error, dryer heating system fault, reset thermostat samsung"
+  },
+  {
+    "slug": "frigidaire-dishwasher-i30-error",
+    "title": "Frigidaire Dishwasher i30 Error Code (Leak Detected)",
+    "category": "Appliance Repair",
+    "promptStr": "Frigidaire dishwasher i30 error code float switch",
+    "keywords": "frigidaire i30 error, dishwasher overflow pan, float switch stuck"
+  },
+  {
+    "slug": "whirlpool-gold-ice-maker-not-working",
+    "title": "Whirlpool Gold Refrigerator Ice Maker Not Working",
+    "category": "Appliance Repair",
+    "promptStr": "Whirlpool Gold refrigerator ice maker not working valve",
+    "keywords": "whirlpool gold ice maker, no ice whirlpool fridge, water inlet valve"
+  },
+  {
+    "slug": "lg-dryer-d80-error",
+    "title": "LG Dryer d80 / d90 / d95 Cooling Flow Blockage",
+    "category": "Appliance Repair",
+    "promptStr": "LG dryer d80 d90 d95 error code exhaust vent",
+    "keywords": "lg dryer d80 error, dryer vent restricted, clean lg dryer duct"
+  },
+  {
+    "slug": "ge-profile-fridge-not-freezing",
+    "title": "GE Profile Refrigerator Fresh Food Section Cold but Freezer Warm",
+    "category": "Appliance Repair",
+    "promptStr": "GE Profile refrigerator fresh food section cold but freezer warm fan",
+    "keywords": "ge profile freezer warm, fresh food cold freezer warm, evaporator fan"
+  },
+  {
+    "slug": "bosch-dishwasher-e24-error",
+    "title": "Bosch Dishwasher E24 Error Code (Drain Hose Blocked)",
+    "category": "Appliance Repair",
+    "promptStr": "Bosch dishwasher E24 error code drain pump impeller",
+    "keywords": "bosch e24 error, dishwasher drain pump cover, e24 check water light"
+  },
+  {
+    "slug": "samsung-washer-dc-error",
+    "title": "Samsung Washer DC / Ub Error Code (Unbalanced Load)",
+    "category": "Appliance Repair",
+    "promptStr": "Samsung washer DC / Ub unbalanced load suspension",
+    "keywords": "samsung dc error, ub washer code, samsung suspension rods replacement"
+  },
+  {
+    "slug": "whirlpool-oven-f1e0-error",
+    "title": "Whirlpool Oven F1E0 Control Board Error",
+    "category": "Appliance Repair",
+    "promptStr": "Whirlpool oven F1E0 control board error repair",
+    "keywords": "whirlpool f1e0 error, oven control board failed, f1 e0 error code"
+  },
+  {
+    "slug": "kenmore-washer-ol-error",
+    "title": "Kenmore Washer OL Code (Overloaded)",
+    "category": "Appliance Repair",
+    "promptStr": "Kenmore washer OL code overloaded motor drag",
+    "keywords": "kenmore ol code, washer overloaded error, drive basket block"
+  },
+  {
+    "slug": "frigidaire-dryer-e64-error",
+    "title": "Frigidaire Dryer e64 Error Code (Heating Element)",
+    "category": "Appliance Repair",
+    "promptStr": "Frigidaire dryer e64 error code heating element",
+    "keywords": "frigidaire e64 code, dryer no heat element, heater assembly repair"
+  },
+  {
+    "slug": "maytag-centennial-washer-sensing-light",
+    "title": "Maytag Centennial Washer Stuck on Sensing Light",
+    "category": "Appliance Repair",
+    "promptStr": "Maytag Centennial washer stuck on sensing light shift actuator",
+    "keywords": "maytag centennial sensing light, shift actuator repair, recalibrate washer"
+  },
+  {
+    "slug": "lg-fridge-dh-fe-error",
+    "title": "LG Refrigerator dH / FE Defrost Error Code",
+    "category": "Appliance Repair",
+    "promptStr": "LG refrigerator dH / FE defrost error code heater",
+    "keywords": "lg fridge dh error, fe error code lg, defrost controller replacement"
+  },
+  {
+    "slug": "ge-washer-h2o-supply-error",
+    "title": "GE Washer H2O Supply / No Water Error",
+    "category": "Appliance Repair",
+    "promptStr": "GE washer H2O supply error water valve clean",
+    "keywords": "ge washer h2o error, water supply fail ge, clean inlet valve screens"
+  },
+  {
+    "slug": "whirlpool-duet-washer-f21-error",
+    "title": "Whirlpool Duet Washer F21 Drain Error",
+    "category": "Appliance Repair",
+    "promptStr": "Whirlpool Duet washer F21 drain error coin trap",
+    "keywords": "whirlpool duet f21 error, clean coin trap duet, washer drain failure"
+  },
+  {
+    "slug": "samsung-dishwasher-lc-error",
+    "title": "Samsung Dishwasher LC / LE Leak Sensor Code",
+    "category": "Appliance Repair",
+    "promptStr": "Samsung dishwasher LC leak sensor error code",
+    "keywords": "samsung lc error, dishwasher water leak sensor, clear le code samsung"
+  },
+  {
+    "slug": "bosch-dishwasher-e22-error",
+    "title": "Bosch Dishwasher E22 Filter Blocked",
+    "category": "Appliance Repair",
+    "promptStr": "Bosch dishwasher E22 filter block pump cover",
+    "keywords": "bosch e22 error, clean bosch filter, dishwasher clogged pump"
+  },
+  {
+    "slug": "frigidaire-fridge-sy-ef-error",
+    "title": "Frigidaire Refrigerator SY EF Evaporator Fan Error",
+    "category": "Appliance Repair",
+    "promptStr": "Frigidaire refrigerator SY EF evaporator fan error fix",
+    "keywords": "frigidaire sy ef code, syef error, freezer fan replacement frigidaire"
+  },
+  {
+    "slug": "kitchenaid-disposal-humming",
+    "title": "KitchenAid Garbage Disposal Humming but Not Spinning",
+    "category": "Appliance Repair",
+    "promptStr": "KitchenAid garbage disposal humming but not spinning wrench",
+    "keywords": "kitchenaid disposal humming, garbage disposal jammed, clear disposal"
+  },
+  {
+    "slug": "maytag-dryer-tumbles-but-no-heat",
+    "title": "Maytag Neptune/Bravos Dryer Tumbles but No Heat",
+    "category": "Appliance Repair",
+    "promptStr": "Maytag dryer tumbles but no heat thermal fuse",
+    "keywords": "maytag dryer no heat, thermal fuse replacement, gas valve coils"
+  },
+  {
+    "slug": "whirlpool-cabrio-dryer-f01-error",
+    "title": "Whirlpool Cabrio Dryer F01 Control Board Failure",
+    "category": "Appliance Repair",
+    "promptStr": "Whirlpool Cabrio dryer F01 control board fail",
+    "keywords": "whirlpool f01 error, cabrio board f01, main board repair"
+  },
+  {
+    "slug": "samsung-oven-se-error",
+    "title": "Samsung Range/Oven SE / 5E Keypad Error Code",
+    "category": "Appliance Repair",
+    "promptStr": "Samsung range oven SE 5E keypad ribbon cable",
+    "keywords": "samsung se error, 5e oven code, membrane switch replacement"
+  },
+  {
+    "slug": "lg-washer-ie-error",
+    "title": "LG Washer IE Inlet Error (No Water)",
+    "category": "Appliance Repair",
+    "promptStr": "LG washer IE inlet error water valves",
+    "keywords": "lg ie error, inlet valve filter screen, no water lg washer"
+  },
+  {
+    "slug": "ge-dishwasher-clicking-noise",
+    "title": "GE Dishwasher Squealing/Clicking (Wash Pump Issue)",
+    "category": "Appliance Repair",
+    "promptStr": "GE dishwasher squealing wash pump assembly",
+    "keywords": "ge dishwasher pump clicking, wash pump replacement, dishwasher sound"
+  },
+  {
+    "slug": "kenmore-elite-fridge-er-dh",
+    "title": "Kenmore Elite Refrigerator Er dH Defrost Heater Error",
+    "category": "Appliance Repair",
+    "promptStr": "Kenmore Elite refrigerator Er dH defrost heater",
+    "keywords": "kenmore er dh, defrost heater failure, food section warm"
+  },
+  {
+    "slug": "frigidaire-washer-e11-error",
+    "title": "Frigidaire Washer E11 Fill Time Too Long",
+    "category": "Appliance Repair",
+    "promptStr": "Frigidaire washer E11 fill time pressure switch",
+    "keywords": "frigidaire e11 error, washer filling slowly, water valve screens"
+  },
+  {
+    "slug": "whirlpool-dishwasher-blinking-clean-light",
+    "title": "Whirlpool Dishwasher Clean Light Blinking (Heater Circuit)",
+    "category": "Appliance Repair",
+    "promptStr": "Whirlpool dishwasher clean light blinking heater circuit",
+    "keywords": "whirlpool clean light blinking, reset heater circuit, heating element"
+  },
+  {
+    "slug": "maytag-washer-slow-drain-f02",
+    "title": "Maytag Washer F02 / SD Drain Error Code",
+    "category": "Appliance Repair",
+    "promptStr": "Maytag washer F02 SD drain error pump clog",
+    "keywords": "maytag f02 error, sd washer code, clean drain pump filter"
+  },
+  {
+    "slug": "samsung-dryer-tE-error",
+    "title": "Samsung Dryer tE Thermistor Sensor Error",
+    "category": "Appliance Repair",
+    "promptStr": "Samsung dryer tE thermistor sensor error code",
+    "keywords": "samsung dryer te error, thermistor replacement, heating element fuse"
+  },
+  {
+    "slug": "lg-dishwasher-nE-error",
+    "title": "LG Dishwasher nE Vario Valve Motor Error",
+    "category": "Appliance Repair",
+    "promptStr": "LG dishwasher nE vario valve motor diverter",
+    "keywords": "lg dishwasher ne error, diverter valve motor, spray arms not spinning"
+  },
+  {
+    "slug": "ge-profile-oven-f9-error",
+    "title": "GE Profile Oven F9 / F90 Door Lock Error",
+    "category": "Appliance Repair",
+    "promptStr": "GE Profile oven F9 door latch switch",
+    "keywords": "ge f9 error, f90 oven code, door lock motor replacement"
+  },
+  {
+    "slug": "whirlpool-fridge-ice-jammed",
+    "title": "Whirlpool Ice Dispenser Jammed or Clogged",
+    "category": "Appliance Repair",
+    "promptStr": "Whirlpool ice dispenser jammed chute ice maker",
+    "keywords": "whirlpool ice jammed, ice maker dispenser flap, clear ice bridge"
+  },
+  {
+    "slug": "bosch-dishwasher-e19-error",
+    "title": "Bosch Dishwasher E19 Heat Exchanger Valve Error",
+    "category": "Appliance Repair",
+    "promptStr": "Bosch dishwasher E19 heat exchanger valve",
+    "keywords": "bosch e19 error, check water light e19, flow control valve"
+  },
+  {
+    "slug": "frigidaire-gallery-fridge-not-dispensing-water",
+    "title": "Frigidaire Gallery Refrigerator Water Dispenser Not Working",
+    "category": "Appliance Repair",
+    "promptStr": "Frigidaire Gallery refrigerator water dispenser not working",
+    "keywords": "frigidaire water dispenser fail, frozen water line, water filter head"
+  },
+  {
+    "slug": "samsung-washer-sud-error",
+    "title": "Samsung Washer SUD / Sd Error Code (Excess Suds)",
+    "category": "Appliance Repair",
+    "promptStr": "Samsung washer SUD Sd error code suds lock",
+    "keywords": "samsung sud code, sd washer error, too much detergent, foam lock"
+  },
+  {
+    "slug": "honda-civic-p0171",
+    "title": "Honda Civic P0171 Code: System Too Lean",
+    "category": "Auto Repair",
+    "promptStr": "Honda Civic P0171 check engine light fix",
+    "keywords": "honda civic p0171, maf sensor clean, vacuum leak honda civic"
+  },
+  {
+    "slug": "ford-f150-spark-plugs",
+    "title": "How to Replace Spark Plugs on a Ford F-150",
+    "category": "Auto Repair",
+    "promptStr": "Ford F150 replace spark plugs",
+    "keywords": "ford f150 spark plugs, ecoboost misfire, spark plug torque, cop replacement"
+  },
+  {
+    "slug": "toyota-camry-p0420",
+    "title": "Toyota Camry P0420 Code: Catalyst System Efficiency Below Threshold",
+    "category": "Auto Repair",
+    "promptStr": "Toyota Camry P0420 catalyst converter fix",
+    "keywords": "toyota camry p0420, cat converter replace, o2 sensor camry"
+  },
+  {
+    "slug": "chevy-silverado-stabili-trak",
+    "title": "Chevy Silverado StabiliTrak Service Light On",
+    "category": "Auto Repair",
+    "promptStr": "Chevy Silverado StabiliTrak steering angle sensor",
+    "keywords": "chevy silverado stabilitrak, service traction control, throttle body"
+  },
+  {
+    "slug": "jeep-wrangler-death-wobble",
+    "title": "Jeep Wrangler Death Wobble Diagnosis and Fix",
+    "category": "Auto Repair",
+    "promptStr": "Jeep Wrangler death wobble track bar steering",
+    "keywords": "jeep wrangler death wobble, track bar loose, steering stabilizer"
+  },
+  {
+    "slug": "honda-accord-starter-clicking",
+    "title": "Honda Accord Starter Clicking but Engine Won't Crank",
+    "category": "Auto Repair",
+    "promptStr": "Honda Accord starter clicking battery check",
+    "keywords": "honda accord starter click, battery terminals corroded, replace starter"
+  },
+  {
+    "slug": "ford-explorer-p0300",
+    "title": "Ford Explorer Random/Multiple Cylinder Misfire P0300",
+    "category": "Auto Repair",
+    "promptStr": "Ford Explorer random cylinder misfire P0300",
+    "keywords": "ford explorer p0300, ignition coil misfire, vacuum leak"
+  },
+  {
+    "slug": "toyota-prius-hybrid-battery-replacement",
+    "title": "Toyota Prius Hybrid Battery Replacement Guide",
+    "category": "Auto Repair",
+    "promptStr": "Toyota Prius hybrid battery replacement pack cell",
+    "keywords": "prius hybrid battery pack, hv battery replacement prius, cell balance"
+  },
+  {
+    "slug": "dodge-ram-hemi-tick",
+    "title": "Dodge Ram Hemi Tick Sound Diagnosis",
+    "category": "Auto Repair",
+    "promptStr": "Dodge Ram Hemi tick noise exhaust manifold bolts",
+    "keywords": "dodge ram hemi tick, broken exhaust manifold bolts, lifter tick hemi"
+  },
+  {
+    "slug": "subaru-outback-head-gasket-symptoms",
+    "title": "Subaru Outback Head Gasket Leak Symptoms",
+    "category": "Auto Repair",
+    "promptStr": "Subaru Outback head gasket leak coolant oil",
+    "keywords": "subaru outback head gasket, ej25 coolant leak, white exhaust smoke"
+  },
+  {
+    "slug": "chevy-equinox-excessive-oil-consumption",
+    "title": "Chevy Equinox Oil Consumption Fix",
+    "category": "Auto Repair",
+    "promptStr": "Chevy Equinox oil consumption pcv piston rings",
+    "keywords": "chevy equinox oil burning, pcv valve clog, low oil pressure light"
+  },
+  {
+    "slug": "nissan-altima-cvt-transmission-slipping",
+    "title": "Nissan Altima CVT Transmission Slipping",
+    "category": "Auto Repair",
+    "promptStr": "Nissan Altima CVT transmission slipping fluid change",
+    "keywords": "nissan altima cvt slipping, cvt fluid replacement, transmission whine"
+  },
+  {
+    "slug": "ford-f150-ecoboost-spark-plug-gap",
+    "title": "Ford F150 EcoBoost Misfire Spark Plug Gap",
+    "category": "Auto Repair",
+    "promptStr": "Ford F150 EcoBoost spark plug gap misfire under load",
+    "keywords": "ford f150 spark plug gap, ecoboost spark blow out, cylinder misfires"
+  },
+  {
+    "slug": "honda-crv-vsa-light-on",
+    "title": "Honda CR-V Vehicle Stability Assist (VSA) Light On",
+    "category": "Auto Repair",
+    "promptStr": "Honda CR-V Vehicle Stability Assist VSA light on brake",
+    "keywords": "honda crv vsa light, vehicle stability assist, wheel speed sensor"
+  },
+  {
+    "slug": "toyota-corolla-rough-idle",
+    "title": "Toyota Corolla Rough Idle When Stopped",
+    "category": "Auto Repair",
+    "promptStr": "Toyota Corolla rough idle throttle body clean",
+    "keywords": "toyota corolla rough idle, clean idle air control, dirty throttle plate"
+  },
+  {
+    "slug": "bmw-3-series-oil-filter-housing-leak",
+    "title": "BMW 3 Series Oil Filter Housing Gasket Leak",
+    "category": "Auto Repair",
+    "promptStr": "BMW 3 Series oil filter housing gasket leak",
+    "keywords": "bmw oil filter housing gasket, ofhg leak symptoms, e90 oil leak"
+  },
+  {
+    "slug": "chevy-silverado-oil-pressure-sensor",
+    "title": "Chevy Silverado Oil Pressure Sensor Replacement (0 PSI)",
+    "category": "Auto Repair",
+    "promptStr": "Chevy Silverado oil pressure sensor screen clean",
+    "keywords": "chevy silverado oil pressure 0, oil pressure sensor location, filter screen"
+  },
+  {
+    "slug": "jeep-grand-cherokee-ac-blend-door",
+    "title": "Jeep Grand Cherokee A/C Blend Door Actuator Replacement",
+    "category": "Auto Repair",
+    "promptStr": "Jeep Grand Cherokee A/C blend door actuator",
+    "keywords": "jeep blend door actuator, dual zone climate control warm, ac clicking"
+  },
+  {
+    "slug": "ford-focus-transmission-tcm-recall",
+    "title": "Ford Focus Transmission TCM Issues and Symptoms",
+    "category": "Auto Repair",
+    "promptStr": "Ford Focus transmission TCM power shift shudder",
+    "keywords": "ford focus tcm failure, powershift transmission shudder, no crank focus"
+  },
+  {
+    "slug": "toyota-tacoma-frame-rust",
+    "title": "Toyota Tacoma Frame Rust Prevention and Treatment",
+    "category": "Auto Repair",
+    "promptStr": "Toyota Tacoma frame rust clean rust converter paint",
+    "keywords": "toyota tacoma frame rust, undercoating tacoma, frame recall check"
+  },
+  {
+    "slug": "honda-civic-alternator-replacement",
+    "title": "Honda Civic Alternator Failure and Replacement",
+    "category": "Auto Repair",
+    "promptStr": "Honda Civic alternator failure battery light",
+    "keywords": "honda civic alternator replace, alternator belt tensioner, dead battery"
+  },
+  {
+    "slug": "nissan-rogue-p0101",
+    "title": "Nissan Rogue P0101 MAF Sensor Circuit Range/Performance",
+    "category": "Auto Repair",
+    "promptStr": "Nissan Rogue P0101 MAF sensor clean throttle relearn",
+    "keywords": "nissan rogue p0101, maf sensor replacement, clean throttle body"
+  },
+  {
+    "slug": "chevy-tahoe-lifter-tick-active-fuel-management",
+    "title": "Chevy Tahoe AFM Lifter Tick Noise",
+    "category": "Auto Repair",
+    "promptStr": "Chevy Tahoe AFM lifter tick active fuel management",
+    "keywords": "chevy tahoe lifter tick, afm delete kit, dod lifter failure"
+  },
+  {
+    "slug": "dodge-charger-p0456",
+    "title": "Dodge Charger P0456 Evap Leak Monitor Small Leak",
+    "category": "Auto Repair",
+    "promptStr": "Dodge Charger P0456 small evap leak gas cap",
+    "keywords": "dodge charger p0456, small evap leak, purge valve canister solenoid"
+  },
+  {
+    "slug": "subaru-forester-wheel-bearing-noise",
+    "title": "Subaru Forester Rear Wheel Bearing Noise",
+    "category": "Auto Repair",
+    "promptStr": "Subaru Forester rear wheel bearing noise press replacement",
+    "keywords": "subaru forester wheel bearing, humming noise driving, hub assembly"
+  },
+  {
+    "slug": "ford-escape-coolant-intrusion",
+    "title": "Ford Escape Engine Coolant Intrusion Symptoms",
+    "category": "Auto Repair",
+    "promptStr": "Ford Escape engine coolant intrusion white smoke block",
+    "keywords": "ford escape coolant intrusion, 1.5L ecoboost head crack, engine misfire"
+  },
+  {
+    "slug": "toyota-camry-alternator-replacement",
+    "title": "Toyota Camry Alternator Replacement",
+    "category": "Auto Repair",
+    "promptStr": "Toyota Camry alternator replacement charging fail",
+    "keywords": "toyota camry alternator, serpentine belt removal, battery not charging"
+  },
+  {
+    "slug": "honda-accord-maintenance-minder-reset",
+    "title": "Honda Accord Maintenance Minder Oil Life Reset",
+    "category": "Auto Repair",
+    "promptStr": "Honda Accord maintenance minder oil life reset oil change",
+    "keywords": "honda accord oil light reset, maintenance minder clear, oil percentage"
+  },
+  {
+    "slug": "chevy-cruze-coolant-leak-water-outlet",
+    "title": "Chevy Cruze Coolant Leak Water Outlet Valve",
+    "category": "Auto Repair",
+    "promptStr": "Chevy Cruze coolant leak water outlet housing",
+    "keywords": "chevy cruze coolant leak, water outlet replacement, thermostat housing"
+  },
+  {
+    "slug": "nissan-sentra-cv-joint-clicking",
+    "title": "Nissan Sentra Clicking Noise When Turning (CV Axle)",
+    "category": "Auto Repair",
+    "promptStr": "Nissan Sentra clicking noise cv axle boot tear",
+    "keywords": "nissan sentra cv joint, clicking noise turning, front cv axle replacement"
+  },
+  {
+    "slug": "ford-mustang-tps-sensor",
+    "title": "Ford Mustang Throttle Position Sensor Calibration",
+    "category": "Auto Repair",
+    "promptStr": "Ford Mustang throttle position sensor calibration idle",
+    "keywords": "ford mustang tps, throttle position sensor reset, high idle mustang"
+  },
+  {
+    "slug": "jeep-wrangler-p0306",
+    "title": "Jeep Wrangler Cylinder 6 Misfire P0306",
+    "category": "Auto Repair",
+    "promptStr": "Jeep Wrangler cylinder 6 misfire P0306 ignition coil",
+    "keywords": "jeep wrangler p0306, cylinder 6 misfire, spark plug replacement"
+  },
+  {
+    "slug": "toyota-tundra-air-injection-pump",
+    "title": "Toyota Tundra Secondary Air Injection Pump Bypass/Fix",
+    "category": "Auto Repair",
+    "promptStr": "Toyota Tundra secondary air injection pump valve bypass",
+    "keywords": "toyota tundra air injection pump, p2440 code, limp mode bypass kit"
+  },
+  {
+    "slug": "honda-civic-brake-pad-replacement",
+    "title": "Honda Civic Brake Pads and Rotors DIY Replacement",
+    "category": "Auto Repair",
+    "promptStr": "Honda Civic brake pad replacement rotors calipers",
+    "keywords": "honda civic brake pads, replace front brakes civic, brake caliper tool"
+  },
+  {
+    "slug": "chevy-impala-evap-vent-solenoid",
+    "title": "Chevy Impala Evap Vent Solenoid Replacement",
+    "category": "Auto Repair",
+    "promptStr": "Chevy Impala evap vent valve solenoid canister",
+    "keywords": "chevy impala evap vent solenoid, gas cap warning, purge valve p0449"
+  },
+  {
+    "slug": "ford-f250-6-0-diesel-hard-start",
+    "title": "Ford F-250 6.0L Powerstroke Cold Start Issues (FICM)",
+    "category": "Auto Repair",
+    "promptStr": "Ford F250 6.0 diesel hard start FICM voltage",
+    "keywords": "ford 6.0 powerstroke hard start, ficm voltage test, stand pipes dummy plugs"
+  },
+  {
+    "slug": "toyota-rav4-check-engine-vsc-4wd",
+    "title": "Toyota RAV4 Check Engine Light + VSC + 4WD Warning Lights",
+    "category": "Auto Repair",
+    "promptStr": "Toyota RAV4 check engine light vsc 4wd oxygen sensor",
+    "keywords": "rav4 check engine vsc 4wd, toyota traction control light, gas cap check"
+  },
+  {
+    "slug": "nissan-frontier-strawberry-milkshake",
+    "title": "Nissan Frontier Coolant and Transmission Fluid Mix (SMOD)",
+    "category": "Auto Repair",
+    "promptStr": "Nissan Frontier radiator bypass coolant transmission mix",
+    "keywords": "nissan frontier smod, radiator bypass transmission line, pink fluid"
+  },
+  {
+    "slug": "subaru-wrx-clutch-squeak",
+    "title": "Subaru WRX Clutch Squeak / Throwout Bearing Noise",
+    "category": "Auto Repair",
+    "promptStr": "Subaru WRX clutch squeak throwout bearing fork",
+    "keywords": "subaru wrx clutch squeak, throwout bearing failure, squeaking clutch pedal"
+  },
+  {
+    "slug": "chevy-malibu-electronic-power-steering",
+    "title": "Chevy Malibu Service ESC and Power Steering Failure",
+    "category": "Auto Repair",
+    "promptStr": "Chevy Malibu electronic power steering assist motor",
+    "keywords": "chevy malibu power steering fail, service esc light, steering torque sensor"
+  },
+  {
+    "slug": "ford-f150-4wd-actuator-vacuum-leak",
+    "title": "Ford F-150 IWE 4WD Actuator Vacuum Solenoid Clicking",
+    "category": "Auto Repair",
+    "promptStr": "Ford F150 IWE 4wd actuator vacuum leak solenoid",
+    "keywords": "ford f150 iwe noise, grinding front wheel hub, 4wd vacuum solenoid"
+  },
+  {
+    "slug": "jeep-cherokee-transmission-service",
+    "title": "Jeep Cherokee Service Transmission Light On",
+    "category": "Auto Repair",
+    "promptStr": "Jeep Cherokee service transmission light software update",
+    "keywords": "jeep cherokee service transmission, 9-speed transmission shift, wire harness"
+  },
+  {
+    "slug": "toyota-sienna-sliding-door-cable",
+    "title": "Toyota Sienna Power Sliding Door Cable Replacement",
+    "category": "Auto Repair",
+    "promptStr": "Toyota Sienna power sliding door cable motor repair",
+    "keywords": "toyota sienna sliding door cable, power door stuck, sliding door motor"
+  },
+  {
+    "slug": "honda-odyssey-vcm-muzzler",
+    "title": "Honda Odyssey VCM (Variable Cylinder Management) Bypass",
+    "category": "Auto Repair",
+    "promptStr": "Honda Odyssey VCM muzzler bypass oil consumption",
+    "keywords": "honda odyssey vcm bypass, engine vibration odyssey, active engine mount"
+  },
+  {
+    "slug": "chevy-silverado-blower-motor-resistor",
+    "title": "Chevy Silverado Blower Motor Resistor Failure",
+    "category": "Auto Repair",
+    "promptStr": "Chevy Silverado blower motor resistor speed replacement",
+    "keywords": "silverado blower motor resistor, fan only works on high, ac fan failure"
+  },
+  {
+    "slug": "nissan-murano-p0011",
+    "title": "Nissan Murano P0011 Camshaft Position Timing Over-Advanced",
+    "category": "Auto Repair",
+    "promptStr": "Nissan Murano P0011 camshaft position timing oil control",
+    "keywords": "nissan murano p0011, camshaft solenoid valve, engine oil sludge"
+  },
+  {
+    "slug": "ford-f350-death-wobble",
+    "title": "Ford F-350 Super Duty Death Wobble Steering Linkage",
+    "category": "Auto Repair",
+    "promptStr": "Ford F350 death wobble track bar ball joint",
+    "keywords": "ford f350 death wobble, dual steering stabilizer, front track bar bush"
+  },
+  {
+    "slug": "toyota-camry-p0300",
+    "title": "Toyota Camry P0300 Random Cylinder Misfire",
+    "category": "Auto Repair",
+    "promptStr": "Toyota Camry P0300 random misfire coil plug",
+    "keywords": "toyota camry p0300, random misfire check engine, vacuum hose leak"
+  },
+  {
+    "slug": "subaru-impreza-oil-consumption",
+    "title": "Subaru Impreza FB20 Engine Oil Consumption",
+    "category": "Auto Repair",
+    "promptStr": "Subaru Impreza FB20 oil consumption test piston rings",
+    "keywords": "subaru impreza burning oil, oil level light, fb20 oil consumption"
+  },
+  {
+    "slug": "honda-civic-headlight-restoration",
+    "title": "Honda Civic Yellow Foggy Headlight Restoration",
+    "category": "Auto Repair",
+    "promptStr": "Honda Civic yellow foggy headlight restoration sand polish",
+    "keywords": "civic headlights restoration, clear hazy headlights, sand and clearcoat"
+  }
+]

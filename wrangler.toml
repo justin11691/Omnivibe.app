@@ -1,0 +1,8 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "omnivibe"
+pages_build_output_dir = "."
+
+[[d1_databases]]
+binding = "DB"
+database_name = "omnivibe-db"
+database_id = "c31a85f2-cba2-4e30-9c39-67cfeca29e36"

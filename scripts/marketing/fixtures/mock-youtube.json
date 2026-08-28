@@ -1,0 +1,46 @@
+[
+  {
+    "videoId": "dQw4w9WgXcQ",
+    "videoTitle": "How to replace spark plugs on a Ford F-150 (2015-2020)",
+    "views": 15000,
+    "description": "This video shows how to change spark plugs. Watch the step by step process.",
+    "comments": [
+      {
+        "commentId": "yt_c_111",
+        "author": "wrench_spinner",
+        "text": "What spark plug socket size did you use for the 2.7 EcoBoost? Mine seems loose."
+      },
+      {
+        "commentId": "yt_c_222",
+        "author": "diy_mom",
+        "text": "My F150 is a 2018. Does this process work the same way? The harness looks a bit different."
+      }
+    ]
+  },
+  {
+    "videoId": "lowViewVideo",
+    "videoTitle": "Replacing spark plugs on Ford F-150 (Low Views)",
+    "views": 200,
+    "description": "Very low views video, should be filtered out.",
+    "comments": [
+      {
+        "commentId": "yt_c_low_1",
+        "author": "someone",
+        "text": "Cool video"
+      }
+    ]
+  },
+  {
+    "videoId": "hasPartsListVideo",
+    "videoTitle": "Replacing spark plugs on Ford F-150 with Parts List",
+    "views": 25000,
+    "description": "This is a great video. Parts list: 1. Spark plugs 2. Socket wrench.",
+    "comments": [
+      {
+        "commentId": "yt_c_parts_1",
+        "author": "someone_else",
+        "text": "Nice parts list!"
+      }
+    ]
+  }
+]

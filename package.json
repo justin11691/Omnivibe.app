@@ -1,0 +1,15 @@
+{
+  "name": "omnivibe",
+  "version": "1.0.0",
+  "description": "Omnivibe application and test suite",
+  "scripts": {
+    "db:reset": "wrangler d1 execute omnivibe-db --local --file=schema.sql --yes",
+    "pretest": "npm run db:reset",
+    "test": "playwright test",
+    "dev": "wrangler pages dev . --port 8788 --compatibility-date=2026-07-01 --d1=DB"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.44.0",
+    "wrangler": "^3.60.0"
+  }
+}

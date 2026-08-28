@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Primary SEO Meta Tags -->
+    <title>OmniGuide | AI-Powered Repair & DIY Courses</title>
+    <meta name="description" content="Generate instant, hyper-specific repair guides and DIY courses for any vehicle, appliance, or home project. Get step-by-step videos, exact tools, and parts lists in seconds.">
+    <meta name="keywords" content="AI repair guide, DIY course, auto repair tutorial, car repair guide, how to fix, step by step repair, OmniGuide, omnivibe">
+    <meta name="author" content="OmniGuide">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://www.omnivibe.app/">
+    <meta name="theme-color" content="#0F172A">
+
+    <!-- Open Graph / Facebook / iMessage -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="OmniGuide">
+    <meta property="og:url" content="https://www.omnivibe.app/">
+    <meta property="og:title" content="OmniGuide | Master Any Repair in Minutes">
+    <meta property="og:description" content="Tell OmniGuide your exact vehicle or project and get a complete AI-generated repair course with videos, parts, and step-by-step instructions.">
+    <meta property="og:image" content="https://www.omnivibe.app/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="OmniGuide - Master any repair in minutes">
+    <meta property="og:locale" content="en_US">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://www.omnivibe.app/">
+    <meta name="twitter:title" content="OmniGuide | Master Any Repair in Minutes">
+    <meta name="twitter:description" content="AI-generated repair guides with videos, tools, and parts. Your first guide is free.">
+    <meta name="twitter:image" content="https://www.omnivibe.app/og-image.png">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>">
+    <link rel="apple-touch-icon" href="https://www.omnivibe.app/og-image.png">
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="./index.css">
+
+    <!-- Icons (loaded async) -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.344.0/dist/umd/lucide.min.js" defer></script>
+
+    <!-- Google AdSense Auto Ads -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4763238667156624" crossorigin="anonymous"></script>
+
+    <!-- Schema.org Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "OmniGuide",
+      "url": "https://www.omnivibe.app/",
+      "description": "AI-powered repair and DIY course generator. Enter any task and get step-by-step guides, videos, tools, and parts lists.",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "description": "First guide free, then $5 for 25 runs"
+      },
+      "provider": {
+        "@type": "Organization",
+        "name": "OmniGuide",
+        "url": "https://www.omnivibe.app/"
+      }
+    }
+    </script>
+</head>
+<body>
+    <!-- Toast notification container -->
+    <div id="toast-container" aria-live="polite" aria-atomic="false"></div>
+
+    <header class="nav-header" role="banner">
+        <div class="container nav-container">
+            <div class="wordmark" aria-label="OmniGuide Home">
+                OmniGuide.
+            </div>
+
+            <!-- Skeleton shimmer — shown while auth state is resolving -->
+            <div class="nav-skeleton" id="nav-skeleton" aria-hidden="true">
+                <div class="nav-skeleton-pill"></div>
+                <div class="nav-skeleton-pill"></div>
+                <div class="nav-skeleton-pill"></div>
+            </div>
+
+            <!-- Logged-out nav (hidden until auth resolves) -->
+            <nav class="nav-controls" id="nav-logged-out" style="display:none;" aria-label="Main navigation">
+                <a href="/error-decoder" class="btn ghost small" style="margin-right:0.5rem; text-decoration:none;"><i data-lucide="search" style="width:16px;height:16px;margin-right:4px;vertical-align:middle;"></i>Free Error Decoder</a>
+                <!-- Free-run badge: shown to visitors who haven't consumed their free run -->
+                <span id="free-run-badge" class="free-run-badge" style="display:none;" aria-label="1 free run available">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    1 Free Run Available
+                </span>
+                <button class="btn ghost" id="btn-signin" onclick="OmniGuideApp.showAuthModal('login')">Sign In</button>
+                <button class="btn primary" id="btn-getstarted" onclick="OmniGuideApp.showAuthModal('register')">Get Started Free</button>
+            </nav>
+
+            <!-- Logged-in nav -->
+            <div class="nav-controls" id="nav-logged-in" style="display: none;" aria-label="User navigation">
+                <a href="/error-decoder" class="btn ghost small" style="margin-right:0.5rem; text-decoration:none;"><i data-lucide="search" style="width:16px;height:16px;margin-right:4px;vertical-align:middle;"></i>Free Error Decoder</a>
+                <span id="beta-badge" class="beta-badge" style="display:none;">BETA</span>
+                <div class="credit-pill" id="credit-display" aria-label="Credits remaining">
+                    <i data-lucide="zap" aria-hidden="true"></i>
+                    <span id="credit-count">—</span> Runs Left
+                </div>
+                <button class="btn outline small" id="btn-buy-credits" onclick="OmniGuideApp.buyCredits()">Buy Credits</button>
+                <div class="dropdown">
+                    <button class="btn ghost small icon-only" id="btn-user-menu" onclick="OmniGuideApp.toggleDropdown()" aria-label="User menu" aria-expanded="false" aria-haspopup="true">
+                        <i data-lucide="user" aria-hidden="true"></i>
+                    </button>
+                    <div class="dropdown-menu" id="user-menu" style="display: none;" role="menu">
+                        <p id="user-email-display" class="muted small" role="menuitem">user@example.com</p>
+                        <hr>
+                        <button class="menu-item text-danger" id="btn-logout" onclick="OmniGuideApp.logout()" role="menuitem">Sign Out</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container" id="main-content" role="main">
+        <!-- Hero Section -->
+        <section class="hero" aria-labelledby="hero-title">
+            <h1 id="hero-title">Master any repair in minutes.</h1>
+            <p id="hero-subtitle">Tell OmniGuide your exact project or vehicle model. We generate a complete curriculum with step-by-step videos, exact tools, and the right parts.</p>
+
+            <div class="search-container">
+                <div class="search-box" role="search">
+                    <label for="prompt-input" class="sr-only">Describe your repair or project</label>
+                    <input
+                        type="search"
+                        id="prompt-input"
+                        placeholder="e.g. 2012 Honda Civic front brake pads..."
+                        aria-label="Describe your repair or project"
+                        autocomplete="off"
+                        data-lpignore="true"
+                        data-1p-ignore="true"
+                        spellcheck="true"
+                    />
+                    <button class="btn primary large" id="generate-btn" onclick="OmniGuideApp.generate()" aria-label="Generate repair course">
+                        <i data-lucide="sparkles" aria-hidden="true"></i> Generate Course
+                    </button>
+                </div>
+                <div class="search-pills" aria-label="Quick search examples">
+                    <span class="pills-label">Try:</span>
+                    <button class="search-pill-btn" onclick="const input = document.getElementById('prompt-input'); input.value = '2015 Honda Civic replace front brake pads'; input.focus();">Honda Civic Brakes</button>
+                    <button class="search-pill-btn" onclick="const input = document.getElementById('prompt-input'); input.value = 'Whirlpool Cabrio washer error code uL'; input.focus();">Whirlpool Washer uL</button>
+                    <button class="search-pill-btn" onclick="const input = document.getElementById('prompt-input'); input.value = 'Replace leaky kitchen faucet sink'; input.focus();">Leaky Kitchen Faucet</button>
+                </div>
+                <p class="search-hint" id="search-hint">Your first run is completely free. No credit card required.</p>
+            </div>
+        </section>
+
+        <!-- Loading State -->
+        <div id="loading-state" class="state-container" style="display: none;" role="status" aria-live="polite" aria-label="Generating your guide">
+            <i data-lucide="loader-2" class="spin icon-large text-accent" aria-hidden="true"></i>
+            <h3>Analyzing task and curating videos...</h3>
+            <p class="muted">This usually takes 10–20 seconds.</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="error-state" class="alert error" style="display: none;" role="alert" aria-live="assertive"></div>
+
+        <!-- Results Section -->
+        <section id="results-section" style="display: none;" aria-labelledby="res-title">
+            <div class="results-header">
+                <h2 id="res-title">Task Title</h2>
+                <div class="meta-tags">
+                    <span class="tag"><i data-lucide="gauge" aria-hidden="true"></i> Difficulty: <span id="res-diff"></span></span>
+                    <span class="tag"><i data-lucide="clock" aria-hidden="true"></i> Est. Time: <span id="res-time"></span></span>
+                </div>
+            </div>
+
+            <div class="results-grid">
+                <!-- Left Column -->
+                <div class="main-column">
+                    <div class="glass-card">
+                        <h3 class="card-title"><i data-lucide="youtube" aria-hidden="true"></i> Tutorial Videos</h3>
+                        <div id="res-videos" class="video-grid" aria-label="Tutorial videos"></div>
+                    </div>
+                    <div class="glass-card" id="diagram-card" style="display:none;">
+                        <h3 class="card-title"><i data-lucide="image" aria-hidden="true"></i> Parts Diagram</h3>
+                        <div id="res-diagram" class="diagram-container"></div>
+                    </div>
+                    <div class="glass-card">
+                        <h3 class="card-title"><i data-lucide="list-ordered" aria-hidden="true"></i> Step-by-Step Instructions</h3>
+                        <ol id="res-steps" class="steps-list" aria-label="Step by step instructions"></ol>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="side-column">
+                    <div class="glass-card">
+                        <h3 class="card-title"><i data-lucide="hammer" aria-hidden="true"></i> Tools Checklist</h3>
+                        <ul id="res-tools" class="checklist" aria-label="Required tools"></ul>
+                    </div>
+                    <div class="glass-card">
+                        <h3 class="card-title"><i data-lucide="shopping-cart" aria-hidden="true"></i> Parts Required</h3>
+                        <ul id="res-parts" class="checklist" aria-label="Required parts"></ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Teaser Signup Sheet — shown to unauth users after partial result render -->
+        <div id="teaser-sheet" role="region" aria-label="Unlock your full guide">
+            <div class="teaser-sheet-inner">
+                <div class="teaser-sheet-eyebrow">⚡ Almost there</div>
+                <h3>You are one click away from your custom guide.</h3>
+                <p>Create your free account to instantly unlock the step-by-step instructions and curated video tutorials — no credit card required.</p>
+                <div class="teaser-actions">
+                    <button class="btn primary large" onclick="OmniGuideApp.unlockFromTeaser('register')">
+                        <i data-lucide="user-plus" aria-hidden="true"></i> Create Free Account
+                    </button>
+                    <button class="btn outline" onclick="OmniGuideApp.unlockFromTeaser('login')">Sign In</button>
+                </div>
+                <p class="teaser-trust">🔒 No credit card required &nbsp;·&nbsp; First guide is always free</p>
+            </div>
+        </div>
+
+
+        <div id="marketing-content">
+            <!-- Features Section -->
+            <section class="features-section" aria-labelledby="features-title">
+                <h2 id="features-title" class="sr-only">Core Features</h2>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i data-lucide="sliders" aria-hidden="true"></i>
+                    </div>
+                    <h3>Custom Instructions</h3>
+                    <p>Tailor guides to your exact vehicle trim, engine type, or specific home repair constraints.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i data-lucide="youtube" aria-hidden="true"></i>
+                    </div>
+                    <h3>Video Matching</h3>
+                    <p>Get the most relevant, high-quality YouTube tutorials automatically curated for your task.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i data-lucide="hammer" aria-hidden="true"></i>
+                    </div>
+                    <h3>Parts & Tools Lists</h3>
+                    <p>Never start a project only to find you're missing a socket size or the correct replacement part.</p>
+                </div>
+            </section>
+
+            <!-- Interactive Preview Section -->
+            <section class="preview-section" aria-labelledby="preview-title">
+                <h2 id="preview-title" class="section-title">See a Generated Guide</h2>
+                <p class="section-subtitle">Here is what a complete AI-generated repair course looks like.</p>
+                
+                <div class="browser-mockup">
+                    <div class="browser-header">
+                        <span class="dot"></span>
+                        <span class="dot"></span>
+                        <span class="dot"></span>
+                        <span class="browser-url">omnivibe.app/guide/2015-honda-civic-brakes</span>
+                    </div>
+                    <div class="browser-content">
+                        <div class="preview-card">
+                            <div class="preview-header">
+                                <h3>2015 Honda Civic Brake Pad Replacement</h3>
+                                <div class="preview-meta">
+                                    <span class="tag"><i data-lucide="gauge" aria-hidden="true"></i> Difficulty: Medium</span>
+                                    <span class="tag"><i data-lucide="clock" aria-hidden="true"></i> Est. Time: 1.5 Hours</span>
+                                </div>
+                            </div>
+                            <div class="preview-grid">
+                                <div class="preview-main">
+                                    <div class="preview-video-placeholder">
+                                        <i data-lucide="play" class="play-icon" aria-hidden="true"></i>
+                                        <span>Curated Tutorial Video: "Honda Civic Front Brake Pads (2012-2015)"</span>
+                                    </div>
+                                    <div class="preview-steps">
+                                        <h4>Step-by-Step Instructions</h4>
+                                        <ol>
+                                            <li>Loosen the wheel lug nuts, jack up the vehicle, and secure it on jack stands.</li>
+                                            <li>Remove the front wheels completely to expose the brake caliper assembly.</li>
+                                            <li>Remove the caliper slide pins and carefully lift the caliper off the rotor.</li>
+                                            <li>Remove the old brake pads and install the new ones with grease at contact points.</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                                <div class="preview-sidebar">
+                                    <div class="preview-box">
+                                        <h4><i data-lucide="hammer" aria-hidden="true"></i> Required Tools</h4>
+                                        <ul>
+                                            <li><input type="checkbox" checked disabled> Floor Jack & Jack Stands</li>
+                                            <li><input type="checkbox" checked disabled> 12mm Wrench & Socket</li>
+                                            <li><input type="checkbox" checked disabled> C-Clamp</li>
+                                        </ul>
+                                    </div>
+                                    <div class="preview-box">
+                                        <h4><i data-lucide="shopping-cart" aria-hidden="true"></i> Parts Needed</h4>
+                                        <ul>
+                                            <li><input type="checkbox" checked disabled> Front Brake Pads (Ceramic)</li>
+                                            <li><input type="checkbox" checked disabled> Brake Lubricant</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Trust & Stats Section -->
+            <section class="trust-section" aria-label="Trust and Statistics">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-number">15,000+</span>
+                        <span class="stat-label">Guides Generated</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">4.9/5</span>
+                        <span class="stat-label">User Satisfaction</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">$250+</span>
+                        <span class="stat-label">Average Savings</span>
+                    </div>
+                </div>
+                <div class="testimonials-grid">
+                    <div class="testimonial-card">
+                        <div class="stars">
+                            <i data-lucide="star" aria-hidden="true"></i>
+                            <i data-lucide="star" aria-hidden="true"></i>
+                            <i data-lucide="star" aria-hidden="true"></i>
+                            <i data-lucide="star" aria-hidden="true"></i>
+                            <i data-lucide="star" aria-hidden="true"></i>
+                        </div>
+                        <p class="comment">"OmniGuide saved me $250 on my dishwasher repair. The step-by-step instructions and video match were spot on!"</p>
+                        <span class="author">— David K., Homeowner</span>
+                    </div>
+                    <div class="testimonial-card">
+                        <div class="stars">
+                            <i data-lucide="star" aria-hidden="true"></i>
+                            <i data-lucide="star" aria-hidden="true"></i>
+                            <i data-lucide="star" aria-hidden="true"></i>
+                            <i data-lucide="star" aria-hidden="true"></i>
+                            <i data-lucide="star" aria-hidden="true"></i>
+                        </div>
+                        <p class="comment">"I was skeptical but needed to change my Civic's alternator. The exact list of sockets and parts to buy made it foolproof."</p>
+                        <span class="author">— Sarah M., DIY Enthusiast</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pricing Section -->
+            <section class="pricing-section" aria-labelledby="pricing-title">
+                <h2 id="pricing-title" class="section-title">Simple, Flat Pricing</h2>
+                <p class="section-subtitle">No monthly subscriptions. Pay only for what you need.</p>
+                <div class="pricing-card">
+                    <span class="popular-badge">Most Popular</span>
+                    <h3>Pro Repair Pack</h3>
+                    <div class="price-value">$5.00</div>
+                    <p class="price-desc">One-time payment for 25 runs (no subscriptions).</p>
+                    <button class="btn primary large buy-btn" onclick="OmniGuideApp.state.isAuthenticated ? OmniGuideApp.buyCredits() : OmniGuideApp.showAuthModal('register')">
+                        <i data-lucide="zap" aria-hidden="true"></i> Buy 25 Credits
+                    </button>
+                    <div class="pricing-trust">
+                        <span class="stripe-badge"><i data-lucide="shield-check" aria-hidden="true"></i> Secured by Stripe</span>
+                    </div>
+                    <ul class="pricing-features">
+                        <li><i data-lucide="check" aria-hidden="true"></i> 25 Generation Runs</li>
+                        <li><i data-lucide="check" aria-hidden="true"></i> Step-by-step videos & checklists</li>
+                        <li><i data-lucide="check" aria-hidden="true"></i> Credits never expire</li>
+                        <li><i data-lucide="check" aria-hidden="true"></i> Ad-free experience</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- FAQ Section -->
+            <section class="faq-section" aria-labelledby="faq-title">
+                <h2 id="faq-title" class="section-title">Frequently Asked Questions</h2>
+                <div class="faq-accordion">
+                    <details class="faq-item">
+                        <summary class="faq-question">What is OmniGuide?</summary>
+                        <div class="faq-answer">
+                            <p>OmniGuide is an AI-powered diagnostic and repair manual generator. Tell it what vehicle, appliance, or item is broken, and it retrieves step-by-step repair manuals, parts lists, and curates highly relevant YouTube video tutorials specifically for that task.</p>
+                        </div>
+                    </details>
+                    <details class="faq-item">
+                        <summary class="faq-question">Can I use it for appliances?</summary>
+                        <div class="faq-answer">
+                            <p>Yes! OmniGuide supports auto repair, home improvement, appliances (refrigerators, washers, dryers, dishwashers), electronics, and general DIY projects.</p>
+                        </div>
+                    </details>
+                    <details class="faq-item">
+                        <summary class="faq-question">Is it really free?</summary>
+                        <div class="faq-answer">
+                            <p>Your first generation run is completely free with no credit card required. If you need more guides, you can purchase packages of 25 runs for a one-time payment of $5.00.</p>
+                        </div>
+                    </details>
+                    <details class="faq-item">
+                        <summary class="faq-question">How does Stripe Billing work?</summary>
+                        <div class="faq-answer">
+                            <p>Payments are handled securely via Stripe. When you purchase credits, you are redirected to Stripe's secure checkout page. Credits are credited instantly to your account once payment is processed.</p>
+                        </div>
+                    </details>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="auth-title">Sign in to OmniGuide</h3>
+                <button class="close-btn" onclick="OmniGuideApp.closeModals()" aria-label="Close dialog">
+                    <i data-lucide="x" aria-hidden="true"></i>
+                </button>
+            </div>
+
+            <!-- Login Form -->
+            <div class="modal-body" id="auth-login-form">
+                <div class="input-group">
+                    <label for="login-email">Email Address</label>
+                    <input type="email" id="login-email" name="email" placeholder="you@example.com" autocomplete="email">
+                </div>
+                <div class="input-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" name="password" placeholder="••••••••" autocomplete="current-password">
+                </div>
+                <button class="btn primary full-width" id="btn-login" onclick="OmniGuideApp.login()">Sign In</button>
+                <div id="login-error" class="text-danger small mt-2" role="alert" aria-live="polite"></div>
+                <p class="small text-center mt-4">Don't have an account? <a href="#" onclick="OmniGuideApp.showAuthModal('register'); return false;">Create one free</a></p>
+            </div>
+
+            <!-- Register Form -->
+            <div class="modal-body" id="auth-register-form" style="display:none;">
+                <p class="muted">Create an account to claim your free guide run. No credit card needed.</p>
+                <div class="input-group">
+                    <label for="register-email">Email Address</label>
+                    <input type="email" id="register-email" name="email" placeholder="you@example.com" autocomplete="email">
+                </div>
+                <div class="input-group">
+                    <label for="register-password">Password</label>
+                    <input type="password" id="register-password" name="password" placeholder="At least 6 characters" autocomplete="new-password">
+                </div>
+                <button class="btn primary full-width" id="btn-register" onclick="OmniGuideApp.register()">Create Account — It's Free</button>
+                <div id="register-error" class="text-danger small mt-2" role="alert" aria-live="polite"></div>
+                <p class="small text-center mt-4">Already have an account? <a href="#" onclick="OmniGuideApp.showAuthModal('login'); return false;">Sign in</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Buy Credits Modal -->
+    <div id="billing-modal" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="billing-title">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="billing-title">Purchase Runs</h3>
+                <button class="close-btn" onclick="OmniGuideApp.closeModals()" aria-label="Close dialog">
+                    <i data-lucide="x" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="modal-body text-center">
+                <h2 class="price">$5.00</h2>
+                <p class="muted">Get 25 additional course generations.</p>
+                <ul class="feature-list" aria-label="Package features">
+                    <li><i data-lucide="check" class="text-success" aria-hidden="true"></i> Instant delivery to your account</li>
+                    <li><i data-lucide="check" class="text-success" aria-hidden="true"></i> Credits never expire</li>
+                    <li><i data-lucide="check" class="text-success" aria-hidden="true"></i> Full video embedding</li>
+                    <li><i data-lucide="check" class="text-success" aria-hidden="true"></i> Amazon parts & tools links</li>
+                </ul>
+                <a href="https://buy.stripe.com/dRmfZj3VRbAI2LXgRB08g0l" target="_blank" rel="noopener noreferrer" class="btn primary full-width mt-4" id="btn-stripe-checkout">
+                    <i data-lucide="credit-card" aria-hidden="true"></i> Checkout with Stripe
+                </a>
+                <p class="small muted mt-2">Secure payment via Stripe. Keep this tab open — credits appear automatically.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- No-script fallback -->
+    <noscript>
+        <div style="padding: 2rem; text-align: center; font-family: sans-serif;">
+            <h2>OmniGuide requires JavaScript</h2>
+            <p>Please enable JavaScript in your browser to use this application.</p>
+        </div>
+    </noscript>
+
+    <script src="./app.js"></script>
+    <script>
+        // Initialize lucide icons after DOM is ready
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
