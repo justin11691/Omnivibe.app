@@ -657,9 +657,21 @@ window.OmniGuideApp = {
         const prompt = document.getElementById('prompt-input')?.value.trim() || '';
         if (!prompt) { showToast('Empty input', 'Please describe your repair or project.', 'error'); return; }
 
-        // Unauthenticated: run teaser flow
+        // ── UNAUTHENTICATED PATH ──────────────────────────────
         if (!this.state.isAuthenticated) {
-            this._runTeaserFlow(prompt);
+            const hasUsedFreeRun = localStorage.getItem('has_used_free_run') === 'true';
+
+            if (hasUsedFreeRun) {
+                // Already used their free run — prompt signup
+                this.state.pendingGenerate = true;
+                this.showAuthModal('register');
+                const regErr = document.getElementById('register-error');
+                if (regErr) regErr.innerText = 'You\'ve used your free run! Create a free account to generate more guides.';
+                return;
+            }
+
+            // First run: call guest-generate for a full real guide
+            await this._runGuestGenerate(prompt);
             return;
         }
 
@@ -728,7 +740,75 @@ window.OmniGuideApp = {
         }
     },
 
-    // ── RENDER RESULTS ────────────────────────────────────────
+
+    // ── GUEST GENERATE (#2 — True Free Run) ──────────────────
+    async _runGuestGenerate(prompt) {
+        this.state.currentPrompt = prompt;
+        this._clearTeaser();
+
+        const btn      = document.getElementById('generate-btn');
+        const loading  = document.getElementById('loading-state');
+        const results  = document.getElementById('results-section');
+        const errState = document.getElementById('error-state');
+        const stageText = loading?.querySelector('.stage-text');
+
+        if (btn)     btn.disabled          = true;
+        if (loading) loading.style.display = 'block';
+        if (results) results.style.display = 'none';
+        if (errState) errState.style.display = 'none';
+
+        if (stageText) stageText.textContent = 'Generating your free guide — this takes 10–20 seconds…';
+
+        ChecklistState.clear('res-tools');
+        ChecklistState.clear('res-parts');
+        ChecklistState.clear('res-steps');
+
+        try {
+            const res  = await fetch('/api/v1/guest-generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt })
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                if (res.status === 429) {
+                    // Already used free run (server-side enforcement)
+                    localStorage.setItem('has_used_free_run', 'true');
+                    this.renderNav();
+                    this.state.pendingGenerate = true;
+                    this.showAuthModal('register');
+                    const regErr = document.getElementById('register-error');
+                    if (regErr) regErr.innerText = data.error || 'Please create a free account to generate more guides.';
+                    throw new Error(data.error || 'Free run limit reached.');
+                }
+                throw new Error(data.error || 'Failed to generate guide. Please try again.');
+            }
+
+            // Mark free run as used
+            localStorage.setItem('has_used_free_run', 'true');
+            this.renderNav();
+
+            this.renderResults(data.guide);
+            if (loading) loading.style.display = 'none';
+            if (results) {
+                results.style.display = 'block';
+                results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+        } catch (e) {
+            if (loading) loading.style.display = 'none';
+            if (errState && !this.state.pendingGenerate) {
+                errState.style.display = 'block';
+                errState.innerText = e.message;
+            }
+        } finally {
+            if (btn) btn.disabled = false;
+            if (stageText) stageText.textContent = 'This usually takes 10–20 seconds.';
+        }
+    },
+
+    // ── RENDER RESULTS (updated with safety + timestamps) ────
     renderResults(data) {
         const set = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val || ''; };
         set('res-title', data.title);
@@ -742,7 +822,48 @@ window.OmniGuideApp = {
             mainCol.removeAttribute('id');
         }
 
-        // Steps — interactive with sessionStorage persistence
+        // ── SAFETY CHECKLIST (#5) ─────────────────────────────
+        const mainColumn = document.querySelector('#results-section .main-column');
+        const existingSafetyCard = document.getElementById('safety-card');
+        if (existingSafetyCard) existingSafetyCard.remove();
+
+        const safetyItems = data.safetyChecklist || [];
+        if (safetyItems.length > 0 && mainColumn) {
+            const safetyCard = document.createElement('div');
+            safetyCard.id = 'safety-card';
+            safetyCard.className = 'safety-card';
+            safetyCard.innerHTML = `
+                <div class="safety-card-header">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    Pre-Repair Safety Checklist
+                </div>
+                <ul class="safety-list" role="list" aria-label="Safety items to complete before starting">
+                    ${safetyItems.map(item => `<li>${esc(item)}</li>`).join('')}
+                </ul>`;
+            mainColumn.insertBefore(safetyCard, mainColumn.firstChild);
+        }
+
+        // ── GUEST RUN BANNER (#2) ─────────────────────────────
+        const existingBanner = document.getElementById('guest-run-banner');
+        if (existingBanner) existingBanner.remove();
+        if (data.isGuestRun) {
+            const banner = document.createElement('div');
+            banner.id = 'guest-run-banner';
+            banner.className = 'guest-run-banner';
+            banner.innerHTML = `
+                <p><strong>This was your free guide run.</strong> Create a free account to generate unlimited guides, save your progress, and get video tutorials.</p>
+                <button class="btn primary small" onclick="OmniGuideApp.showAuthModal('register')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                    Create Free Account
+                </button>`;
+            if (mainColumn) mainColumn.insertBefore(banner, mainColumn.firstChild);
+        }
+
+        // ── STEPS with Timestamps (#7) ────────────────────────
+        // Store the first video ID for timestamp deep-links
+        this._currentVideoId = (data.videos && data.videos[0]) ? data.videos[0].videoId : null;
+        const timestamps = data.stepTimestamps || [];
+
         const stepsEl = document.getElementById('res-steps');
         if (stepsEl) {
             stepsEl.innerHTML = '';
@@ -763,21 +884,47 @@ window.OmniGuideApp = {
                 li.appendChild(numEl);
                 li.appendChild(textEl);
 
-                li.addEventListener('click', () => {
+                // Add video timestamp link if we have a video and timestamp data
+                const ts = timestamps[i];
+                if (ts && this._currentVideoId) {
+                    const startFmt = this._formatSeconds(ts.startSeconds);
+                    const endFmt   = this._formatSeconds(ts.endSeconds);
+                    const tsLink   = document.createElement('a');
+                    tsLink.className = 'step-timestamp-link';
+                    tsLink.href      = `https://www.youtube.com/watch?v=${this._currentVideoId}&t=${ts.startSeconds}`;
+                    tsLink.target    = '_blank';
+                    tsLink.rel       = 'noopener noreferrer';
+                    tsLink.innerHTML = `<svg viewBox="0 0 24 24" fill="#FF0000" width="12" height="12"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> Watch ${startFmt}–${endFmt}`;
+                    li.appendChild(tsLink);
+                }
+
+                li.addEventListener('click', (e) => {
+                    if (e.target.closest('a')) return; // Don't toggle when clicking links
                     li.classList.toggle('step-completed');
                     ChecklistState.save('res-steps', i, li.classList.contains('step-completed'));
                 });
 
                 stepsEl.appendChild(li);
             });
+
+            // Add Garage Mode button after steps
+            const existingGarageBtn = document.getElementById('garage-mode-trigger');
+            if (existingGarageBtn) existingGarageBtn.remove();
+            if ((data.steps || []).length > 0) {
+                const garageBtn = document.createElement('button');
+                garageBtn.id = 'garage-mode-trigger';
+                garageBtn.className = 'garage-mode-btn';
+                garageBtn.onclick = () => OmniGuideApp.enterGarageMode();
+                garageBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Start Garage Mode — One Step at a Time`;
+                stepsEl.parentNode.appendChild(garageBtn);
+            }
         }
 
-        // Tools — multi-store + affiliate links
+        // ── TOOLS & PARTS Checklists ──────────────────────────
         this.renderChecklist('res-tools', data.tools || [], data.title);
-        // Parts — multi-store + affiliate links
         this.renderChecklist('res-parts', data.parts || [], data.title);
 
-        // Videos
+        // ── VIDEOS ────────────────────────────────────────────
         const vidContainer = document.getElementById('res-videos');
         if (vidContainer) {
             vidContainer.innerHTML = '';
@@ -797,6 +944,8 @@ window.OmniGuideApp = {
                         </div>`;
                     vidContainer.appendChild(a);
                 });
+            } else if (data.isGuestRun) {
+                vidContainer.innerHTML = `<p class="muted small">Create a free account to get AI-curated tutorial videos for this repair.</p>`;
             } else {
                 const searchLinks = data.youtubeSearchLinks || [];
                 if (searchLinks.length > 0) {
@@ -805,10 +954,7 @@ window.OmniGuideApp = {
                     wrapper.innerHTML = '<p class="muted small" style="margin-bottom:0.75rem;">Click a search below to find the best tutorials on YouTube:</p>';
                     searchLinks.forEach(link => {
                         const a = document.createElement('a');
-                        a.href      = link.searchUrl;
-                        a.target    = '_blank';
-                        a.rel       = 'noopener noreferrer';
-                        a.className = 'yt-search-btn';
+                        a.href = link.searchUrl; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.className = 'yt-search-btn';
                         a.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="#FF0000"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> ${esc(link.query)}`;
                         wrapper.appendChild(a);
                     });
@@ -819,7 +965,7 @@ window.OmniGuideApp = {
             }
         }
 
-        // Diagram
+        // ── DIAGRAM ───────────────────────────────────────────
         const diagramCard      = document.getElementById('diagram-card');
         const diagramContainer = document.getElementById('res-diagram');
         if (diagramContainer && data.diagramBase64) {
@@ -830,15 +976,23 @@ window.OmniGuideApp = {
             if (diagramCard) diagramCard.style.display = 'none';
         }
 
+        // Store steps for garage mode
+        this._garageSteps = data.steps || [];
+        this._garageTimestamps = data.stepTimestamps || [];
+
         if (typeof lucide !== 'undefined') lucide.createIcons();
+    },
+
+    // ── FORMAT SECONDS to mm:ss ───────────────────────────────
+    _formatSeconds(secs) {
+        const m = Math.floor(secs / 60);
+        const s = String(secs % 60).padStart(2, '0');
+        return `${m}:${s}`;
     },
 
     // ── RENDER CHECKLIST ─────────────────────────────────────
     /**
-     * Render an interactive checklist with affiliate links and sessionStorage persistence.
-     * @param {string} containerId
-     * @param {Array<{name: string, search_term?: string, category?: string, storeLinks?: Array}>} items
-     * @param {string} projectContext - The guide title for affiliate link context
+     * Render an interactive checklist with affiliate links (#6 — RockAuto + ApplianceParts added).
      */
     renderChecklist(containerId, items, projectContext = '') {
         const container = document.getElementById(containerId);
@@ -849,11 +1003,9 @@ window.OmniGuideApp = {
             const li = document.createElement('li');
             li.className = 'checklist-item';
 
-            // Restore state from sessionStorage
             const saved = ChecklistState.load(containerId, i);
             if (saved) li.classList.add('item-checked');
 
-            // Interactive checkbox
             const cb = document.createElement('input');
             cb.type      = 'checkbox';
             cb.className = 'checklist-checkbox';
@@ -870,26 +1022,30 @@ window.OmniGuideApp = {
             const nameEl = document.createElement('span');
             nameEl.className = 'item-name';
             nameEl.innerText = item.name;
+
+            // OEM part number badge if present
+            if (item.oem_part_number) {
+                const oemBadge = document.createElement('span');
+                oemBadge.className = 'store-note-badge';
+                oemBadge.style.cssText = 'margin-left:0.4rem;font-size:0.72rem;font-family:monospace;';
+                oemBadge.textContent = `OEM: ${item.oem_part_number}`;
+                nameEl.appendChild(oemBadge);
+            }
+
             content.appendChild(nameEl);
 
-            // Store links — inject affiliate Amazon link
+            // Store links
             if (item.storeLinks && item.storeLinks.length > 0) {
                 const linksEl = document.createElement('div');
                 linksEl.className = 'store-links';
 
                 item.storeLinks.forEach(link => {
                     const a = document.createElement('a');
-
-                    // Replace bare Amazon links with affiliate-tagged version
                     if (link.store === 'Amazon') {
-                        a.href = generateAffiliateLink(
-                            item.search_term || item.name,
-                            projectContext
-                        );
+                        a.href = generateAffiliateLink(item.search_term || item.name, projectContext);
                     } else {
                         a.href = link.url;
                     }
-
                     a.target    = '_blank';
                     a.rel       = 'noopener noreferrer';
                     a.className = 'store-btn';
@@ -898,9 +1054,7 @@ window.OmniGuideApp = {
                     let badgeHtml = '';
                     if (link.note) {
                         const noteLower = link.note.toLowerCase();
-                        const badgeClass = noteLower.includes('cheapest') ? 'cheapest'
-                                         : noteLower.includes('budget')   ? 'budget'
-                                         : '';
+                        const badgeClass = noteLower.includes('oem') ? 'cheapest' : noteLower.includes('specialist') ? 'budget' : '';
                         badgeHtml = `<span class="store-note-badge ${badgeClass}">${esc(link.note)}</span>`;
                     }
                     a.innerHTML = `${esc(link.store)}${badgeHtml}`;
@@ -915,7 +1069,167 @@ window.OmniGuideApp = {
             container.appendChild(li);
         });
     },
+
+    // ── PRINT / PDF EXPORT (#9) ───────────────────────────────
+    printGuide() {
+        window.print();
+    },
+
+    // ── GARAGE MODE (#4) ──────────────────────────────────────
+    _garageSteps: [],
+    _garageTimestamps: [],
+    _garageCurrentStep: 0,
+    _wakeLock: null,
+    _currentVideoId: null,
+
+    async enterGarageMode() {
+        if (!this._garageSteps.length) {
+            showToast('No guide loaded', 'Please generate a guide first.', 'error');
+            return;
+        }
+
+        this._garageCurrentStep = 0;
+        this._renderGarageStep();
+
+        const overlay = document.getElementById('garage-overlay');
+        if (overlay) overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+
+        // Request Screen Wake Lock to prevent sleep
+        try {
+            if ('wakeLock' in navigator) {
+                this._wakeLock = await navigator.wakeLock.request('screen');
+                const indicator = document.getElementById('garage-wake-indicator');
+                if (indicator) indicator.style.display = 'flex';
+            }
+        } catch (e) {
+            // Wake lock not available — silently skip
+            const indicator = document.getElementById('garage-wake-indicator');
+            if (indicator) indicator.style.display = 'none';
+        }
+    },
+
+    exitGarageMode() {
+        const overlay = document.getElementById('garage-overlay');
+        if (overlay) overlay.classList.remove('active');
+        document.body.style.overflow = '';
+
+        // Release wake lock
+        if (this._wakeLock) {
+            this._wakeLock.release().catch(() => {});
+            this._wakeLock = null;
+        }
+    },
+
+    _renderGarageStep() {
+        const i    = this._garageCurrentStep;
+        const step = this._garageSteps[i];
+        const total = this._garageSteps.length;
+
+        const numEl  = document.getElementById('garage-step-num');
+        const textEl = document.getElementById('garage-step-text');
+        const progEl = document.getElementById('garage-progress');
+        const prevBtn = document.getElementById('garage-prev');
+        const nextBtn = document.getElementById('garage-next');
+        const tsEl   = document.getElementById('garage-timestamp');
+        const tsLink = document.getElementById('garage-video-link');
+
+        if (numEl)  numEl.textContent  = String(i + 1);
+        if (textEl) textEl.textContent = step;
+        if (progEl) progEl.textContent = `Step ${i + 1} of ${total}`;
+        if (prevBtn) prevBtn.disabled  = i === 0;
+        if (nextBtn) {
+            nextBtn.textContent = i === total - 1 ? '✓ Done' : 'Next →';
+            nextBtn.disabled    = false;
+        }
+
+        // Video timestamp
+        const ts = this._garageTimestamps[i];
+        if (ts && this._currentVideoId && tsEl && tsLink) {
+            tsEl.style.display = 'flex';
+            const startFmt = this._formatSeconds(ts.startSeconds);
+            const endFmt   = this._formatSeconds(ts.endSeconds);
+            tsLink.href      = `https://www.youtube.com/watch?v=${this._currentVideoId}&t=${ts.startSeconds}`;
+            tsLink.textContent = `Watch ${startFmt}–${endFmt} →`;
+        } else if (tsEl) {
+            tsEl.style.display = 'none';
+        }
+    },
+
+    garageNext() {
+        if (this._garageCurrentStep >= this._garageSteps.length - 1) {
+            showToast('Repair Complete! 🎉', 'You\'ve finished all steps. Great work!', 'success', 6000);
+            this.exitGarageMode();
+            return;
+        }
+        this._garageCurrentStep++;
+        this._renderGarageStep();
+    },
+
+    garagePrev() {
+        if (this._garageCurrentStep > 0) {
+            this._garageCurrentStep--;
+            this._renderGarageStep();
+        }
+    },
+
+    // ── SYMPTOM TRIAGE (#8) ───────────────────────────────────
+    _triageAnswers: {},
+
+    toggleTriage() {
+        const toggle = document.getElementById('triage-toggle');
+        const body   = document.getElementById('triage-body');
+        const isOpen = body?.classList.contains('open');
+        toggle?.classList.toggle('open', !isOpen);
+        body?.classList.toggle('open', !isOpen);
+        toggle?.setAttribute('aria-expanded', String(!isOpen));
+    },
+
+    selectTriageOption(btn) {
+        const q = btn.dataset.q;
+        const val = btn.dataset.val;
+
+        // Deselect siblings
+        btn.closest('.triage-options')?.querySelectorAll('.triage-opt-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+
+        this._triageAnswers[q] = val;
+
+        // Advance to next question
+        if (q === '1') {
+            document.getElementById('triage-q2').style.display = 'block';
+        } else if (q === '2') {
+            document.getElementById('triage-q3').style.display = 'block';
+        } else if (q === '3') {
+            const composeBtn = document.getElementById('triage-compose-btn');
+            if (composeBtn) composeBtn.disabled = false;
+        }
+    },
+
+    composeFromTriage() {
+        const a = this._triageAnswers;
+        if (!a['1'] || !a['2'] || !a['3']) {
+            showToast('Incomplete', 'Please answer all three questions first.', 'error');
+            return;
+        }
+
+        const composed = `My ${a['1']} ${a['2']} ${a['3']}`;
+        const input = document.getElementById('prompt-input');
+        if (input) {
+            input.value = composed;
+            input.focus();
+        }
+
+        // Close triage widget
+        this.toggleTriage();
+        this._triageAnswers = {};
+
+        // Scroll to search box smoothly
+        document.querySelector('.search-box')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        showToast('Search composed!', 'Review your description and click Generate to continue.', 'success', 3500);
+    },
 };
+
 
 // ── DOM READY ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {

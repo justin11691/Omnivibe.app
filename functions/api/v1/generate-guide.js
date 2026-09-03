@@ -88,7 +88,7 @@ export async function onRequest(context) {
 
     // ─── STEP 1: Gemini — generate guide data ─────────────────
     const guidePrompt = `
-You are an expert master mechanic, builder, and DIY instructor with encyclopedic knowledge of auto repair, home improvement, and all trades.
+You are an expert master mechanic, builder, and DIY instructor with encyclopedic knowledge of auto repair, home improvement, electronics, and all trades.
 The user task: "${trimmedPrompt}"
 
 Return ONLY a raw JSON object (no markdown, no code fences) with this EXACT structure:
@@ -96,6 +96,10 @@ Return ONLY a raw JSON object (no markdown, no code fences) with this EXACT stru
   "title": "Concise descriptive title",
   "difficulty": "Easy",
   "estimatedTime": "2-3 hours",
+  "safetyChecklist": [
+    "Specific safety action relevant to this repair type (e.g. 'Disconnect the negative 12V battery terminal before beginning.')",
+    "Second safety item (e.g. 'Secure the vehicle on rated jack stands — never work under a vehicle on a floor jack alone.')"
+  ],
   "youtubeQueries": [
     "Highly specific query WITH year/make/model if automotive (e.g. '2003 Ford Expedition 4.6L front tie rod end replacement how to')",
     "Broader query (e.g. 'how to replace outer tie rod end step by step')",
@@ -116,11 +120,15 @@ Return ONLY a raw JSON object (no markdown, no code fences) with this EXACT stru
       "category": "auto_part"
     }
   ],
-  "steps": ["Step 1: ...", "Step 2: ..."]
+  "steps": ["Step 1: ...", "Step 2: ..."],
+  "stepTimestamps": [
+    {"step": 1, "startSeconds": 30, "endSeconds": 90}
+  ]
 }
 
 Rules:
 - difficulty: Easy | Medium | Hard only
+- safetyChecklist: 3-6 items specific to this repair category. Auto = battery/jack safety. Electrical/appliance = unplug/breaker. Microwave/capacitor = discharge warning. Computer = static discharge (ESD). Gas appliances = shut off gas line.
 - youtubeQueries: 3 distinct queries, most specific first
 - tools category: "tool" for hand tools, "tool_specialty" for specialty, "consumable" for fluids/tape/etc
 - parts category: "auto_part" | "home_part" | "hardware" based on the task type
@@ -128,6 +136,7 @@ Rules:
 - Part naming & search_term: For automotive tasks, extract the exact year, make, and model from the user's request (e.g. "2003 Ford Expedition") and prefix it to the "search_term" (e.g. "2003 Ford Expedition Front Outer Tie Rod End"). Use standard auto parts industry terminology (like "Front Outer Tie Rod End" instead of just "Tie Rod") to ensure store catalog matching is accurate. For general tools, keep search_term simple. For vehicle-specific specialty tools (e.g. specific socket sizes or oil filter wrenches), prefix with the year, make, and model.
 - diagramPrompt creation: The generated diagramPrompt must start by explicitly naming the primary target object/device (e.g., "A laptop computer", "A home HVAC unit", "A car steering system") as the subject. Never write a generic prompt that could confuse the image generator (e.g., if the task is a laptop motherboard, explicitly specify "laptop computer motherboard" so it does not draw a mobile phone motherboard).
 - steps: 8-15 detailed steps
+- stepTimestamps: One object per step. Estimate start/end seconds based on typical tutorial pacing (intro ~30s, each step 30-120s depending on complexity). The array length MUST equal the steps array length.
 - Return ONLY the JSON. Nothing else.
 `;
 
@@ -244,6 +253,7 @@ Rules:
       } else {
         // hardware / home_part / default
         links.push({ store: 'Amazon', url: `https://www.amazon.com/s?k=${q}` });
+        links.push({ store: 'ApplianceParts', url: `https://www.appliancepartspros.com/search/?model=&q=${q}`, note: 'Appliance Specialist' });
         links.push({ store: 'Home Depot', url: `https://www.homedepot.com/s/${q}` });
         links.push({ store: "Lowe's", url: `https://www.lowes.com/search?searchTerm=${q}` });
       }
@@ -258,9 +268,11 @@ Rules:
       title: guideData.title,
       difficulty: guideData.difficulty,
       estimatedTime: guideData.estimatedTime,
+      safetyChecklist: guideData.safetyChecklist || [],
       tools: toolsWithLinks,
       parts: partsWithLinks,
       steps: guideData.steps,
+      stepTimestamps: guideData.stepTimestamps || [],
       videos,
       youtubeSearchLinks,
       ytErrors,

@@ -7,11 +7,11 @@
     <!-- Primary SEO Meta Tags -->
     <title>OmniGuide | AI-Powered Repair & DIY Courses</title>
     <meta name="description" content="Generate instant, hyper-specific repair guides and DIY courses for any vehicle, appliance, or home project. Get step-by-step videos, exact tools, and parts lists in seconds.">
-    <meta name="keywords" content="AI repair guide, DIY course, auto repair tutorial, car repair guide, how to fix, step by step repair, OmniGuide, omnivibe">
+    <meta name="keywords" content="AI repair guide, DIY course, auto repair tutorial, car repair guide, appliance repair, computer repair, home repair, how to fix, step by step repair, OmniGuide">
     <meta name="author" content="OmniGuide">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://www.omnivibe.app/">
-    <meta name="theme-color" content="#0F172A">
+    <meta name="theme-color" content="#0D1117">
 
     <!-- Open Graph / Facebook / iMessage -->
     <meta property="og:type" content="website">
@@ -158,6 +158,53 @@
                     <button class="search-pill-btn" onclick="const input = document.getElementById('prompt-input'); input.value = 'Replace leaky kitchen faucet sink'; input.focus();">Leaky Kitchen Faucet</button>
                 </div>
                 <p class="search-hint" id="search-hint">Your first run is completely free. No credit card required.</p>
+
+            <!-- Symptom Triage Widget -->
+            <div class="triage-widget" id="triage-widget">
+                <button class="triage-toggle" id="triage-toggle" onclick="OmniGuideApp.toggleTriage()" aria-expanded="false">
+                    <span>🔍 Not sure what's broken? Try our 3-question symptom checker</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </button>
+                <div class="triage-body" id="triage-body">
+                    <!-- Q1 -->
+                    <div id="triage-q1">
+                        <p class="triage-question">1. What type of thing needs to be fixed?</p>
+                        <div class="triage-options" role="group" aria-label="Category options">
+                            <button class="triage-opt-btn" data-q="1" data-val="car or truck" onclick="OmniGuideApp.selectTriageOption(this)">🚗 Car / Truck</button>
+                            <button class="triage-opt-btn" data-q="1" data-val="home appliance" onclick="OmniGuideApp.selectTriageOption(this)">🏠 Home Appliance</button>
+                            <button class="triage-opt-btn" data-q="1" data-val="computer or laptop" onclick="OmniGuideApp.selectTriageOption(this)">💻 Computer / Laptop</button>
+                            <button class="triage-opt-btn" data-q="1" data-val="smartphone or tablet" onclick="OmniGuideApp.selectTriageOption(this)">📱 Phone / Tablet</button>
+                            <button class="triage-opt-btn" data-q="1" data-val="home plumbing or electrical" onclick="OmniGuideApp.selectTriageOption(this)">🔧 Home Plumbing / Electrical</button>
+                            <button class="triage-opt-btn" data-q="1" data-val="outdoor equipment or tool" onclick="OmniGuideApp.selectTriageOption(this)">🌿 Outdoor Equipment</button>
+                        </div>
+                    </div>
+                    <!-- Q2 -->
+                    <div id="triage-q2" style="display:none;">
+                        <p class="triage-question">2. What is it doing (or not doing)?</p>
+                        <div class="triage-options" role="group" aria-label="Symptom options">
+                            <button class="triage-opt-btn" data-q="2" data-val="won't start or turn on" onclick="OmniGuideApp.selectTriageOption(this)">⚡ Won't start / turn on</button>
+                            <button class="triage-opt-btn" data-q="2" data-val="makes a strange noise" onclick="OmniGuideApp.selectTriageOption(this)">🔊 Strange noise</button>
+                            <button class="triage-opt-btn" data-q="2" data-val="is leaking" onclick="OmniGuideApp.selectTriageOption(this)">💧 Leaking</button>
+                            <button class="triage-opt-btn" data-q="2" data-val="overheats or gets too hot" onclick="OmniGuideApp.selectTriageOption(this)">🌡️ Overheating</button>
+                            <button class="triage-opt-btn" data-q="2" data-val="has reduced performance or is slow" onclick="OmniGuideApp.selectTriageOption(this)">🐢 Poor performance / slow</button>
+                            <button class="triage-opt-btn" data-q="2" data-val="shows an error code" onclick="OmniGuideApp.selectTriageOption(this)">❌ Error code / warning light</button>
+                            <button class="triage-opt-btn" data-q="2" data-val="has a broken or damaged part" onclick="OmniGuideApp.selectTriageOption(this)">💔 Broken part / damage</button>
+                        </div>
+                    </div>
+                    <!-- Q3 -->
+                    <div id="triage-q3" style="display:none;">
+                        <p class="triage-question">3. When does it happen?</p>
+                        <div class="triage-options" role="group" aria-label="Timing options">
+                            <button class="triage-opt-btn" data-q="3" data-val="all the time" onclick="OmniGuideApp.selectTriageOption(this)">Always</button>
+                            <button class="triage-opt-btn" data-q="3" data-val="only when starting" onclick="OmniGuideApp.selectTriageOption(this)">When starting</button>
+                            <button class="triage-opt-btn" data-q="3" data-val="when under load or in use" onclick="OmniGuideApp.selectTriageOption(this)">Under load / in use</button>
+                            <button class="triage-opt-btn" data-q="3" data-val="intermittently or randomly" onclick="OmniGuideApp.selectTriageOption(this)">Intermittently</button>
+                            <button class="triage-opt-btn" data-q="3" data-val="after a recent repair or impact" onclick="OmniGuideApp.selectTriageOption(this)">After impact / repair</button>
+                        </div>
+                        <button class="triage-compose-btn" id="triage-compose-btn" onclick="OmniGuideApp.composeFromTriage()" disabled>Build My Search →</button>
+                    </div>
+                </div>
+            </div>
             </div>
         </section>
 
@@ -174,7 +221,13 @@
         <!-- Results Section -->
         <section id="results-section" style="display: none;" aria-labelledby="res-title">
             <div class="results-header">
-                <h2 id="res-title">Task Title</h2>
+                <div class="results-header-actions">
+                    <h2 id="res-title">Task Title</h2>
+                    <button class="print-btn" onclick="OmniGuideApp.printGuide()" title="Save or print this guide as PDF">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                        Print / Save PDF
+                    </button>
+                </div>
                 <div class="meta-tags">
                     <span class="tag"><i data-lucide="gauge" aria-hidden="true"></i> Difficulty: <span id="res-diff"></span></span>
                     <span class="tag"><i data-lucide="clock" aria-hidden="true"></i> Est. Time: <span id="res-time"></span></span>
@@ -210,6 +263,7 @@
                     </div>
                 </div>
             </div>
+            <div class="print-footer" style="display:none;">Generated by OmniGuide — omnivibe.app</div>
         </section>
 
         <!-- Teaser Signup Sheet — shown to unauth users after partial result render -->
@@ -266,7 +320,7 @@
                         <span class="dot"></span>
                         <span class="dot"></span>
                         <span class="dot"></span>
-                        <span class="browser-url">omnivibe.app/guide/2015-honda-civic-brakes</span>
+                        <span class="browser-url">omniguide.app/guide/2015-honda-civic-brakes</span>
                     </div>
                     <div class="browser-content">
                         <div class="preview-card">
@@ -500,5 +554,30 @@
             if (typeof lucide !== 'undefined') lucide.createIcons();
         });
     </script>
+
+    <!-- Garage Mode Overlay -->
+    <div id="garage-overlay" role="dialog" aria-modal="true" aria-label="Garage Mode - Step by step view">
+        <div class="garage-header">
+            <span class="garage-title-bar">🔧 Garage Mode</span>
+            <span class="garage-progress" id="garage-progress">Step 1 of 1</span>
+            <button class="garage-close-btn" onclick="OmniGuideApp.exitGarageMode()">✕ Exit</button>
+        </div>
+        <div class="garage-step-content">
+            <div class="garage-step-num" id="garage-step-num">1</div>
+            <div class="garage-step-text" id="garage-step-text">Loading step...</div>
+            <div class="garage-timestamp" id="garage-timestamp" style="display:none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Video: <a id="garage-video-link" href="#" target="_blank" rel="noopener noreferrer">Watch this step</a>
+            </div>
+            <div class="garage-nav">
+                <button class="garage-nav-btn prev" id="garage-prev" onclick="OmniGuideApp.garagePrev()" disabled>← Prev</button>
+                <button class="garage-nav-btn next" id="garage-next" onclick="OmniGuideApp.garageNext()">Next →</button>
+            </div>
+        </div>
+        <div class="garage-wake-indicator" id="garage-wake-indicator">
+            <div class="wake-dot"></div>
+            <span>Screen awake</span>
+        </div>
+    </div>
 </body>
 </html>
