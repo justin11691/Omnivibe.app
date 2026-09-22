@@ -42,8 +42,9 @@ export async function onRequest(context) {
   const ua  = request.headers.get('User-Agent') || '';
   const ip  = request.headers.get('CF-Connecting-IP') || 'unknown';
 
-  // 1. Block bad bots on non-API routes (allow API so Stripe webhooks aren't blocked)
-  if (!url.pathname.startsWith(API_PREFIX)) {
+  // 1. Block bad bots on non-API routes (allow major search engines & social crawlers)
+  const isSearchEngineBot = /Googlebot|bingbot|DuckDuckBot|Baiduspider|YandexBot|facebookexternalhit|Twitterbot|LinkedInBot/i.test(ua);
+  if (!url.pathname.startsWith(API_PREFIX) && !isSearchEngineBot) {
     for (const pattern of BLOCKED_UA_PATTERNS) {
       if (pattern.test(ua)) {
         return new Response('Forbidden', { status: 403 });
