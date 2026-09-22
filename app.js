@@ -862,10 +862,10 @@ window.OmniGuideApp = {
             banner.id = 'guest-run-banner';
             banner.className = 'guest-run-banner';
             banner.innerHTML = `
-                <p><strong>This was your free guide run.</strong> Create a free account to generate unlimited guides, save your progress, and get video tutorials.</p>
+                <p><strong>This was your trial guide run.</strong> Create an account to generate more guides, save your progress, and get video tutorials.</p>
                 <button class="btn primary small" onclick="OmniGuideApp.showAuthModal('register')">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-                    Create Free Account
+                    Create Account
                 </button>`;
             if (mainColumn) mainColumn.insertBefore(banner, mainColumn.firstChild);
         }

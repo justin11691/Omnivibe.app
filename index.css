@@ -2349,3 +2349,150 @@ h1, h2, h3, .wordmark {
     .garage-step-text { font-size: clamp(1.1rem, 5vw, 1.6rem); }
 }
 
+/* ============================================================
+   RESPONSIVE STREAMLINING & MOBILE/DESKTOP PROPORTIONS
+   ============================================================ */
+
+html, body {
+    overflow-x: hidden !important;
+    width: 100% !important;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 1.25rem;
+    box-sizing: border-box;
+}
+
+/* Mobile & Tablet Optimizations */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 1rem;
+    }
+
+    .nav-container {
+        height: 60px;
+        gap: 0.5rem;
+    }
+
+    .wordmark {
+        font-size: 1.2rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .nav-controls {
+        gap: 0.4rem;
+    }
+
+    .nav-controls .btn {
+        padding: 0.4rem 0.75rem;
+        font-size: 0.825rem;
+    }
+
+    .hero {
+        padding: 2.5rem 0 1.5rem;
+    }
+
+    .hero h1 {
+        font-size: 2rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .hero p {
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .search-container {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .search-box {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+        background: transparent;
+        border: none;
+        padding: 0;
+        box-shadow: none;
+    }
+
+    .search-box input {
+        width: 100%;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 0.85rem 1rem;
+        font-size: 0.95rem;
+        box-sizing: border-box;
+    }
+
+    .search-box button {
+        width: 100%;
+        justify-content: center;
+        padding: 0.85rem;
+        border-radius: var(--radius-sm);
+        font-size: 1rem;
+    }
+
+    .search-pills {
+        justify-content: center;
+        gap: 0.35rem;
+        margin-top: 0.75rem;
+    }
+
+    .search-pill-btn {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.6rem;
+    }
+
+    .features-section {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .feature-card {
+        width: 100%;
+        box-sizing: border-radius: var(--radius-md);
+    }
+
+    .pricing-card {
+        max-width: 100%;
+        margin: 0;
+        padding: 1.5rem;
+    }
+
+    .pricing-section {
+        padding: 2rem 0;
+    }
+
+    .results-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1rem;
+    }
+
+    .main-column, .side-column {
+        width: 100% !important;
+    }
+
+    .triage-widget {
+        margin-top: 1rem;
+        width: 100%;
+    }
+
+    .triage-options {
+        justify-content: center;
+    }
+
+    .triage-opt-btn {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.65rem;
+    }
+}
+

@@ -5,31 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Primary SEO Meta Tags -->
-    <title>OmniGuide | AI-Powered Repair & DIY Courses</title>
+    <title>Omnivibe Guide | AI-Powered Repair & DIY Courses</title>
     <meta name="description" content="Generate instant, hyper-specific repair guides and DIY courses for any vehicle, appliance, or home project. Get step-by-step videos, exact tools, and parts lists in seconds.">
-    <meta name="keywords" content="AI repair guide, DIY course, auto repair tutorial, car repair guide, appliance repair, computer repair, home repair, how to fix, step by step repair, OmniGuide">
-    <meta name="author" content="OmniGuide">
+    <meta name="keywords" content="AI repair guide, DIY course, auto repair tutorial, car repair guide, appliance repair, computer repair, home repair, how to fix, step by step repair, Omnivibe Guide">
+    <meta name="author" content="Omnivibe Guide">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://www.omnivibe.app/">
     <meta name="theme-color" content="#0D1117">
 
     <!-- Open Graph / Facebook / iMessage -->
     <meta property="og:type" content="website">
-    <meta property="og:site_name" content="OmniGuide">
+    <meta property="og:site_name" content="Omnivibe Guide">
     <meta property="og:url" content="https://www.omnivibe.app/">
-    <meta property="og:title" content="OmniGuide | Master Any Repair in Minutes">
-    <meta property="og:description" content="Tell OmniGuide your exact vehicle or project and get a complete AI-generated repair course with videos, parts, and step-by-step instructions.">
+    <meta property="og:title" content="Omnivibe Guide | Master Any Repair in Minutes">
+    <meta property="og:description" content="Tell Omnivibe Guide your exact vehicle or project and get a complete AI-generated repair course with videos, parts, and step-by-step instructions.">
     <meta property="og:image" content="https://www.omnivibe.app/og-image.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="OmniGuide - Master any repair in minutes">
+    <meta property="og:image:alt" content="Omnivibe Guide - Master any repair in minutes">
     <meta property="og:locale" content="en_US">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://www.omnivibe.app/">
-    <meta name="twitter:title" content="OmniGuide | Master Any Repair in Minutes">
-    <meta name="twitter:description" content="AI-generated repair guides with videos, tools, and parts. Your first guide is free.">
+    <meta name="twitter:title" content="Omnivibe Guide | Master Any Repair in Minutes">
+    <meta name="twitter:description" content="AI-generated repair guides with videos, tools, and parts. 1 trial run included.">
     <meta name="twitter:image" content="https://www.omnivibe.app/og-image.png">
 
     <!-- Favicon -->
@@ -57,7 +57,7 @@
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
-      "name": "OmniGuide",
+      "name": "Omnivibe Guide",
       "url": "https://www.omnivibe.app/",
       "description": "AI-powered repair and DIY course generator. Enter any task and get step-by-step guides, videos, tools, and parts lists.",
       "applicationCategory": "UtilitiesApplication",
@@ -66,11 +66,11 @@
         "@type": "Offer",
         "price": "0",
         "priceCurrency": "USD",
-        "description": "First guide free, then $5 for 25 runs"
+        "description": "1 trial run included, then $5 for 25 runs"
       },
       "provider": {
         "@type": "Organization",
-        "name": "OmniGuide",
+        "name": "Omnivibe Guide",
         "url": "https://www.omnivibe.app/"
       }
     }
@@ -82,32 +82,24 @@
 
     <header class="nav-header" role="banner">
         <div class="container nav-container">
-            <div class="wordmark" aria-label="OmniGuide Home">
-                OmniGuide.
-            </div>
+            <a href="/" class="wordmark" aria-label="Omnivibe Guide Home">
+                Omnivibe Guide.
+            </a>
 
             <!-- Skeleton shimmer — shown while auth state is resolving -->
             <div class="nav-skeleton" id="nav-skeleton" aria-hidden="true">
-                <div class="nav-skeleton-pill"></div>
                 <div class="nav-skeleton-pill"></div>
                 <div class="nav-skeleton-pill"></div>
             </div>
 
             <!-- Logged-out nav (hidden until auth resolves) -->
             <nav class="nav-controls" id="nav-logged-out" style="display:none;" aria-label="Main navigation">
-                <a href="/error-decoder" class="btn ghost small" style="margin-right:0.5rem; text-decoration:none;"><i data-lucide="search" style="width:16px;height:16px;margin-right:4px;vertical-align:middle;"></i>Free Error Decoder</a>
-                <!-- Free-run badge: shown to visitors who haven't consumed their free run -->
-                <span id="free-run-badge" class="free-run-badge" style="display:none;" aria-label="1 free run available">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                    1 Free Run Available
-                </span>
                 <button class="btn ghost" id="btn-signin" onclick="OmniGuideApp.showAuthModal('login')">Sign In</button>
-                <button class="btn primary" id="btn-getstarted" onclick="OmniGuideApp.showAuthModal('register')">Get Started Free</button>
+                <button class="btn primary" id="btn-getstarted" onclick="OmniGuideApp.showAuthModal('register')">Get Started</button>
             </nav>
 
             <!-- Logged-in nav -->
             <div class="nav-controls" id="nav-logged-in" style="display: none;" aria-label="User navigation">
-                <a href="/error-decoder" class="btn ghost small" style="margin-right:0.5rem; text-decoration:none;"><i data-lucide="search" style="width:16px;height:16px;margin-right:4px;vertical-align:middle;"></i>Free Error Decoder</a>
                 <span id="beta-badge" class="beta-badge" style="display:none;">BETA</span>
                 <div class="credit-pill" id="credit-display" aria-label="Credits remaining">
                     <i data-lucide="zap" aria-hidden="true"></i>
@@ -132,7 +124,7 @@
         <!-- Hero Section -->
         <section class="hero" aria-labelledby="hero-title">
             <h1 id="hero-title">Master any repair in minutes.</h1>
-            <p id="hero-subtitle">Tell OmniGuide your exact project or vehicle model. We generate a complete curriculum with step-by-step videos, exact tools, and the right parts.</p>
+            <p id="hero-subtitle">Tell Omnivibe Guide your exact project or vehicle model. We generate a complete curriculum with step-by-step videos, exact tools, and the right parts.</p>
 
             <div class="search-container">
                 <div class="search-box" role="search">
@@ -157,7 +149,7 @@
                     <button class="search-pill-btn" onclick="const input = document.getElementById('prompt-input'); input.value = 'Whirlpool Cabrio washer error code uL'; input.focus();">Whirlpool Washer uL</button>
                     <button class="search-pill-btn" onclick="const input = document.getElementById('prompt-input'); input.value = 'Replace leaky kitchen faucet sink'; input.focus();">Leaky Kitchen Faucet</button>
                 </div>
-                <p class="search-hint" id="search-hint">Your first run is completely free. No credit card required.</p>
+                <p class="search-hint" id="search-hint">1 Trial Run Included.</p>
 
             <!-- Symptom Triage Widget -->
             <div class="triage-widget" id="triage-widget">
@@ -263,7 +255,7 @@
                     </div>
                 </div>
             </div>
-            <div class="print-footer" style="display:none;">Generated by OmniGuide — omnivibe.app</div>
+            <div class="print-footer" style="display:none;">Generated by Omnivibe Guide — omnivibe.app</div>
         </section>
 
         <!-- Teaser Signup Sheet — shown to unauth users after partial result render -->
@@ -271,14 +263,14 @@
             <div class="teaser-sheet-inner">
                 <div class="teaser-sheet-eyebrow">⚡ Almost there</div>
                 <h3>You are one click away from your custom guide.</h3>
-                <p>Create your free account to instantly unlock the step-by-step instructions and curated video tutorials — no credit card required.</p>
+                <p>Create an account to instantly unlock step-by-step instructions and curated video tutorials.</p>
                 <div class="teaser-actions">
                     <button class="btn primary large" onclick="OmniGuideApp.unlockFromTeaser('register')">
-                        <i data-lucide="user-plus" aria-hidden="true"></i> Create Free Account
+                        <i data-lucide="user-plus" aria-hidden="true"></i> Create Account
                     </button>
                     <button class="btn outline" onclick="OmniGuideApp.unlockFromTeaser('login')">Sign In</button>
                 </div>
-                <p class="teaser-trust">🔒 No credit card required &nbsp;·&nbsp; First guide is always free</p>
+                <p class="teaser-trust">🔒 1 trial run included with your account</p>
             </div>
         </div>
 
@@ -320,7 +312,7 @@
                         <span class="dot"></span>
                         <span class="dot"></span>
                         <span class="dot"></span>
-                        <span class="browser-url">omniguide.app/guide/2015-honda-civic-brakes</span>
+                        <span class="browser-url">omnivibe.app/guide/2015-honda-civic-brakes</span>
                     </div>
                     <div class="browser-content">
                         <div class="preview-card">
@@ -395,7 +387,7 @@
                             <i data-lucide="star" aria-hidden="true"></i>
                             <i data-lucide="star" aria-hidden="true"></i>
                         </div>
-                        <p class="comment">"OmniGuide saved me $250 on my dishwasher repair. The step-by-step instructions and video match were spot on!"</p>
+                        <p class="comment">"Omnivibe Guide saved me $250 on my dishwasher repair. The step-by-step instructions and video match were spot on!"</p>
                         <span class="author">— David K., Homeowner</span>
                     </div>
                     <div class="testimonial-card">
@@ -441,21 +433,21 @@
                 <h2 id="faq-title" class="section-title">Frequently Asked Questions</h2>
                 <div class="faq-accordion">
                     <details class="faq-item">
-                        <summary class="faq-question">What is OmniGuide?</summary>
+                        <summary class="faq-question">What is Omnivibe Guide?</summary>
                         <div class="faq-answer">
-                            <p>OmniGuide is an AI-powered diagnostic and repair manual generator. Tell it what vehicle, appliance, or item is broken, and it retrieves step-by-step repair manuals, parts lists, and curates highly relevant YouTube video tutorials specifically for that task.</p>
+                            <p>Omnivibe Guide is an AI-powered diagnostic and repair manual generator. Tell it what vehicle, appliance, or item is broken, and it retrieves step-by-step repair manuals, parts lists, and curates highly relevant YouTube video tutorials specifically for that task.</p>
                         </div>
                     </details>
                     <details class="faq-item">
                         <summary class="faq-question">Can I use it for appliances?</summary>
                         <div class="faq-answer">
-                            <p>Yes! OmniGuide supports auto repair, home improvement, appliances (refrigerators, washers, dryers, dishwashers), electronics, and general DIY projects.</p>
+                            <p>Yes! Omnivibe Guide supports auto repair, home improvement, appliances (refrigerators, washers, dryers, dishwashers), electronics, and general DIY projects.</p>
                         </div>
                     </details>
                     <details class="faq-item">
-                        <summary class="faq-question">Is it really free?</summary>
+                        <summary class="faq-question">Is it free?</summary>
                         <div class="faq-answer">
-                            <p>Your first generation run is completely free with no credit card required. If you need more guides, you can purchase packages of 25 runs for a one-time payment of $5.00.</p>
+                            <p>You receive 1 trial run to try the service. If you need more guides, you can purchase packages of 25 runs for a one-time payment of $5.00.</p>
                         </div>
                     </details>
                     <details class="faq-item">
@@ -473,7 +465,7 @@
     <div id="auth-modal" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="auth-title">
         <div class="modal">
             <div class="modal-header">
-                <h3 id="auth-title">Sign in to OmniGuide</h3>
+                <h3 id="auth-title">Sign in to Omnivibe Guide</h3>
                 <button class="close-btn" onclick="OmniGuideApp.closeModals()" aria-label="Close dialog">
                     <i data-lucide="x" aria-hidden="true"></i>
                 </button>
@@ -491,12 +483,12 @@
                 </div>
                 <button class="btn primary full-width" id="btn-login" onclick="OmniGuideApp.login()">Sign In</button>
                 <div id="login-error" class="text-danger small mt-2" role="alert" aria-live="polite"></div>
-                <p class="small text-center mt-4">Don't have an account? <a href="#" onclick="OmniGuideApp.showAuthModal('register'); return false;">Create one free</a></p>
+                <p class="small text-center mt-4">Don't have an account? <a href="#" onclick="OmniGuideApp.showAuthModal('register'); return false;">Create Account</a></p>
             </div>
 
             <!-- Register Form -->
             <div class="modal-body" id="auth-register-form" style="display:none;">
-                <p class="muted">Create an account to claim your free guide run. No credit card needed.</p>
+                <p class="muted">Create an account for your trial guide run.</p>
                 <div class="input-group">
                     <label for="register-email">Email Address</label>
                     <input type="email" id="register-email" name="email" placeholder="you@example.com" autocomplete="email">
@@ -505,7 +497,7 @@
                     <label for="register-password">Password</label>
                     <input type="password" id="register-password" name="password" placeholder="At least 6 characters" autocomplete="new-password">
                 </div>
-                <button class="btn primary full-width" id="btn-register" onclick="OmniGuideApp.register()">Create Account — It's Free</button>
+                <button class="btn primary full-width" id="btn-register" onclick="OmniGuideApp.register()">Create Account</button>
                 <div id="register-error" class="text-danger small mt-2" role="alert" aria-live="polite"></div>
                 <p class="small text-center mt-4">Already have an account? <a href="#" onclick="OmniGuideApp.showAuthModal('login'); return false;">Sign in</a></p>
             </div>
@@ -541,7 +533,7 @@
     <!-- No-script fallback -->
     <noscript>
         <div style="padding: 2rem; text-align: center; font-family: sans-serif;">
-            <h2>OmniGuide requires JavaScript</h2>
+            <h2>Omnivibe Guide requires JavaScript</h2>
             <p>Please enable JavaScript in your browser to use this application.</p>
         </div>
     </noscript>
