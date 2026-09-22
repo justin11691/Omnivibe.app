@@ -7,9 +7,49 @@
     <!-- Primary SEO Meta Tags -->
     <title>Free OBD2 & Appliance Error Code Decoder | OmniGuide</title>
     <meta name="description" content="Instantly decode check engine lights (OBD2) or appliance error codes. Get a free diagnosis and step-by-step repair guide to fix it yourself.">
-    <meta name="keywords" content="OBD2 code reader, check engine light code, appliance error code, washing machine error code, free diagnostic tool, OmniGuide">
+    <meta name="keywords" content="OBD2 code reader, check engine light code, appliance error code, washing machine error code, free diagnostic tool, OmniGuide, error code lookup, P0420, P0171, whirlpool error code">
     <link rel="canonical" href="https://www.omnivibe.app/error-decoder">
-    <meta name="theme-color" content="#0F172A">
+    <meta name="theme-color" content="#0D1117">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="OmniGuide">
+    <meta property="og:url" content="https://www.omnivibe.app/error-decoder">
+    <meta property="og:title" content="Free Error Code Decoder | OmniGuide">
+    <meta property="og:description" content="Decode OBD2 check engine codes and appliance error codes instantly. Free diagnosis with step-by-step repair guide.">
+    <meta property="og:image" content="https://www.omnivibe.app/og-image.png">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Free Error Code Decoder | OmniGuide">
+    <meta name="twitter:description" content="Decode OBD2 and appliance error codes instantly. Free diagnosis with step-by-step repair guide.">
+
+    <!-- Schema.org Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "OmniGuide Error Code Decoder",
+      "url": "https://www.omnivibe.app/error-decoder",
+      "description": "Free tool to decode OBD2 vehicle error codes and appliance error codes. Get instant diagnosis and step-by-step repair instructions.",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "description": "Free error code decoding"
+      },
+      "provider": {
+        "@type": "Organization",
+        "name": "OmniGuide"
+      }
+    }
+    </script>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>">
 
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -19,6 +59,9 @@
 
     <!-- Icons -->
     <script src="https://cdn.jsdelivr.net/npm/lucide@0.344.0/dist/umd/lucide.min.js" defer></script>
+
+    <!-- Google AdSense Auto Ads -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4763238667156624" crossorigin="anonymous"></script>
 </head>
 <body>
     <header class="nav-header">
@@ -50,6 +93,18 @@
                     <i data-lucide="search"></i> Decode Error Free
                 </button>
             </div>
+
+            <!-- Popular codes quick-access -->
+            <div style="margin-top: 1.5rem; display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center;">
+                <span style="font-size: 0.8rem; color: var(--text-muted); margin-right: 0.25rem; align-self: center;">Popular:</span>
+                <button class="triage-opt-btn" onclick="quickDecode('P0420', 'Vehicle')">P0420</button>
+                <button class="triage-opt-btn" onclick="quickDecode('P0171', 'Vehicle')">P0171</button>
+                <button class="triage-opt-btn" onclick="quickDecode('P0300', 'Vehicle')">P0300</button>
+                <button class="triage-opt-btn" onclick="quickDecode('uL', 'Whirlpool Washer')">Whirlpool uL</button>
+                <button class="triage-opt-btn" onclick="quickDecode('OE', 'LG Washer')">LG OE</button>
+                <button class="triage-opt-btn" onclick="quickDecode('E15', 'Bosch Dishwasher')">Bosch E15</button>
+                <button class="triage-opt-btn" onclick="quickDecode('5C', 'Samsung Washer')">Samsung 5C</button>
+            </div>
         </section>
 
         <!-- Loading State -->
@@ -63,11 +118,11 @@
 
         <!-- Results Section -->
         <section id="results-section" style="display: none; margin-top: 2rem;">
-            <div class="glass-card" style="border-left: 4px solid var(--accent-color);">
+            <div class="glass-card" style="border-left: 4px solid var(--accent);">
                 <h3><i data-lucide="info"></i> Diagnosis</h3>
                 <p id="res-explanation" style="font-size: 1.1rem; line-height: 1.6;"></p>
                 
-                <div class="mt-4" style="background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: var(--radius-md);">
+                <div class="mt-4" style="background: rgba(88, 166, 255, 0.05); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
                     <h4>Ready to fix it?</h4>
                     <p class="small muted mb-2">We've prepared the exact prompt to generate your step-by-step repair guide, tools, and parts list.</p>
                     <button class="btn primary" onclick="goToGenerator()" id="btn-fix-it">
@@ -76,10 +131,49 @@
                 </div>
             </div>
         </section>
+
+        <!-- SEO Content Section for Organic Traffic -->
+        <section style="margin-top: 3rem; margin-bottom: 3rem;">
+            <div class="glass-card" style="padding: 2rem;">
+                <h2 style="font-size: 1.3rem; margin-bottom: 1rem;">What is an Error Code?</h2>
+                <p style="line-height: 1.7; font-size: 0.95rem; color: var(--text-muted);">
+                    Error codes are diagnostic messages generated by vehicles, appliances, and electronics when something goes wrong. 
+                    <strong>OBD-II codes</strong> (like P0420, P0171, P0300) are standardized codes emitted by your vehicle's onboard computer — they tell you exactly which system needs attention.
+                    <strong>Appliance error codes</strong> (like Whirlpool uL, LG OE, Samsung 5C) are manufacturer-specific alerts displayed on digital screens when a washing machine, dishwasher, dryer, or refrigerator detects a fault.
+                </p>
+                <p style="line-height: 1.7; font-size: 0.95rem; color: var(--text-muted); margin-top: 1rem;">
+                    OmniGuide's free error decoder uses AI to instantly translate these cryptic codes into plain-language explanations, identify the most likely cause, and generate a complete step-by-step repair guide with the exact tools and parts you need.
+                </p>
+            </div>
+        </section>
     </main>
 
     <script>
         let currentSuggestedPrompt = "";
+
+        // Handle URL params: ?code=P0420&device=2015+Honda+Civic
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+
+            const params = new URLSearchParams(window.location.search);
+            const code = params.get('code');
+            const device = params.get('device');
+
+            if (code) {
+                document.getElementById('error-code').value = decodeURIComponent(code);
+                if (device) {
+                    document.getElementById('device-context').value = decodeURIComponent(device);
+                }
+                // Auto-decode if code is provided via URL
+                setTimeout(() => decodeError(), 300);
+            }
+        });
+
+        function quickDecode(code, device) {
+            document.getElementById('error-code').value = code;
+            document.getElementById('device-context').value = device;
+            decodeError();
+        }
 
         async function decodeError() {
             const errorCode = document.getElementById('error-code').value.trim();
@@ -127,17 +221,11 @@
 
         function goToGenerator() {
             if (currentSuggestedPrompt) {
-                // Redirect to main page and pass the prompt in URL hash or query
-                window.location.href = '/?prompt=' + encodeURIComponent(currentSuggestedPrompt);
+                window.location.href = '/?prompt=' + encodeURIComponent(currentSuggestedPrompt) + '&auto=true';
             } else {
                 window.location.href = '/';
             }
         }
-
-        // Initialize icons
-        document.addEventListener('DOMContentLoaded', () => {
-            if (typeof lucide !== 'undefined') lucide.createIcons();
-        });
     </script>
 </body>
 </html>

@@ -167,6 +167,17 @@ window.OmniGuideApp = {
         if (promptParam) {
             const promptInput = document.getElementById('prompt-input');
             if (promptInput) promptInput.value = decodeURIComponent(promptParam);
+
+            // Auto-generate if ?auto=true is set (used by ad landing pages and SEO CTAs)
+            if (urlParams.get('auto') === 'true') {
+                // Small delay to let the UI render first
+                setTimeout(() => this.generate(), 300);
+            }
+        }
+
+        // Auto-open the symptom triage widget if ?triage=open is set
+        if (urlParams.get('triage') === 'open') {
+            setTimeout(() => this.toggleTriage(), 200);
         }
     },
 
