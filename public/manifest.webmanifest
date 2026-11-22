@@ -1,0 +1,37 @@
+{
+  "name": "OmniVibe Studio — Visualizers, Soundscapes & Smart-Light Sync",
+  "short_name": "OmniVibe Studio",
+  "description": "Offline-first 60fps 3D audio visualizers, generative soundscapes, and local companion bridge for Philips Hue, Govee LAN, and WiZ lighting.",
+  "start_url": "/studio",
+  "display": "standalone",
+  "background_color": "#0D1117",
+  "theme_color": "#0D1117",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["utilities", "music", "lifestyle", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Launch Web Studio",
+      "url": "/studio",
+      "description": "Open OmniVibe Studio visualizer and soundscape console"
+    },
+    {
+      "name": "Launch TV Stage",
+      "url": "/?stage=true",
+      "description": "Open zero-chrome visualizer stage for TV or projector"
+    }
+  ]
+}

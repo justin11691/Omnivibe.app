@@ -1,0 +1,246 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Mobile Safe Area Insets (Capacitor iOS & Android) */
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+
+  /* Default: 03. Midnight & Steel */
+  --studio-bg: #0D1117;
+  --studio-surface: #141A22;
+  --studio-card: #1E2933;
+  --studio-elevated: #283644;
+  --studio-border: rgba(74, 85, 104, 0.45);
+  --studio-border-subtle: rgba(74, 85, 104, 0.25);
+  --studio-text: #E2E8F0;
+  --studio-text-muted: #A6B0BF;
+  --studio-accent: #38bdf8;
+  --studio-accent-glow: rgba(56, 189, 248, 0.4);
+  --studio-accent-secondary: #A6B0BF;
+}
+
+/* 1. 03. Midnight & Steel (Free Default) */
+.theme-obsidian,
+.theme-midnight-steel {
+  --studio-bg: #0D1117;
+  --studio-surface: #141A22;
+  --studio-card: #1E2933;
+  --studio-elevated: #283644;
+  --studio-border: rgba(74, 85, 104, 0.45);
+  --studio-border-subtle: rgba(74, 85, 104, 0.25);
+  --studio-text: #E2E8F0;
+  --studio-text-muted: #A6B0BF;
+  --studio-accent: #38bdf8;
+  --studio-accent-glow: rgba(56, 189, 248, 0.4);
+  --studio-accent-secondary: #A6B0BF;
+}
+
+/* 2. Warm Amber Analog (Free) */
+.theme-warm-amber {
+  --studio-bg: #100b06;
+  --studio-surface: #1a120b;
+  --studio-card: #271a10;
+  --studio-elevated: #352416;
+  --studio-border: rgba(245, 158, 11, 0.18);
+  --studio-border-subtle: rgba(245, 158, 11, 0.07);
+  --studio-text: #fef3c7;
+  --studio-text-muted: #d97706;
+  --studio-accent: #f59e0b;
+  --studio-accent-glow: rgba(245, 158, 11, 0.45);
+  --studio-accent-secondary: #fb923c;
+}
+
+/* 3. Cool Slate & Chilton (Free) */
+.theme-cool-slate {
+  --studio-bg: #090f1b;
+  --studio-surface: #111a2e;
+  --studio-card: #18253f;
+  --studio-elevated: #213253;
+  --studio-border: rgba(125, 211, 252, 0.14);
+  --studio-border-subtle: rgba(125, 211, 252, 0.06);
+  --studio-text: #e0f2fe;
+  --studio-text-muted: #7dd3fc;
+  --studio-accent: #0284c7;
+  --studio-accent-glow: rgba(2, 132, 199, 0.35);
+  --studio-accent-secondary: #38bdf8;
+}
+
+/* 4. Teenage Signal Industrial (Free) - Powder-coated matte charcoal with safety signal orange */
+.theme-signal-industrial {
+  --studio-bg: #121316;
+  --studio-surface: #1a1b20;
+  --studio-card: #23252c;
+  --studio-elevated: #2f323c;
+  --studio-border: rgba(255, 85, 0, 0.22);
+  --studio-border-subtle: rgba(255, 255, 255, 0.07);
+  --studio-text: #f4f4f0;
+  --studio-text-muted: #9e9ea6;
+  --studio-accent: #ff5500;
+  --studio-accent-glow: rgba(255, 85, 0, 0.45);
+  --studio-accent-secondary: #f4d06f;
+}
+
+/* 5. Nordic Pine & Moss (Free) - Deep Scandinavian evergreen, muted sage, calm forest retreat */
+.theme-nordic-pine {
+  --studio-bg: #09120e;
+  --studio-surface: #101c16;
+  --studio-card: #172720;
+  --studio-elevated: #20352b;
+  --studio-border: rgba(52, 211, 153, 0.16);
+  --studio-border-subtle: rgba(52, 211, 153, 0.06);
+  --studio-text: #ecfdf5;
+  --studio-text-muted: #6ee7b7;
+  --studio-accent: #10b981;
+  --studio-accent-glow: rgba(16, 185, 129, 0.4);
+  --studio-accent-secondary: #34d399;
+}
+
+/* 6. Retro McIntosh Hi-Fi (Free) - Iconic glass blackface with electric cyan/turquoise watt-meter glow */
+.theme-mcintosh-hifi {
+  --studio-bg: #07090c;
+  --studio-surface: #0e1218;
+  --studio-card: #151b24;
+  --studio-elevated: #1e2633;
+  --studio-border: rgba(0, 229, 255, 0.2);
+  --studio-border-subtle: rgba(0, 229, 255, 0.08);
+  --studio-text: #e6f9ff;
+  --studio-text-muted: #80deea;
+  --studio-accent: #00e5ff;
+  --studio-accent-glow: rgba(0, 229, 255, 0.45);
+  --studio-accent-secondary: #29b6f6;
+}
+
+/* 7. Tokyo Midnight Neon (Pro) - Deep midnight ultraviolet & neon magenta */
+.theme-tokyo-neon {
+  --studio-bg: #0a0814;
+  --studio-surface: #130f24;
+  --studio-card: #1c1634;
+  --studio-elevated: #281f49;
+  --studio-border: rgba(236, 72, 153, 0.25);
+  --studio-border-subtle: rgba(236, 72, 153, 0.08);
+  --studio-text: #fdf2f8;
+  --studio-text-muted: #f472b6;
+  --studio-accent: #ec4899;
+  --studio-accent-glow: rgba(236, 72, 153, 0.45);
+  --studio-accent-secondary: #a855f7;
+}
+
+/* 8. Clean Daylight (Pro) - High-contrast alabaster and stone for bright daytime */
+.theme-clean-daylight {
+  --studio-bg: #f8fafc;
+  --studio-surface: #ffffff;
+  --studio-card: #f1f5f9;
+  --studio-elevated: #e2e8f0;
+  --studio-border: rgba(15, 23, 42, 0.12);
+  --studio-border-subtle: rgba(15, 23, 42, 0.06);
+  --studio-text: #0f172a;
+  --studio-text-muted: #64748b;
+  --studio-accent: #0284c7;
+  --studio-accent-glow: rgba(2, 132, 199, 0.25);
+  --studio-accent-secondary: #475569;
+}
+
+/* 9. Winamp Classic '99 (Millennial Nostalgia) - Brushed gunmetal, electric equalizer green, LCD amber */
+.theme-winamp-classic {
+  --studio-bg: #14171a;
+  --studio-surface: #1e2227;
+  --studio-card: #272d34;
+  --studio-elevated: #323942;
+  --studio-border: rgba(0, 255, 102, 0.28);
+  --studio-border-subtle: rgba(255, 255, 255, 0.08);
+  --studio-text: #e8f5e9;
+  --studio-text-muted: #81c784;
+  --studio-accent: #00ff66;
+  --studio-accent-glow: rgba(0, 255, 102, 0.5);
+  --studio-accent-secondary: #ffaa00;
+}
+
+/* Tactile hardware textures and styling */
+.hardware-panel {
+  background: var(--studio-surface);
+  border: 1px solid var(--studio-border);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.hardware-card {
+  background: var(--studio-card);
+  border: 1px solid var(--studio-border-subtle);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hardware-card:hover {
+  border-color: var(--studio-border);
+  transform: translateY(-1px);
+}
+
+/* Rotary Knob aesthetics */
+.rotary-knob {
+  background: radial-gradient(circle at 35% 35%, #2a3042, #141824 80%);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.2), inset 0 -2px 4px rgba(0, 0, 0, 0.8);
+}
+
+/* Fader groove */
+.fader-track {
+  background: #090a0f;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.8), 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Custom scrollbars for studio aesthetics */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--studio-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--studio-accent);
+}
+
+/* Electron Window Controls & Frameless Titlebar */
+.electron-drag {
+  -webkit-app-region: drag;
+}
+.electron-no-drag {
+  -webkit-app-region: no-drag;
+}
+
+/* Mobile Notch & Navigation Safe Area Spacing */
+.safe-top {
+  padding-top: var(--sat);
+}
+.safe-bottom {
+  padding-bottom: var(--sab);
+}
+.safe-left {
+  padding-left: var(--sal);
+}
+.safe-right {
+  padding-right: var(--sar);
+}
+
+/* Dark-mode native time picker contrast (Guardrails & Circadian) */
+input[type='time'] {
+  color-scheme: dark;
+}
+input[type='time']::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.85;
+  cursor: pointer;
+}
+input[type='time'].omni-time-input::-webkit-calendar-picker-indicator {
+  position: absolute;
+  right: 0.5rem;
+  opacity: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  cursor: pointer;
+}

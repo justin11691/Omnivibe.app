@@ -1,0 +1,29 @@
+{
+  "url": "https://omnivibe.app",
+  "name": "OmniVibe — Smart Atmosphere & Visual Mood Studio",
+  "shortName": "OmniVibe",
+  "packageId": "RuralAndRecklessMediaLLC.OmniVibeStudio",
+  "publisher": {
+    "displayName": "Rural & Reckless Media LLC",
+    "commonName": "CN=REPLACE_WITH_MICROSOFT_PARTNER_CENTER_PUBLISHER_ID",
+    "duns": "14-501-9603",
+    "entityType": "Corporation (US)",
+    "address": "4301 W Mogollon Dr, Show Low, AZ, US",
+    "phone": "(928) 368-3484"
+  },
+  "version": "1.0.0.0",
+  "classicPackage": {
+    "generate": true,
+    "version": "1.0.0.0"
+  },
+  "edgeHtmlPackage": {
+    "generate": false
+  },
+  "images": {
+    "baseImage": "https://omnivibe.app/icon-512.png"
+  },
+  "startUrl": "https://omnivibe.app/?studio=true",
+  "manifestUrl": "https://omnivibe.app/manifest.webmanifest",
+  "allowWebContentsAccess": false,
+  "capabilities": ["internetClient"]
+}

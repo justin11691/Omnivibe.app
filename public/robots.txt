@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /guide/
+
+Sitemap: https://omnivibe.app/sitemap.xml

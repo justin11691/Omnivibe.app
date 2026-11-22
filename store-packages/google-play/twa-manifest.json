@@ -1,0 +1,52 @@
+{
+  "packageId": "app.omnivibe.studio",
+  "host": "omnivibe.app",
+  "name": "OmniVibe — Atmosphere & Visual Mood Studio",
+  "launcherName": "OmniVibe",
+  "display": "standalone",
+  "themeColor": "#0D1117",
+  "navigationColor": "#0D1117",
+  "navigationColorDark": "#0D1117",
+  "navigationDividerColor": "#1E2933",
+  "navigationDividerColorDark": "#1E2933",
+  "backgroundColor": "#0D1117",
+  "enableNotifications": false,
+  "startUrl": "/?studio=true",
+  "iconUrl": "https://omnivibe.app/icon-512.png",
+  "maskableIconUrl": "https://omnivibe.app/icon-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./android-release.keystore",
+    "alias": "omnivibe"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [
+    {
+      "name": "Launch TV Stage",
+      "shortName": "Stage",
+      "url": "/?stage=true",
+      "chosenIconUrl": "https://omnivibe.app/icon-192.png"
+    }
+  ],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://omnivibe.app/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {
+    "playBilling": {
+      "enabled": true
+    },
+    "locationDelegation": {
+      "enabled": false
+    }
+  },
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://omnivibe.app/",
+  "minSdkVersion": 24,
+  "orientation": "any"
+}

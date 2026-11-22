@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hardware Compatibility Matrix — OmniVibe Studio</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="canonical" href="https://omnivibe.app/compatibility.html" />
+    <meta name="theme-color" content="#0D1117" />
+    <style>
+      :root { color-scheme: dark; }
+      body { margin: 0; background: #07090E; color: #E2E8F0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif; line-height: 1.65; }
+      .container { max-width: 920px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+      header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; border-bottom: 1px solid rgba(74, 85, 104, 0.35); padding-bottom: 1.25rem; margin-bottom: 2rem; }
+      .brand { font-weight: 800; letter-spacing: 0.14em; color: #FFFFFF; text-decoration: none; font-size: 1.05rem; }
+      nav a { color: #94A3B8; text-decoration: none; font-size: 0.85rem; margin-left: 1rem; }
+      nav a:hover { color: #38BDF8; }
+      .cta { color: #FFFFFF !important; background: linear-gradient(90deg, #0ea5e9, #4f46e5); padding: 0.45rem 0.9rem; border-radius: 0.6rem; font-weight: 700; }
+      h1 { font-size: 2rem; color: #FFFFFF; margin: 0 0 0.5rem; }
+      h2 { font-size: 1.15rem; color: #38BDF8; margin-top: 2rem; }
+      p { color: #CBD5E1; font-size: 0.95rem; }
+      table { width: 100%; border-collapse: collapse; margin: 1.25rem 0; background: #0D1117; border: 1px solid rgba(74,85,104,0.35); border-radius: 0.75rem; overflow: hidden; }
+      th, td { text-align: left; padding: 0.85rem 1rem; border-bottom: 1px solid rgba(74,85,104,0.25); font-size: 0.9rem; }
+      th { background: #141A22; color: #94A3B8; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; }
+      .badge { display: inline-block; padding: 0.2rem 0.55rem; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
+      .ok { background: rgba(16,185,129,0.16); color: #34D399; border: 1px solid rgba(16,185,129,0.4); }
+      .no { background: rgba(245,158,11,0.14); color: #FBBF24; border: 1px solid rgba(245,158,11,0.4); }
+      .soon { background: rgba(56,189,248,0.14); color: #7DD3FC; border: 1px solid rgba(56,189,248,0.35); }
+      .note { background: #0D1117; border: 1px solid rgba(74,85,104,0.35); border-radius: 0.9rem; padding: 1.1rem 1.25rem; margin: 1.25rem 0; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <a class="brand" href="/">OMNIVIBE STUDIO</a>
+        <nav>
+          <a href="/">Home</a>
+          <a href="/compatibility.html" style="color:#38BDF8;">Compatibility</a>
+          <a href="/faq.html">FAQ</a>
+          <a href="/privacy.html">Privacy</a>
+          <a class="cta" href="/studio">Launch Web Studio &rarr;</a>
+        </nav>
+      </header>
+
+      <h1>Hardware Compatibility Matrix</h1>
+      <p>
+        OmniVibe Studio separates the <strong>Web Studio</strong> (instant browser 60fps shaders + generative soundscapes) from the
+        <strong>Local Companion Bridge / Native Desktop App</strong>, which owns native OS UDP &amp; DTLS 1.2 sockets for sub-50 ms local Wi-Fi smart-light sync.
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Ecosystem / Model</th>
+            <th>Status</th>
+            <th>Transport Protocol &amp; Requirements</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Philips Hue Bridge v2</strong> + Color Bulbs / Lightstrips / Play Bars</td>
+            <td><span class="badge ok">Supported</span></td>
+            <td>Entertainment API v2 (API &ge; 1.22), DTLS 1.2 PSK over UDP 2100 at 35 Hz. Requires an Entertainment Area (up to 10 lights, max 1 active area per bridge).</td>
+          </tr>
+          <tr>
+            <td><strong>Govee LAN-Enabled Models</strong> (e.g. H6199, H61A0, H6072, H6056, H6159 with LAN API)</td>
+            <td><span class="badge ok">Supported</span></td>
+            <td>Local LAN UDP (multicast 239.255.255.250:4001, listen 4002, control 4003) + optional Razer/Dreamview 0xB1 mode + static-IP unicast fallback. Requires "LAN Control" toggled ON in Govee Home app.</td>
+          </tr>
+          <tr>
+            <td><strong>WiZ Wi-Fi RGB / RGBTW Bulbs &amp; Strips</strong></td>
+            <td><span class="badge ok">Supported</span></td>
+            <td>Local raw JSON <code>setPilot</code> over UDP 38899 (broadcast 255.255.255.255 or static IP unicast with DHCP reservation recommended). Includes exponential smoothing.</td>
+          </tr>
+          <tr>
+            <td><strong>Philips Hue Bridge v1 (Round BSB001)</strong></td>
+            <td><span class="badge no">Unsupported</span></td>
+            <td>Bridge v1 lacks Entertainment API &amp; DTLS 1.2 support. OmniVibe Studio does not fall back to rate-limited REST polling.</td>
+          </tr>
+          <tr>
+            <td><strong>Bluetooth-Only Bulbs</strong> (Hue Bluetooth without Bridge v2, Govee BLE-only)</td>
+            <td><span class="badge no">Unsupported</span></td>
+            <td>Cannot receive high-rate LAN UDP/DTLS frames.</td>
+          </tr>
+          <tr>
+            <td><strong>Govee H6006 / H605C</strong> &amp; Cloud-Only Govee Models</td>
+            <td><span class="badge no">Unsupported</span></td>
+            <td>These models do not expose Govee's local LAN Control toggle. OmniVibe never uses Govee's cloud HTTP API (10,000 req/24h cap) for live audio sync.</td>
+          </tr>
+          <tr>
+            <td><strong>Matter over Thread / Wi-Fi &amp; Bluetooth BLE Ambient Lamps</strong></td>
+            <td><span class="badge soon">Coming Soon</span></td>
+            <td>Planned for future native bridge releases once high-frequency streaming profiles stabilize.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="note">
+        <strong>Pre-Flight Diagnostics Built In:</strong> The Local Companion Bridge automatically checks for UDP port 4002 conflicts (Home Assistant, Homebridge, Govee Desktop), active VPN adapters, and Wi-Fi/Ethernet dual-homing before scanning, and always supports direct Static-IP Unicast bypass.
+      </div>
+    </div>
+  </body>
+</html>

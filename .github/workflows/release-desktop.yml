@@ -1,0 +1,57 @@
+name: Build & Publish OmniVibe Studio Desktop Installers
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-installers:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            build_cmd: npm run build:win
+            artifact_glob: release/*.exe
+          - os: macos-latest
+            build_cmd: npm run build:mac
+            artifact_glob: release/*.dmg
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Typecheck & Unit Tests
+        run: npm run typecheck && npm test
+
+      - name: Build Native Desktop Installer (Includes Local Companion Bridge)
+        run: ${{ matrix.build_cmd }}
+
+      - name: Upload Installer Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: omnivibe-studio-${{ matrix.os }}
+          path: ${{ matrix.artifact_glob }}
+
+      - name: Publish to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ matrix.artifact_glob }}
+          generate_release_notes: true

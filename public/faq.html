@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Audio, Setup &amp; Licensing FAQ — OmniVibe Studio</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="canonical" href="https://omnivibe.app/faq.html" />
+    <meta name="theme-color" content="#0D1117" />
+    <style>
+      :root { color-scheme: dark; }
+      body { margin: 0; background: #07090E; color: #E2E8F0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif; line-height: 1.7; }
+      .container { max-width: 820px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+      header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; border-bottom: 1px solid rgba(74, 85, 104, 0.35); padding-bottom: 1.25rem; margin-bottom: 2rem; }
+      .brand { font-weight: 800; letter-spacing: 0.14em; color: #FFFFFF; text-decoration: none; font-size: 1.05rem; }
+      nav a { color: #94A3B8; text-decoration: none; font-size: 0.85rem; margin-left: 1rem; }
+      nav a:hover { color: #38BDF8; }
+      .cta { color: #FFFFFF !important; background: linear-gradient(90deg, #0ea5e9, #4f46e5); padding: 0.45rem 0.9rem; border-radius: 0.6rem; font-weight: 700; }
+      h1 { font-size: 2rem; color: #FFFFFF; margin: 0 0 0.5rem; }
+      h2 { font-size: 1.1rem; color: #38BDF8; margin: 1.75rem 0 0.4rem; }
+      p { color: #CBD5E1; font-size: 0.95rem; margin: 0 0 1rem; }
+      .card { background: #0D1117; border: 1px solid rgba(74,85,104,0.35); border-radius: 0.9rem; padding: 1.25rem 1.4rem; margin-bottom: 1rem; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <a class="brand" href="/">OMNIVIBE STUDIO</a>
+        <nav>
+          <a href="/">Home</a>
+          <a href="/compatibility.html">Compatibility</a>
+          <a href="/faq.html" style="color:#38BDF8;">FAQ</a>
+          <a href="/privacy.html">Privacy</a>
+          <a class="cta" href="/studio">Launch Web Studio &rarr;</a>
+        </nav>
+      </header>
+
+      <h1>Frequently Asked Questions</h1>
+      <p>Clear answers about the Web Studio, Local Companion Bridge, audio capture across platforms, and our $19 Lifetime Pro license.</p>
+
+      <div class="card">
+        <h2 style="margin-top:0;">Why are the Web Studio and Local Companion Bridge separated?</h2>
+        <p style="margin-bottom:0;">
+          Standard web browsers intentionally block raw UDP multicast and DTLS 1.2 sockets for security. Rather than faking smart-light sync or falling back to slow cloud APIs, OmniVibe Studio keeps <strong>omnivibe.app</strong> as a zero-install 60fps shader &amp; soundscape studio, while our lightweight <strong>Local Companion Bridge / Desktop App</strong> runs natively on your LAN to drive Philips Hue (UDP 2100 DTLS), Govee (UDP 4001–4003), and WiZ (UDP 38899) at sub-50 ms latency.
+        </p>
+      </div>
+
+      <div class="card">
+        <h2 style="margin-top:0;">How does music capture work on Windows/macOS vs. iOS/Android?</h2>
+        <p style="margin-bottom:0;">
+          <strong>Windows &amp; macOS:</strong> Use Desktop System Loopback (captures Spotify, Apple Music, YouTube, or games directly) or any Wired Line-In / USB audio interface.<br />
+          <strong>iOS &amp; Android:</strong> Mobile OS DRM policies (Android <code>ALLOW_CAPTURE_BY_SYSTEM</code> and iOS ReplayKit limits) frequently block third-party capture of streaming apps. On mobile, use OmniVibe Studio's <strong>Integrated Local Audio Player</strong> (zero DRM interference) or our <strong>Noise-Gated Acoustic Room Mic</strong> with adjustable noise gate and 0.5x–3.0x sensitivity.
+        </p>
+      </div>
+
+      <div class="card">
+        <h2 style="margin-top:0;">Why do Bluetooth speakers or TVs feel slightly behind the lights?</h2>
+        <p style="margin-bottom:0;">
+          Bluetooth codecs and TV soundbars introduce 60–180 ms of audio delay. Use OmniVibe Studio's <strong>Audio-to-Light Latency Offset Slider (0–250 ms)</strong> with saved profiles for <em>Wired Speakers (0 ms)</em>, <em>TV / Soundbar (85 ms)</em>, and <em>Bluetooth Speakers (140 ms)</em> so lights hit on the exact audible beat.
+        </p>
+      </div>
+
+      <div class="card">
+        <h2 style="margin-top:0;">Does the $19 Lifetime Pro license work offline across Web, Desktop &amp; Mobile?</h2>
+        <p style="margin-bottom:0;">
+          Yes. One $19 payment unlocks all 9 3D visualizers, all 9 Studio skins, TV Stage Casting, multi-zone smart-light sync, and the Local Companion Bridge across up to 5 personal devices with offline cryptographic key verification and a 14-day money-back guarantee.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

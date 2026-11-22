@@ -1,575 +1,152 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!-- Primary SEO Meta Tags -->
-    <title>Omnivibe Guide | AI-Powered Repair & DIY Courses</title>
-    <meta name="description" content="Generate instant, hyper-specific repair guides and DIY courses for any vehicle, appliance, or home project. Get step-by-step videos, exact tools, and parts lists in seconds.">
-    <meta name="keywords" content="AI repair guide, DIY course, auto repair tutorial, car repair guide, appliance repair, computer repair, home repair, how to fix, step by step repair, Omnivibe Guide">
-    <meta name="author" content="Omnivibe Guide">
-    <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://www.omnivibe.app/">
-    <meta name="theme-color" content="#0D1117">
+    <title>OmniVibe Studio — Audio-Reactive Smart Lighting &amp; Soundscape Deck</title>
+    <meta name="title" content="OmniVibe Studio — Audio-Reactive Smart Lighting &amp; Soundscape Deck" />
+    <meta name="google-site-verification" content="AefiSZOUOGT5gHLZJ3-XGT-4VlK12lJ-ZrfpDd8vH8I" />
+    <meta name="description" content="OmniVibe Studio is an offline-first 60fps 3D audio-reactive visualizer and generative soundscape deck paired with a Local Companion Bridge for sub-50 ms Philips Hue Entertainment API v2, Govee LAN UDP, and WiZ UDP smart-lighting sync. One-time $19 Lifetime Pro." />
+    <meta name="keywords" content="OmniVibe Studio, audio reactive smart lighting, soundscape deck, philips hue entertainment api dtls, govee lan udp sync, wiz udp smart lights, local companion bridge, 60fps webgl visualizer, winamp milkdrop web" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://omnivibe.app" />
 
-    <!-- Open Graph / Facebook / iMessage -->
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="Omnivibe Guide">
-    <meta property="og:url" content="https://www.omnivibe.app/">
-    <meta property="og:title" content="Omnivibe Guide | Master Any Repair in Minutes">
-    <meta property="og:description" content="Tell Omnivibe Guide your exact vehicle or project and get a complete AI-generated repair course with videos, parts, and step-by-step instructions.">
-    <meta property="og:image" content="https://www.omnivibe.app/og-image.png">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="Omnivibe Guide - Master any repair in minutes">
-    <meta property="og:locale" content="en_US">
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://omnivibe.app" />
+    <meta property="og:title" content="OmniVibe Studio — Audio-Reactive Smart Lighting &amp; Soundscape Deck" />
+    <meta property="og:description" content="Try the offline-first Web Studio for 9 3D shaders and 8 generative soundscapes, or download the Desktop App &amp; Local Companion Bridge for sub-50 ms Philips Hue, Govee LAN, and WiZ room lighting sync ($19 Lifetime Pro)." />
+    <meta property="og:image" content="https://omnivibe.app/icon-512.png" />
+    <meta property="og:site_name" content="OmniVibe Studio" />
 
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:url" content="https://www.omnivibe.app/">
-    <meta name="twitter:title" content="Omnivibe Guide | Master Any Repair in Minutes">
-    <meta name="twitter:description" content="AI-generated repair guides with videos, tools, and parts. 1 trial run included.">
-    <meta name="twitter:image" content="https://www.omnivibe.app/og-image.png">
+    <!-- Twitter / X -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://omnivibe.app" />
+    <meta property="twitter:title" content="OmniVibe Studio — Audio-Reactive Smart Lighting &amp; Soundscape Deck" />
+    <meta property="twitter:description" content="9 60fps 3D WebGL shaders, 8 procedural soundscapes, and sub-50 ms local Wi-Fi smart-light sync via our Local Companion Bridge." />
+    <meta property="twitter:image" content="https://omnivibe.app/icon-512.png" />
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>">
-    <link rel="apple-touch-icon" href="https://www.omnivibe.app/og-image.png">
+    <!-- Mobile & PWA Configuration -->
+    <meta name="theme-color" content="#0D1117" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="OmniVibe Studio" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
 
-    <!-- Preconnect for performance -->
+    <!-- Typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-
-    <!-- Styles -->
-    <link rel="stylesheet" href="./index.css">
-
-    <!-- Icons (loaded async) -->
-    <script src="https://cdn.jsdelivr.net/npm/lucide@0.344.0/dist/umd/lucide.min.js" defer></script>
-
-    <!-- Google AdSense Auto Ads -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4763238667156624" crossorigin="anonymous"></script>
-
-    <!-- Schema.org Structured Data -->
+    <!-- Schema.org JSON-LD Structured Data -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "Omnivibe Guide",
-      "url": "https://www.omnivibe.app/",
-      "description": "AI-powered repair and DIY course generator. Enter any task and get step-by-step guides, videos, tools, and parts lists.",
-      "applicationCategory": "UtilitiesApplication",
-      "operatingSystem": "Web",
+      "@type": "SoftwareApplication",
+      "name": "OmniVibe Studio",
+      "applicationCategory": "MultimediaApplication",
+      "operatingSystem": "Windows 10+, macOS Monterey+, Android 9+, iOS 16+, Modern Web Browsers",
       "offers": {
         "@type": "Offer",
-        "price": "0",
+        "price": "19.00",
         "priceCurrency": "USD",
-        "description": "1 trial run included, then $5 for 25 runs"
+        "priceValidUntil": "2030-12-31",
+        "availability": "https://schema.org/InStock",
+        "url": "https://buy.stripe.com/fZufZjfEz48ggCN58T08g0n"
       },
-      "provider": {
+      "description": "Audio-reactive smart lighting and generative soundscape deck. Runs 9 60fps 3D WebGL visualizers and 8 procedural soundscapes in the browser, paired with a Local Companion Bridge for sub-50 ms Philips Hue Entertainment API v2 (DTLS 1.2 PSK), Govee LAN UDP, and WiZ UDP room lighting sync.",
+      "url": "https://omnivibe.app",
+      "publisher": {
         "@type": "Organization",
-        "name": "Omnivibe Guide",
-        "url": "https://www.omnivibe.app/"
+        "name": "OmniVibe Studio"
       }
     }
     </script>
-</head>
-<body>
-    <!-- Toast notification container -->
-    <div id="toast-container" aria-live="polite" aria-atomic="false"></div>
+  </head>
+  <body class="bg-studio-bg text-studio-text antialiased selection:bg-studio-accent selection:text-black">
+    <!-- Pre-rendered Static HTML inside #root for zero-JS crawlers, link-previewers & instant first paint (replaced on React mount) -->
+    <div id="root">
+      <div style="min-height:100vh;background:#07090E;color:#E2E8F0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Inter,sans-serif;line-height:1.65;">
+        <header style="border-bottom:1px solid rgba(74,85,104,0.35);padding:1rem 1.5rem;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem;background:#0B0E17;">
+          <a href="/" style="color:#FFFFFF;font-weight:800;letter-spacing:0.14em;text-decoration:none;font-size:1.1rem;">OMNIVIBE STUDIO</a>
+          <nav style="display:flex;flex-wrap:wrap;gap:1rem;font-size:0.875rem;align-items:center;">
+            <a href="#downloads" style="color:#CBD5E1;text-decoration:none;">Downloads</a>
+            <a href="/compatibility.html" style="color:#CBD5E1;text-decoration:none;">Compatibility</a>
+            <a href="#audio-guide" style="color:#CBD5E1;text-decoration:none;">Audio Guide</a>
+            <a href="/faq.html" style="color:#CBD5E1;text-decoration:none;">FAQ</a>
+            <a href="/privacy.html" style="color:#CBD5E1;text-decoration:none;">Privacy</a>
+            <a href="/terms.html" style="color:#CBD5E1;text-decoration:none;">Terms</a>
+            <a href="/studio" style="color:#FFFFFF;background:linear-gradient(90deg,#0ea5e9,#4f46e5);padding:0.45rem 0.9rem;border-radius:0.6rem;text-decoration:none;font-weight:700;">Launch Web Studio &rarr;</a>
+          </nav>
+        </header>
 
-    <header class="nav-header" role="banner">
-        <div class="container nav-container">
-            <a href="/" class="wordmark" aria-label="Omnivibe Guide Home">
-                Omnivibe Guide.
-            </a>
+        <main style="max-width:960px;margin:0 auto;padding:3rem 1.5rem 4rem;">
+          <h1 style="color:#FFFFFF;font-size:2.25rem;margin:0 0 0.75rem;letter-spacing:0.04em;text-transform:uppercase;">OmniVibe Studio — Audio-Reactive Smart Lighting &amp; Soundscape Deck</h1>
+          <p style="color:#CBD5E1;font-size:1.05rem;max-width:740px;">
+            Run all 9 60fps 3D WebGL visualizers (MilkDrop, Retro Winamp, Cyber Tunnel, 3D Lava Blobs, Liquid Waveforms, Monolith Matrix, 3D Equalizer, Particles, Harmonic Nebula) and 8 procedural Web Audio soundscapes directly in your browser—or download the Desktop App &amp; Local Companion Bridge for sub-50 ms Philips Hue Entertainment API v2 (DTLS 1.2 / UDP 2100), Govee LAN UDP (4001–4003 + Razer 0xB1), and WiZ UDP (38899) room lighting sync.
+          </p>
 
-            <!-- Skeleton shimmer — shown while auth state is resolving -->
-            <div class="nav-skeleton" id="nav-skeleton" aria-hidden="true">
-                <div class="nav-skeleton-pill"></div>
-                <div class="nav-skeleton-pill"></div>
-            </div>
+          <p style="margin:1.5rem 0;display:flex;flex-wrap:wrap;gap:0.75rem;">
+            <a href="/studio" style="color:#FFFFFF;background:#0ea5e9;padding:0.7rem 1.25rem;border-radius:0.75rem;text-decoration:none;font-weight:700;">Launch Web Studio (Screen + Soundscapes)</a>
+            <a href="/downloads/omnivibe-local-companion-bridge.mjs" download style="color:#E2E8F0;border:1px solid rgba(56,189,248,0.45);padding:0.7rem 1.25rem;border-radius:0.75rem;text-decoration:none;font-weight:700;">Download Local Companion Bridge (.mjs)</a>
+            <a href="https://buy.stripe.com/fZufZjfEz48ggCN58T08g0n" style="color:#07090E;background:#fbbf24;padding:0.7rem 1.25rem;border-radius:0.75rem;text-decoration:none;font-weight:700;">Get Lifetime Pro — $19</a>
+          </p>
 
-            <!-- Logged-out nav (hidden until auth resolves) -->
-            <nav class="nav-controls" id="nav-logged-out" style="display:none;" aria-label="Main navigation">
-                <button class="btn ghost" id="btn-signin" onclick="OmniGuideApp.showAuthModal('login')">Sign In</button>
-                <button class="btn primary" id="btn-getstarted" onclick="OmniGuideApp.showAuthModal('register')">Get Started</button>
-            </nav>
+          <section id="demos" style="margin-top:2rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;">
+            <figure style="margin:0;background:#0D1117;border:1px solid rgba(74,85,104,0.35);border-radius:0.9rem;padding:0.75rem;">
+              <video src="/demos/shaders-showcase.webm" autoplay muted loop playsinline style="width:100%;border-radius:0.6rem;display:block;background:#07090E;"></video>
+              <figcaption style="margin-top:0.5rem;font-size:0.85rem;color:#CBD5E1;"><strong>9-Shader 60fps Showcase Reel</strong> — MilkDrop, Retro Winamp, Cyber Tunnel, 3D Lava Blobs, Monolith Matrix &amp; Harmonic Nebula.</figcaption>
+            </figure>
+            <figure style="margin:0;background:#0D1117;border:1px solid rgba(74,85,104,0.35);border-radius:0.9rem;padding:0.75rem;">
+              <video src="/demos/room-lighting-sync.webm" autoplay muted loop playsinline style="width:100%;border-radius:0.6rem;display:block;background:#07090E;"></video>
+              <figcaption style="margin-top:0.5rem;font-size:0.85rem;color:#CBD5E1;"><strong>Real-Room Hue / Govee / WiZ Sync Demo</strong> — Sub-50 ms Local Companion Bridge lighting telemetry.</figcaption>
+            </figure>
+          </section>
 
-            <!-- Logged-in nav -->
-            <div class="nav-controls" id="nav-logged-in" style="display: none;" aria-label="User navigation">
-                <span id="beta-badge" class="beta-badge" style="display:none;">BETA</span>
-                <div class="credit-pill" id="credit-display" aria-label="Credits remaining">
-                    <i data-lucide="zap" aria-hidden="true"></i>
-                    <span id="credit-count">—</span> Runs Left
-                </div>
-                <button class="btn outline small" id="btn-buy-credits" onclick="OmniGuideApp.buyCredits()">Buy Credits</button>
-                <div class="dropdown">
-                    <button class="btn ghost small icon-only" id="btn-user-menu" onclick="OmniGuideApp.toggleDropdown()" aria-label="User menu" aria-expanded="false" aria-haspopup="true">
-                        <i data-lucide="user" aria-hidden="true"></i>
-                    </button>
-                    <div class="dropdown-menu" id="user-menu" style="display: none;" role="menu">
-                        <p id="user-email-display" class="muted small" role="menuitem">user@example.com</p>
-                        <hr>
-                        <button class="menu-item text-danger" id="btn-logout" onclick="OmniGuideApp.logout()" role="menuitem">Sign Out</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
+          <section id="downloads" style="margin-top:2.5rem;">
+            <h2 style="color:#38BDF8;font-size:1.3rem;">Desktop App &amp; Local Companion Bridge Downloads</h2>
+            <p style="color:#CBD5E1;">Standard web browsers block raw UDP multicast and DTLS 1.2 sockets. Use the standalone Native Desktop App (bundles the Local Companion Bridge with zero Node.js required) or download the portable Local Companion Bridge directly:</p>
+            <ul style="color:#CBD5E1;">
+              <li><a href="https://github.com/justin11691/Omnivibe.app/releases" style="color:#38BDF8;">OmniVibe Studio Desktop Installers (Windows .exe / macOS .dmg on GitHub Releases)</a></li>
+              <li><a href="/downloads/omnivibe-local-companion-bridge.mjs" download style="color:#38BDF8;">Portable Local Companion Bridge (omnivibe-local-companion-bridge.mjs)</a> — Windows, macOS &amp; Linux</li>
+              <li><a href="/downloads/start-omnivibe-bridge.bat" download style="color:#38BDF8;">Windows 1-Click Bridge Launcher (start-omnivibe-bridge.bat)</a></li>
+              <li><a href="/downloads/start-omnivibe-bridge.command" download style="color:#38BDF8;">macOS 1-Click Bridge Launcher (start-omnivibe-bridge.command)</a></li>
+            </ul>
+          </section>
 
-    <main class="container" id="main-content" role="main">
-        <!-- Hero Section -->
-        <section class="hero" aria-labelledby="hero-title">
-            <h1 id="hero-title">Master any repair in minutes.</h1>
-            <p id="hero-subtitle">Tell Omnivibe Guide your exact project or vehicle model. We generate a complete curriculum with step-by-step videos, exact tools, and the right parts.</p>
+          <section id="compatibility" style="margin-top:2rem;">
+            <h2 style="color:#38BDF8;font-size:1.3rem;">Hardware Compatibility Summary</h2>
+            <ul style="color:#CBD5E1;">
+              <li><strong>Supported:</strong> Philips Hue Bridge v2 (API &ge; 1.22 + Entertainment Area, DTLS UDP 2100), Govee LAN-enabled models (UDP 4001–4003 + Razer 0xB1 + static-IP unicast), WiZ Wi-Fi RGB bulbs (raw JSON UDP 38899 with exponential smoothing).</li>
+              <li><strong>Unsupported:</strong> Philips Hue Bridge v1 (BSB001), Bluetooth-only bulbs, Govee H6006 &amp; H605C (no LAN Control).</li>
+              <li><strong>Coming Soon:</strong> Matter over Thread/Wi-Fi and Bluetooth BLE ambient lamps.</li>
+            </ul>
+            <p><a href="/compatibility.html" style="color:#38BDF8;">View Full Hardware Compatibility Matrix &rarr;</a></p>
+          </section>
 
-            <div class="search-container">
-                <div class="search-box" role="search">
-                    <label for="prompt-input" class="sr-only">Describe your repair or project</label>
-                    <input
-                        type="search"
-                        id="prompt-input"
-                        placeholder="e.g. 2012 Honda Civic front brake pads..."
-                        aria-label="Describe your repair or project"
-                        autocomplete="off"
-                        data-lpignore="true"
-                        data-1p-ignore="true"
-                        spellcheck="true"
-                    />
-                    <button class="btn primary large" id="generate-btn" onclick="OmniGuideApp.generate()" aria-label="Generate repair course">
-                        <i data-lucide="sparkles" aria-hidden="true"></i> Generate Course
-                    </button>
-                </div>
-                <div class="search-pills" aria-label="Quick search examples">
-                    <span class="pills-label">Try:</span>
-                    <button class="search-pill-btn" onclick="const input = document.getElementById('prompt-input'); input.value = '2015 Honda Civic replace front brake pads'; input.focus();">Honda Civic Brakes</button>
-                    <button class="search-pill-btn" onclick="const input = document.getElementById('prompt-input'); input.value = 'Whirlpool Cabrio washer error code uL'; input.focus();">Whirlpool Washer uL</button>
-                    <button class="search-pill-btn" onclick="const input = document.getElementById('prompt-input'); input.value = 'Replace leaky kitchen faucet sink'; input.focus();">Leaky Kitchen Faucet</button>
-                </div>
-                <p class="search-hint" id="search-hint">1 Trial Run Included.</p>
+          <section id="audio-guide" style="margin-top:2rem;">
+            <h2 style="color:#38BDF8;font-size:1.3rem;">Audio Sources &amp; DSP Calibration</h2>
+            <p style="color:#CBD5E1;">
+              <strong>Windows &amp; macOS:</strong> Desktop System Loopback + Wired Line-In / USB Audio Interfaces.<br />
+              <strong>iOS &amp; Android:</strong> Integrated Local Audio File Player (zero DRM blocks) + Noise-Gated Acoustic Room Mic (0.5x–3.0x sensitivity).<br />
+              <strong>Calibration:</strong> 0–250 ms Audio-to-Light Latency Offset (Wired, TV/Soundbar, Bluetooth profiles), Decoupled Master Brightness, Configurable Minimum-Black Floor (0.5%–15%), Calm/Ambient vs. Party/Beat-Reactive modes.
+            </p>
+          </section>
+        </main>
 
-            <!-- Symptom Triage Widget -->
-            <div class="triage-widget" id="triage-widget">
-                <button class="triage-toggle" id="triage-toggle" onclick="OmniGuideApp.toggleTriage()" aria-expanded="false">
-                    <span>🔍 Not sure what's broken? Try our 3-question symptom checker</span>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                </button>
-                <div class="triage-body" id="triage-body">
-                    <!-- Q1 -->
-                    <div id="triage-q1">
-                        <p class="triage-question">1. What type of thing needs to be fixed?</p>
-                        <div class="triage-options" role="group" aria-label="Category options">
-                            <button class="triage-opt-btn" data-q="1" data-val="car or truck" onclick="OmniGuideApp.selectTriageOption(this)">🚗 Car / Truck</button>
-                            <button class="triage-opt-btn" data-q="1" data-val="home appliance" onclick="OmniGuideApp.selectTriageOption(this)">🏠 Home Appliance</button>
-                            <button class="triage-opt-btn" data-q="1" data-val="computer or laptop" onclick="OmniGuideApp.selectTriageOption(this)">💻 Computer / Laptop</button>
-                            <button class="triage-opt-btn" data-q="1" data-val="smartphone or tablet" onclick="OmniGuideApp.selectTriageOption(this)">📱 Phone / Tablet</button>
-                            <button class="triage-opt-btn" data-q="1" data-val="home plumbing or electrical" onclick="OmniGuideApp.selectTriageOption(this)">🔧 Home Plumbing / Electrical</button>
-                            <button class="triage-opt-btn" data-q="1" data-val="outdoor equipment or tool" onclick="OmniGuideApp.selectTriageOption(this)">🌿 Outdoor Equipment</button>
-                        </div>
-                    </div>
-                    <!-- Q2 -->
-                    <div id="triage-q2" style="display:none;">
-                        <p class="triage-question">2. What is it doing (or not doing)?</p>
-                        <div class="triage-options" role="group" aria-label="Symptom options">
-                            <button class="triage-opt-btn" data-q="2" data-val="won't start or turn on" onclick="OmniGuideApp.selectTriageOption(this)">⚡ Won't start / turn on</button>
-                            <button class="triage-opt-btn" data-q="2" data-val="makes a strange noise" onclick="OmniGuideApp.selectTriageOption(this)">🔊 Strange noise</button>
-                            <button class="triage-opt-btn" data-q="2" data-val="is leaking" onclick="OmniGuideApp.selectTriageOption(this)">💧 Leaking</button>
-                            <button class="triage-opt-btn" data-q="2" data-val="overheats or gets too hot" onclick="OmniGuideApp.selectTriageOption(this)">🌡️ Overheating</button>
-                            <button class="triage-opt-btn" data-q="2" data-val="has reduced performance or is slow" onclick="OmniGuideApp.selectTriageOption(this)">🐢 Poor performance / slow</button>
-                            <button class="triage-opt-btn" data-q="2" data-val="shows an error code" onclick="OmniGuideApp.selectTriageOption(this)">❌ Error code / warning light</button>
-                            <button class="triage-opt-btn" data-q="2" data-val="has a broken or damaged part" onclick="OmniGuideApp.selectTriageOption(this)">💔 Broken part / damage</button>
-                        </div>
-                    </div>
-                    <!-- Q3 -->
-                    <div id="triage-q3" style="display:none;">
-                        <p class="triage-question">3. When does it happen?</p>
-                        <div class="triage-options" role="group" aria-label="Timing options">
-                            <button class="triage-opt-btn" data-q="3" data-val="all the time" onclick="OmniGuideApp.selectTriageOption(this)">Always</button>
-                            <button class="triage-opt-btn" data-q="3" data-val="only when starting" onclick="OmniGuideApp.selectTriageOption(this)">When starting</button>
-                            <button class="triage-opt-btn" data-q="3" data-val="when under load or in use" onclick="OmniGuideApp.selectTriageOption(this)">Under load / in use</button>
-                            <button class="triage-opt-btn" data-q="3" data-val="intermittently or randomly" onclick="OmniGuideApp.selectTriageOption(this)">Intermittently</button>
-                            <button class="triage-opt-btn" data-q="3" data-val="after a recent repair or impact" onclick="OmniGuideApp.selectTriageOption(this)">After impact / repair</button>
-                        </div>
-                        <button class="triage-compose-btn" id="triage-compose-btn" onclick="OmniGuideApp.composeFromTriage()" disabled>Build My Search →</button>
-                    </div>
-                </div>
-            </div>
-            </div>
-        </section>
-
-        <!-- Loading State -->
-        <div id="loading-state" class="state-container" style="display: none;" role="status" aria-live="polite" aria-label="Generating your guide">
-            <i data-lucide="loader-2" class="spin icon-large text-accent" aria-hidden="true"></i>
-            <h3>Analyzing task and curating videos...</h3>
-            <p class="muted">This usually takes 10–20 seconds.</p>
-        </div>
-
-        <!-- Error State -->
-        <div id="error-state" class="alert error" style="display: none;" role="alert" aria-live="assertive"></div>
-
-        <!-- Results Section -->
-        <section id="results-section" style="display: none;" aria-labelledby="res-title">
-            <div class="results-header">
-                <div class="results-header-actions">
-                    <h2 id="res-title">Task Title</h2>
-                    <button class="print-btn" onclick="OmniGuideApp.printGuide()" title="Save or print this guide as PDF">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-                        Print / Save PDF
-                    </button>
-                </div>
-                <div class="meta-tags">
-                    <span class="tag"><i data-lucide="gauge" aria-hidden="true"></i> Difficulty: <span id="res-diff"></span></span>
-                    <span class="tag"><i data-lucide="clock" aria-hidden="true"></i> Est. Time: <span id="res-time"></span></span>
-                </div>
-            </div>
-
-            <div class="results-grid">
-                <!-- Left Column -->
-                <div class="main-column">
-                    <div class="glass-card">
-                        <h3 class="card-title"><i data-lucide="youtube" aria-hidden="true"></i> Tutorial Videos</h3>
-                        <div id="res-videos" class="video-grid" aria-label="Tutorial videos"></div>
-                    </div>
-                    <div class="glass-card" id="diagram-card" style="display:none;">
-                        <h3 class="card-title"><i data-lucide="image" aria-hidden="true"></i> Parts Diagram</h3>
-                        <div id="res-diagram" class="diagram-container"></div>
-                    </div>
-                    <div class="glass-card">
-                        <h3 class="card-title"><i data-lucide="list-ordered" aria-hidden="true"></i> Step-by-Step Instructions</h3>
-                        <ol id="res-steps" class="steps-list" aria-label="Step by step instructions"></ol>
-                    </div>
-                </div>
-
-                <!-- Right Column -->
-                <div class="side-column">
-                    <div class="glass-card">
-                        <h3 class="card-title"><i data-lucide="hammer" aria-hidden="true"></i> Tools Checklist</h3>
-                        <ul id="res-tools" class="checklist" aria-label="Required tools"></ul>
-                    </div>
-                    <div class="glass-card">
-                        <h3 class="card-title"><i data-lucide="shopping-cart" aria-hidden="true"></i> Parts Required</h3>
-                        <ul id="res-parts" class="checklist" aria-label="Required parts"></ul>
-                    </div>
-                </div>
-            </div>
-            <div class="print-footer" style="display:none;">Generated by Omnivibe Guide — omnivibe.app</div>
-        </section>
-
-        <!-- Teaser Signup Sheet — shown to unauth users after partial result render -->
-        <div id="teaser-sheet" role="region" aria-label="Unlock your full guide">
-            <div class="teaser-sheet-inner">
-                <div class="teaser-sheet-eyebrow">⚡ Almost there</div>
-                <h3>You are one click away from your custom guide.</h3>
-                <p>Create an account to instantly unlock step-by-step instructions and curated video tutorials.</p>
-                <div class="teaser-actions">
-                    <button class="btn primary large" onclick="OmniGuideApp.unlockFromTeaser('register')">
-                        <i data-lucide="user-plus" aria-hidden="true"></i> Create Account
-                    </button>
-                    <button class="btn outline" onclick="OmniGuideApp.unlockFromTeaser('login')">Sign In</button>
-                </div>
-                <p class="teaser-trust">🔒 1 trial run included with your account</p>
-            </div>
-        </div>
-
-
-        <div id="marketing-content">
-            <!-- Features Section -->
-            <section class="features-section" aria-labelledby="features-title">
-                <h2 id="features-title" class="sr-only">Core Features</h2>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i data-lucide="sliders" aria-hidden="true"></i>
-                    </div>
-                    <h3>Custom Instructions</h3>
-                    <p>Tailor guides to your exact vehicle trim, engine type, or specific home repair constraints.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i data-lucide="youtube" aria-hidden="true"></i>
-                    </div>
-                    <h3>Video Matching</h3>
-                    <p>Get the most relevant, high-quality YouTube tutorials automatically curated for your task.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i data-lucide="hammer" aria-hidden="true"></i>
-                    </div>
-                    <h3>Parts & Tools Lists</h3>
-                    <p>Never start a project only to find you're missing a socket size or the correct replacement part.</p>
-                </div>
-            </section>
-
-            <!-- Interactive Preview Section -->
-            <section class="preview-section" aria-labelledby="preview-title">
-                <h2 id="preview-title" class="section-title">See a Generated Guide</h2>
-                <p class="section-subtitle">Here is what a complete AI-generated repair course looks like.</p>
-                
-                <div class="browser-mockup">
-                    <div class="browser-header">
-                        <span class="dot"></span>
-                        <span class="dot"></span>
-                        <span class="dot"></span>
-                        <span class="browser-url">omnivibe.app/guide/2015-honda-civic-brakes</span>
-                    </div>
-                    <div class="browser-content">
-                        <div class="preview-card">
-                            <div class="preview-header">
-                                <h3>2015 Honda Civic Brake Pad Replacement</h3>
-                                <div class="preview-meta">
-                                    <span class="tag"><i data-lucide="gauge" aria-hidden="true"></i> Difficulty: Medium</span>
-                                    <span class="tag"><i data-lucide="clock" aria-hidden="true"></i> Est. Time: 1.5 Hours</span>
-                                </div>
-                            </div>
-                            <div class="preview-grid">
-                                <div class="preview-main">
-                                    <div class="preview-video-placeholder">
-                                        <i data-lucide="play" class="play-icon" aria-hidden="true"></i>
-                                        <span>Curated Tutorial Video: "Honda Civic Front Brake Pads (2012-2015)"</span>
-                                    </div>
-                                    <div class="preview-steps">
-                                        <h4>Step-by-Step Instructions</h4>
-                                        <ol>
-                                            <li>Loosen the wheel lug nuts, jack up the vehicle, and secure it on jack stands.</li>
-                                            <li>Remove the front wheels completely to expose the brake caliper assembly.</li>
-                                            <li>Remove the caliper slide pins and carefully lift the caliper off the rotor.</li>
-                                            <li>Remove the old brake pads and install the new ones with grease at contact points.</li>
-                                        </ol>
-                                    </div>
-                                </div>
-                                <div class="preview-sidebar">
-                                    <div class="preview-box">
-                                        <h4><i data-lucide="hammer" aria-hidden="true"></i> Required Tools</h4>
-                                        <ul>
-                                            <li><input type="checkbox" checked disabled> Floor Jack & Jack Stands</li>
-                                            <li><input type="checkbox" checked disabled> 12mm Wrench & Socket</li>
-                                            <li><input type="checkbox" checked disabled> C-Clamp</li>
-                                        </ul>
-                                    </div>
-                                    <div class="preview-box">
-                                        <h4><i data-lucide="shopping-cart" aria-hidden="true"></i> Parts Needed</h4>
-                                        <ul>
-                                            <li><input type="checkbox" checked disabled> Front Brake Pads (Ceramic)</li>
-                                            <li><input type="checkbox" checked disabled> Brake Lubricant</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Trust & Stats Section -->
-            <section class="trust-section" aria-label="Trust and Statistics">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <span class="stat-number">15,000+</span>
-                        <span class="stat-label">Guides Generated</span>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-number">4.9/5</span>
-                        <span class="stat-label">User Satisfaction</span>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-number">$250+</span>
-                        <span class="stat-label">Average Savings</span>
-                    </div>
-                </div>
-                <div class="testimonials-grid">
-                    <div class="testimonial-card">
-                        <div class="stars">
-                            <i data-lucide="star" aria-hidden="true"></i>
-                            <i data-lucide="star" aria-hidden="true"></i>
-                            <i data-lucide="star" aria-hidden="true"></i>
-                            <i data-lucide="star" aria-hidden="true"></i>
-                            <i data-lucide="star" aria-hidden="true"></i>
-                        </div>
-                        <p class="comment">"Omnivibe Guide saved me $250 on my dishwasher repair. The step-by-step instructions and video match were spot on!"</p>
-                        <span class="author">— David K., Homeowner</span>
-                    </div>
-                    <div class="testimonial-card">
-                        <div class="stars">
-                            <i data-lucide="star" aria-hidden="true"></i>
-                            <i data-lucide="star" aria-hidden="true"></i>
-                            <i data-lucide="star" aria-hidden="true"></i>
-                            <i data-lucide="star" aria-hidden="true"></i>
-                            <i data-lucide="star" aria-hidden="true"></i>
-                        </div>
-                        <p class="comment">"I was skeptical but needed to change my Civic's alternator. The exact list of sockets and parts to buy made it foolproof."</p>
-                        <span class="author">— Sarah M., DIY Enthusiast</span>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Pricing Section -->
-            <section class="pricing-section" aria-labelledby="pricing-title">
-                <h2 id="pricing-title" class="section-title">Simple, Flat Pricing</h2>
-                <p class="section-subtitle">No monthly subscriptions. Pay only for what you need.</p>
-                <div class="pricing-card">
-                    <span class="popular-badge">Most Popular</span>
-                    <h3>Pro Repair Pack</h3>
-                    <div class="price-value">$5.00</div>
-                    <p class="price-desc">One-time payment for 25 runs (no subscriptions).</p>
-                    <button class="btn primary large buy-btn" onclick="OmniGuideApp.state.isAuthenticated ? OmniGuideApp.buyCredits() : OmniGuideApp.showAuthModal('register')">
-                        <i data-lucide="zap" aria-hidden="true"></i> Buy 25 Credits
-                    </button>
-                    <div class="pricing-trust">
-                        <span class="stripe-badge"><i data-lucide="shield-check" aria-hidden="true"></i> Secured by Stripe</span>
-                    </div>
-                    <ul class="pricing-features">
-                        <li><i data-lucide="check" aria-hidden="true"></i> 25 Generation Runs</li>
-                        <li><i data-lucide="check" aria-hidden="true"></i> Step-by-step videos & checklists</li>
-                        <li><i data-lucide="check" aria-hidden="true"></i> Credits never expire</li>
-                        <li><i data-lucide="check" aria-hidden="true"></i> Ad-free experience</li>
-                    </ul>
-                </div>
-            </section>
-
-            <!-- FAQ Section -->
-            <section class="faq-section" aria-labelledby="faq-title">
-                <h2 id="faq-title" class="section-title">Frequently Asked Questions</h2>
-                <div class="faq-accordion">
-                    <details class="faq-item">
-                        <summary class="faq-question">What is Omnivibe Guide?</summary>
-                        <div class="faq-answer">
-                            <p>Omnivibe Guide is an AI-powered diagnostic and repair manual generator. Tell it what vehicle, appliance, or item is broken, and it retrieves step-by-step repair manuals, parts lists, and curates highly relevant YouTube video tutorials specifically for that task.</p>
-                        </div>
-                    </details>
-                    <details class="faq-item">
-                        <summary class="faq-question">Can I use it for appliances?</summary>
-                        <div class="faq-answer">
-                            <p>Yes! Omnivibe Guide supports auto repair, home improvement, appliances (refrigerators, washers, dryers, dishwashers), electronics, and general DIY projects.</p>
-                        </div>
-                    </details>
-                    <details class="faq-item">
-                        <summary class="faq-question">Is it free?</summary>
-                        <div class="faq-answer">
-                            <p>You receive 1 trial run to try the service. If you need more guides, you can purchase packages of 25 runs for a one-time payment of $5.00.</p>
-                        </div>
-                    </details>
-                    <details class="faq-item">
-                        <summary class="faq-question">How does Stripe Billing work?</summary>
-                        <div class="faq-answer">
-                            <p>Payments are handled securely via Stripe. When you purchase credits, you are redirected to Stripe's secure checkout page. Credits are credited instantly to your account once payment is processed.</p>
-                        </div>
-                    </details>
-                </div>
-            </section>
-        </div>
-    </main>
-
-    <!-- Auth Modal -->
-    <div id="auth-modal" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="auth-title">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 id="auth-title">Sign in to Omnivibe Guide</h3>
-                <button class="close-btn" onclick="OmniGuideApp.closeModals()" aria-label="Close dialog">
-                    <i data-lucide="x" aria-hidden="true"></i>
-                </button>
-            </div>
-
-            <!-- Login Form -->
-            <div class="modal-body" id="auth-login-form">
-                <div class="input-group">
-                    <label for="login-email">Email Address</label>
-                    <input type="email" id="login-email" name="email" placeholder="you@example.com" autocomplete="email">
-                </div>
-                <div class="input-group">
-                    <label for="login-password">Password</label>
-                    <input type="password" id="login-password" name="password" placeholder="••••••••" autocomplete="current-password">
-                </div>
-                <button class="btn primary full-width" id="btn-login" onclick="OmniGuideApp.login()">Sign In</button>
-                <div id="login-error" class="text-danger small mt-2" role="alert" aria-live="polite"></div>
-                <p class="small text-center mt-4">Don't have an account? <a href="#" onclick="OmniGuideApp.showAuthModal('register'); return false;">Create Account</a></p>
-            </div>
-
-            <!-- Register Form -->
-            <div class="modal-body" id="auth-register-form" style="display:none;">
-                <p class="muted">Create an account for your trial guide run.</p>
-                <div class="input-group">
-                    <label for="register-email">Email Address</label>
-                    <input type="email" id="register-email" name="email" placeholder="you@example.com" autocomplete="email">
-                </div>
-                <div class="input-group">
-                    <label for="register-password">Password</label>
-                    <input type="password" id="register-password" name="password" placeholder="At least 6 characters" autocomplete="new-password">
-                </div>
-                <button class="btn primary full-width" id="btn-register" onclick="OmniGuideApp.register()">Create Account</button>
-                <div id="register-error" class="text-danger small mt-2" role="alert" aria-live="polite"></div>
-                <p class="small text-center mt-4">Already have an account? <a href="#" onclick="OmniGuideApp.showAuthModal('login'); return false;">Sign in</a></p>
-            </div>
-        </div>
+        <footer style="border-top:1px solid rgba(74,85,104,0.35);padding:1.5rem;text-align:center;font-size:0.85rem;color:#94A3B8;">
+          OmniVibe Studio &bull; One-Time $19 Lifetime Pro (14-Day Money-Back Guarantee) &bull;
+          <a href="/compatibility.html" style="color:#38BDF8;margin:0 0.5rem;">Compatibility</a>
+          <a href="/faq.html" style="color:#38BDF8;margin:0 0.5rem;">FAQ</a>
+          <a href="/privacy.html" style="color:#38BDF8;margin:0 0.5rem;">Privacy Policy</a>
+          <a href="/terms.html" style="color:#38BDF8;margin:0 0.5rem;">Terms of Service</a>
+        </footer>
+      </div>
     </div>
-
-    <!-- Buy Credits Modal -->
-    <div id="billing-modal" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="billing-title">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 id="billing-title">Purchase Runs</h3>
-                <button class="close-btn" onclick="OmniGuideApp.closeModals()" aria-label="Close dialog">
-                    <i data-lucide="x" aria-hidden="true"></i>
-                </button>
-            </div>
-            <div class="modal-body text-center">
-                <h2 class="price">$5.00</h2>
-                <p class="muted">Get 25 additional course generations.</p>
-                <ul class="feature-list" aria-label="Package features">
-                    <li><i data-lucide="check" class="text-success" aria-hidden="true"></i> Instant delivery to your account</li>
-                    <li><i data-lucide="check" class="text-success" aria-hidden="true"></i> Credits never expire</li>
-                    <li><i data-lucide="check" class="text-success" aria-hidden="true"></i> Full video embedding</li>
-                    <li><i data-lucide="check" class="text-success" aria-hidden="true"></i> Amazon parts & tools links</li>
-                </ul>
-                <a href="https://buy.stripe.com/dRmfZj3VRbAI2LXgRB08g0l" target="_blank" rel="noopener noreferrer" class="btn primary full-width mt-4" id="btn-stripe-checkout">
-                    <i data-lucide="credit-card" aria-hidden="true"></i> Checkout with Stripe
-                </a>
-                <p class="small muted mt-2">Secure payment via Stripe. Keep this tab open — credits appear automatically.</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- No-script fallback -->
-    <noscript>
-        <div style="padding: 2rem; text-align: center; font-family: sans-serif;">
-            <h2>Omnivibe Guide requires JavaScript</h2>
-            <p>Please enable JavaScript in your browser to use this application.</p>
-        </div>
-    </noscript>
-
-    <script src="./app.js"></script>
-    <script>
-        // Initialize lucide icons after DOM is ready
-        if (typeof lucide !== 'undefined') lucide.createIcons();
-        document.addEventListener('DOMContentLoaded', function() {
-            if (typeof lucide !== 'undefined') lucide.createIcons();
-        });
-    </script>
-
-    <!-- Garage Mode Overlay -->
-    <div id="garage-overlay" role="dialog" aria-modal="true" aria-label="Garage Mode - Step by step view">
-        <div class="garage-header">
-            <span class="garage-title-bar">🔧 Garage Mode</span>
-            <span class="garage-progress" id="garage-progress">Step 1 of 1</span>
-            <button class="garage-close-btn" onclick="OmniGuideApp.exitGarageMode()">✕ Exit</button>
-        </div>
-        <div class="garage-step-content">
-            <div class="garage-step-num" id="garage-step-num">1</div>
-            <div class="garage-step-text" id="garage-step-text">Loading step...</div>
-            <div class="garage-timestamp" id="garage-timestamp" style="display:none;">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                Video: <a id="garage-video-link" href="#" target="_blank" rel="noopener noreferrer">Watch this step</a>
-            </div>
-            <div class="garage-nav">
-                <button class="garage-nav-btn prev" id="garage-prev" onclick="OmniGuideApp.garagePrev()" disabled>← Prev</button>
-                <button class="garage-nav-btn next" id="garage-next" onclick="OmniGuideApp.garageNext()">Next →</button>
-            </div>
-        </div>
-        <div class="garage-wake-indicator" id="garage-wake-indicator">
-            <div class="wake-dot"></div>
-            <span>Screen awake</span>
-        </div>
-    </div>
-</body>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>

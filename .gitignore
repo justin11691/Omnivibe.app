@@ -1,8 +1,4 @@
-node_modules/
-.dev.vars
-.wrangler/
-scratch/
-.agents/
-subagent_metadata/
-test-results/
-playwright-report/
+node_modules
+dist
+.DS_Store
+*.local
