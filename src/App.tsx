@@ -685,12 +685,16 @@ export const App: React.FC = () => {
         {/* Brand, Live Pulse Aura & Top Status Pill */}
         <div className="flex items-center gap-2.5 sm:gap-3">
           <div
-            className="w-8 h-8 rounded-xl bg-studio-card border border-studio-border flex items-center justify-center transition-all duration-200 shrink-0"
+            className="w-10 h-10 rounded-xl bg-[#0B111A] border border-cyan-400/40 overflow-hidden flex items-center justify-center transition-all duration-200 shrink-0"
             style={{
-              boxShadow: `0 0 16px ${activePreset.colors[0] || '#38bdf8'}40`,
+              boxShadow: `0 0 18px ${activePreset.colors[0] || '#22d3ee'}45, 0 0 10px rgba(217, 70, 239, 0.28)`,
             }}
           >
-            <Sparkles className="w-4 h-4 text-studio-accent" />
+            <img
+              src="/omnivibe-logo.jpg"
+              alt="OmniVibe Studio Logo"
+              className="w-full h-full object-cover scale-110"
+            />
           </div>
 
           <div className="min-w-0">
@@ -903,7 +907,7 @@ export const App: React.FC = () => {
           {/* Studio Drawer Toggle */}
           <button
             onClick={handleOpenStudioDrawer}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-mono font-bold text-xs shadow-md shadow-indigo-500/25 transition-all ml-0.5 cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-cyan-500 via-fuchsia-500 to-amber-500 hover:brightness-110 text-white font-mono font-bold text-xs shadow-md shadow-fuchsia-500/25 transition-all ml-0.5 cursor-pointer"
             title="Open Interactive Studio Drawer"
           >
             <Sliders className="w-3.5 h-3.5 text-white" />

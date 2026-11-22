@@ -319,12 +319,16 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
   });
 
   return (
-    <div className="min-h-screen bg-[#07090E] text-[#E2E8F0] font-sans flex flex-col selection:bg-studio-accent selection:text-black">
+    <div className="min-h-screen bg-[#0B111A] text-[#E2E8F0] font-sans flex flex-col selection:bg-cyan-400 selection:text-black">
       {/* Top Navigation Bar — Consistent OmniVibe Studio Branding */}
-      <header className="sticky top-0 z-50 bg-[#0B0E17]/95 backdrop-blur-md border-b border-white/10 px-3 sm:px-6 py-3 flex items-center justify-between gap-3 select-none">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-studio-accent to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/20 shrink-0">
-            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
+      <header className="sticky top-0 z-50 bg-[#0F1724]/95 backdrop-blur-md border-b border-cyan-400/20 px-3 sm:px-6 py-3 flex items-center justify-between gap-3 select-none">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-[#0B111A] border border-cyan-400/40 overflow-hidden flex items-center justify-center shadow-lg shadow-fuchsia-500/25 shrink-0">
+            <img
+              src="/omnivibe-logo.jpg"
+              alt="OmniVibe Studio Logo"
+              className="w-full h-full object-cover scale-110"
+            />
           </div>
           <div className="min-w-0">
             <span className="text-lg sm:text-xl font-heading tracking-widest uppercase font-bold text-white leading-none block truncate">
@@ -366,7 +370,7 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
 
           <button
             onClick={onEnterStudio}
-            className="px-4 py-2 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white text-xs font-bold whitespace-nowrap transition-all shadow-md shadow-indigo-500/25 shrink-0 cursor-pointer"
+            className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 via-fuchsia-500 to-amber-500 hover:brightness-110 text-white text-xs font-bold whitespace-nowrap transition-all shadow-md shadow-fuchsia-500/25 shrink-0 cursor-pointer"
           >
             Launch Studio &rarr;
           </button>
@@ -382,7 +386,7 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
 
         <h1 className="text-3xl sm:text-5xl md:text-6xl font-heading tracking-wider uppercase text-white max-w-4xl leading-tight">
           Music You Can See. <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-indigo-300 to-amber-300">
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-amber-400">
             Room Lighting That Feels Alive.
           </span>
         </h1>
@@ -395,7 +399,7 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 mt-2 w-full max-w-3xl">
           <a
             href="#downloads"
-            className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-mono font-bold text-xs sm:text-sm uppercase tracking-wider whitespace-nowrap flex items-center justify-center gap-2.5 shadow-xl shadow-indigo-500/30 transition-all transform hover:scale-[1.02] active:scale-95 cursor-pointer shrink-0"
+            className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 via-fuchsia-500 to-amber-500 hover:brightness-110 text-white font-mono font-bold text-xs sm:text-sm uppercase tracking-wider whitespace-nowrap flex items-center justify-center gap-2.5 shadow-xl shadow-fuchsia-500/25 transition-all transform hover:scale-[1.02] active:scale-95 cursor-pointer shrink-0"
           >
             <Download className="w-4 h-4 text-white shrink-0" />
             <span>DOWNLOAD OFFLINE APP (3-DAY FREE TRIAL)</span>

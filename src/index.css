@@ -9,34 +9,34 @@
   --sal: env(safe-area-inset-left, 0px);
   --sar: env(safe-area-inset-right, 0px);
 
-  /* Default: 03. Midnight & Steel */
-  --studio-bg: #0D1117;
-  --studio-surface: #141A22;
-  --studio-card: #1E2933;
-  --studio-elevated: #283644;
-  --studio-border: rgba(74, 85, 104, 0.45);
-  --studio-border-subtle: rgba(74, 85, 104, 0.25);
+  /* Default: OmniVibe Neon Spectrum (Midnight Navy + Cyan / Magenta / Gold) */
+  --studio-bg: #0B111A;
+  --studio-surface: #111A28;
+  --studio-card: #172233;
+  --studio-elevated: #1F2D42;
+  --studio-border: rgba(56, 189, 248, 0.28);
+  --studio-border-subtle: rgba(217, 70, 239, 0.16);
   --studio-text: #E2E8F0;
   --studio-text-muted: #A6B0BF;
-  --studio-accent: #38bdf8;
-  --studio-accent-glow: rgba(56, 189, 248, 0.4);
-  --studio-accent-secondary: #A6B0BF;
+  --studio-accent: #22D3EE;
+  --studio-accent-glow: rgba(217, 70, 239, 0.45);
+  --studio-accent-secondary: #D946EF;
 }
 
-/* 1. 03. Midnight & Steel (Free Default) */
+/* 1. 03. Midnight & Steel (Free Default — Matched to Neon Logo) */
 .theme-obsidian,
 .theme-midnight-steel {
-  --studio-bg: #0D1117;
-  --studio-surface: #141A22;
-  --studio-card: #1E2933;
-  --studio-elevated: #283644;
-  --studio-border: rgba(74, 85, 104, 0.45);
-  --studio-border-subtle: rgba(74, 85, 104, 0.25);
+  --studio-bg: #0B111A;
+  --studio-surface: #111A28;
+  --studio-card: #172233;
+  --studio-elevated: #1F2D42;
+  --studio-border: rgba(56, 189, 248, 0.28);
+  --studio-border-subtle: rgba(217, 70, 239, 0.16);
   --studio-text: #E2E8F0;
   --studio-text-muted: #A6B0BF;
-  --studio-accent: #38bdf8;
-  --studio-accent-glow: rgba(56, 189, 248, 0.4);
-  --studio-accent-secondary: #A6B0BF;
+  --studio-accent: #22D3EE;
+  --studio-accent-glow: rgba(217, 70, 239, 0.45);
+  --studio-accent-secondary: #D946EF;
 }
 
 /* 2. Warm Amber Analog (Free) */
