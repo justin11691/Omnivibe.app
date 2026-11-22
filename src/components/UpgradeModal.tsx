@@ -55,6 +55,17 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
     }
   }, []);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const handleGooglePlayCheckout = async () => {
@@ -211,11 +222,17 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 select-none animate-in fade-in duration-200">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="upgrade-modal-title"
+      className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 select-none animate-in fade-in duration-200"
+    >
       <div className="hardware-panel max-w-xl w-full p-6 rounded-3xl flex flex-col gap-5 border border-studio-border max-h-[92vh] overflow-y-auto shadow-2xl relative">
         {/* Close Button */}
         <button
           onClick={onClose}
+          aria-label="Close modal"
           className="absolute top-5 right-5 p-1.5 rounded-xl text-studio-textMuted hover:text-studio-text hover:bg-studio-surface transition-colors"
         >
           <X className="w-5 h-5" />
@@ -245,7 +262,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
                 <span>PERMANENT OFFLINE LICENSE</span>
               </div>
 
-              <h2 className="text-2xl font-mono font-bold text-studio-text tracking-tight">
+              <h2 id="upgrade-modal-title" className="text-2xl font-mono font-bold text-studio-text tracking-tight">
                 {isPermanentPro
                   ? 'OmniVibe Pro License Active'
                   : isTrial

@@ -986,14 +986,6 @@ export const App: React.FC = () => {
         </div>
       </footer>
 
-      {/* UPGRADE PRO MODAL */}
-      <UpgradeModal
-        isOpen={isUpgradeModalOpen}
-        onClose={() => setIsUpgradeModalOpen(false)}
-        onActivatePro={handleActivatePro}
-        isPro={proLicense.isPro}
-      />
-
       {/* INTERACTIVE STUDIO DRAWER (SLIDE-OVER) */}
       <StudioDrawer
         isOpen={isStudioDrawerOpen}
