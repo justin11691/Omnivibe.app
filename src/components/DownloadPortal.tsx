@@ -377,18 +377,18 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
       <section className="relative px-4 sm:px-6 py-12 md:py-16 max-w-6xl mx-auto flex flex-col items-center text-center gap-5">
         <div className="flex items-center gap-2 px-3.5 py-1 rounded-full bg-studio-card/80 border border-studio-border text-xs font-mono text-studio-accent shadow-sm">
           <ShieldCheck className="w-4 h-4 text-emerald-400" />
-          <span>OmniVibe Studio • Offline-First Web Shaders + Local Companion Bridge</span>
+          <span>100% Offline • 3-Day Free Trial • $9.99 Once</span>
         </div>
 
         <h1 className="text-3xl sm:text-5xl md:text-6xl font-heading tracking-wider uppercase text-white max-w-4xl leading-tight">
-          60FPS Audio-Reactive Shaders &amp; <br />
+          Music You Can See. <br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-indigo-300 to-amber-300">
-            Sub-50 ms Local Room Lighting
+            Room Lighting That Feels Alive.
           </span>
         </h1>
 
         <p className="text-xs sm:text-sm md:text-base font-subheading text-studio-textMuted max-w-2xl leading-relaxed">
-          Install OmniVibe Studio directly on Windows or macOS for 100% offline 60fps 3D shaders, system audio loopback, and built-in Philips Hue, Govee LAN, and WiZ lighting sync. Includes a full 3-day free trial, then $9.99 once — or try the live browser demo first.
+          One offline desktop app for Windows and macOS. Watch smooth 3D visuals react to anything playing on your computer while your Philips Hue, Govee, and WiZ lights pulse in sync over local Wi-Fi. Free for 3 days, then $9.99 for life—or try the browser demo right here.
         </p>
 
         {/* Dual-Path CTAs */}
