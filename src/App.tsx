@@ -285,6 +285,10 @@ export const App: React.FC = () => {
   const activePreset =
     presets.find((p) => p.id === activePresetId) || presets[0];
 
+  const isElectronEnv = Boolean((window as unknown as { electronAPI?: { isElectron?: boolean } }).electronAPI?.isElectron);
+  // Web Studio acts as an open interactive demo; Desktop App enforces the 3-day offline trial + $9.99 lifetime key
+  const hasStudioAccess = !isElectronEnv || proLicense.isPro;
+
   // Subscribe to real-time audio FFT telemetry & stream calibrated frames to Local Companion Bridge
   useEffect(() => {
     const unsubscribe = globalAudioEngine.subscribeTelemetry((t) => {
@@ -413,7 +417,7 @@ export const App: React.FC = () => {
 
   // Handle Preset Selection
   const handleSelectPreset = useCallback((preset: VibePreset) => {
-    if (preset.isPro && !proLicense.isPro) {
+    if (preset.isPro && !hasStudioAccess) {
       setIsUpgradeModalOpen(true);
       return;
     }
@@ -425,12 +429,11 @@ export const App: React.FC = () => {
     globalAudioEngine.bassGain = preset.audioReactivity.bassWeight;
     globalAudioEngine.midGain = preset.audioReactivity.midWeight;
     globalAudioEngine.trebleGain = preset.audioReactivity.trebleWeight;
-  }, [proLicense.isPro]);
+  }, [hasStudioAccess]);
 
-  // Toggle Room Zones (Free tier: single active zone; Pro: multi-zone whole home)
+  // Toggle Room Zones
   const handleToggleZone = (zoneId: string) => {
-    if (!proLicense.isPro) {
-      // Free tier single-select zone behavior
+    if (!hasStudioAccess) {
       const updated = zones.map((z) => ({
         ...z,
         active: z.id === zoneId ? !z.active : false,
@@ -447,39 +450,43 @@ export const App: React.FC = () => {
 
   // Launch Stage Window (Broadcast Sync)
   const handleLaunchStageWindow = () => {
-    if (!proLicense.isPro) {
+    if (!hasStudioAccess) {
       setIsUpgradeModalOpen(true);
+      return;
+    }
+    if (isElectronEnv && (window as unknown as { electronAPI?: { launchStage?: () => void } }).electronAPI?.launchStage) {
+      (window as unknown as { electronAPI: { launchStage: () => void } }).electronAPI.launchStage();
       return;
     }
     window.open(`${window.location.origin}/?stage=true`, 'OmniVibeStage', 'width=1280,height=720,menubar=no,toolbar=no');
   };
 
-  // Open Studio Drawer (Pro feature)
+  // Open Studio Drawer
   const handleOpenStudioDrawer = () => {
-    if (!proLicense.isPro) {
+    if (!hasStudioAccess) {
       setIsUpgradeModalOpen(true);
       return;
     }
     setIsStudioDrawerOpen(true);
   };
 
-  // Open Smart Home Bridge (Free interactive Preview + Pro Live Sync)
+  // Open Smart Home Bridge
   const handleOpenBridge = () => {
     setIsBridgeModalOpen(true);
   };
 
-  // Open Circadian Scheduler (Pro feature)
+  // Open Circadian Scheduler
   const handleOpenCircadian = () => {
-    if (!proLicense.isPro) {
+    if (!hasStudioAccess) {
       setIsUpgradeModalOpen(true);
       return;
     }
     setIsCircadianModalOpen(true);
   };
 
-  // Open Share Modal (Pro feature)
+  // Open Share Modal
   const handleOpenShare = () => {
-    if (!proLicense.isPro) {
+    if (!hasStudioAccess) {
       setIsUpgradeModalOpen(true);
       return;
     }
@@ -764,14 +771,14 @@ export const App: React.FC = () => {
               handleLaunchStageWindow();
             }}
             className="group flex flex-col items-center justify-center p-1.5 sm:px-2 rounded-xl bg-studio-card border border-studio-border hover:border-studio-accent text-studio-text transition-all relative min-w-[44px]"
-            title={proLicense.isPro ? 'Launch Zero-Chrome Visualizer on TV or 2nd Monitor' : 'Unlock Stage Casting with Pro'}
+            title={hasStudioAccess ? 'Launch Zero-Chrome Visualizer on TV or 2nd Monitor' : '3-Day Trial Ended — Unlock for $9.99'}
           >
             <Tv className="w-4 h-4 text-studio-accent group-hover:scale-105 transition-transform" />
             <span className="text-[10px] font-mono text-studio-text/90 group-hover:text-studio-text mt-0.5 leading-none whitespace-nowrap">
               TV Mode
             </span>
-            {!proLicense.isPro && <Lock className="absolute top-0.5 right-0.5 w-2.5 h-2.5 text-amber-400" aria-label="Pro" />}
-            {proLicense.isPro && !visitedPanels['tv_mode'] && (
+            {!hasStudioAccess && <Lock className="absolute top-0.5 right-0.5 w-2.5 h-2.5 text-amber-400" aria-label="Locked" />}
+            {hasStudioAccess && !visitedPanels['tv_mode'] && (
               <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-amber-400" />
             )}
           </button>
@@ -783,14 +790,14 @@ export const App: React.FC = () => {
               handleOpenBridge();
             }}
             className="group flex flex-col items-center justify-center p-1.5 sm:px-2 rounded-xl bg-studio-card border border-studio-border hover:border-studio-accent text-studio-text transition-all relative min-w-[44px]"
-            title={proLicense.isPro ? 'Local Companion Bridge (Hue DTLS, Govee LAN, WiZ UDP)' : 'Local Companion Bridge Preview (Upgrade to Pro for Live Sync)'}
+            title="Local Companion Bridge (Hue DTLS, Govee LAN, WiZ UDP)"
           >
             <Cpu className="w-4 h-4 text-studio-accent group-hover:scale-105 transition-transform" />
             <span className="text-[10px] font-mono text-studio-text/90 group-hover:text-studio-text mt-0.5 leading-none whitespace-nowrap">
               Lights
             </span>
-            {!proLicense.isPro && <Lock className="absolute top-0.5 right-0.5 w-2.5 h-2.5 text-amber-400" aria-label="Pro" />}
-            {proLicense.isPro && devices.length === 0 && !visitedPanels['lights'] && (
+            {!hasStudioAccess && <Lock className="absolute top-0.5 right-0.5 w-2.5 h-2.5 text-amber-400" aria-label="Locked" />}
+            {hasStudioAccess && devices.length === 0 && !visitedPanels['lights'] && (
               <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-amber-400" />
             )}
           </button>
@@ -823,8 +830,8 @@ export const App: React.FC = () => {
             <span className="text-[10px] font-mono text-studio-text/90 group-hover:text-studio-text mt-0.5 leading-none whitespace-nowrap">
               Bright
             </span>
-            {!proLicense.isPro && <Lock className="absolute top-0.5 right-0.5 w-2.5 h-2.5 text-amber-400" aria-label="Pro" />}
-            {proLicense.isPro && !circadian.enabled && !visitedPanels['brightness'] && (
+            {!hasStudioAccess && <Lock className="absolute top-0.5 right-0.5 w-2.5 h-2.5 text-amber-400" aria-label="Locked" />}
+            {hasStudioAccess && !circadian.enabled && !visitedPanels['brightness'] && (
               <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-amber-400" />
             )}
           </button>
@@ -842,24 +849,33 @@ export const App: React.FC = () => {
             <span className="text-[10px] font-mono text-studio-text/90 group-hover:text-studio-text mt-0.5 leading-none whitespace-nowrap">
               Share
             </span>
-            {!proLicense.isPro && <Lock className="absolute top-0.5 right-0.5 w-2.5 h-2.5 text-amber-400" aria-label="Pro" />}
+            {!hasStudioAccess && <Lock className="absolute top-0.5 right-0.5 w-2.5 h-2.5 text-amber-400" aria-label="Locked" />}
           </button>
 
-          {/* De-escalated Sleek PRO / 7-Day Trial Badge on Right */}
-          {!proLicense.isPro ? (
+          {/* Right Header License / Trial / Download Pill */}
+          {!isElectronEnv && !proLicense.isPro ? (
+            <button
+              onClick={() => setViewMode('download_portal')}
+              className="flex items-center gap-1 px-2.5 py-2 rounded-xl bg-amber-500/15 border border-amber-500/40 hover:bg-amber-500/25 text-amber-400 font-mono font-bold text-[11px] transition-all shadow-sm shadow-amber-500/10 ml-1 cursor-pointer whitespace-nowrap"
+              title="Download 100% Offline Desktop App (3-Day Free Trial, then $9.99)"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <span>GET APP · $9.99</span>
+            </button>
+          ) : !proLicense.isPro ? (
             <button
               onClick={() => setIsUpgradeModalOpen(true)}
               className="flex items-center gap-1 px-2.5 py-2 rounded-xl bg-amber-500/15 border border-amber-500/40 hover:bg-amber-500/25 text-amber-400 font-mono font-bold text-xs transition-all shadow-sm shadow-amber-500/10 ml-1 cursor-pointer whitespace-nowrap"
-              title={proLicense.trialStatus?.isExpired ? '7-Day Free Trial Ended — Enter Offline License Key' : 'Unlock Lifetime Pro ($19)'}
+              title="3-Day Free Trial Ended — Enter $9.99 Offline License Key"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-              <span>{proLicense.trialStatus?.isExpired ? 'TRIAL ENDED' : 'PRO'}</span>
+              <span>TRIAL ENDED · $9.99</span>
             </button>
           ) : proLicense.isTrial ? (
             <button
               onClick={() => setIsUpgradeModalOpen(true)}
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-sky-500/15 border border-sky-400/40 hover:bg-sky-500/25 text-sky-300 font-mono font-bold text-[11px] ml-1 cursor-pointer whitespace-nowrap"
-              title="7-Day Offline Free Trial Active — Click to Enter Lifetime Key"
+              title="3-Day Offline Free Trial Active — Click to Enter $9.99 Lifetime Key"
             >
               <Sparkles className="w-3.5 h-3.5 text-sky-400 shrink-0" />
               <span>TRIAL · {formatTrialRemaining(proLicense.trialStatus)}</span>
@@ -867,11 +883,11 @@ export const App: React.FC = () => {
           ) : (
             <button
               onClick={() => setIsUpgradeModalOpen(true)}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 hover:bg-emerald-500/25 text-emerald-400 font-mono font-bold text-xs ml-1 cursor-pointer"
-              title="Pro Active — Manage or Copy License Key"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 hover:bg-emerald-500/25 text-emerald-400 font-mono font-bold text-xs ml-1 cursor-pointer whitespace-nowrap"
+              title="Offline Lifetime License Active — Manage or Copy Key"
             >
               <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>PRO</span>
+              <span>LICENSED</span>
             </button>
           )}
 
@@ -892,7 +908,7 @@ export const App: React.FC = () => {
           >
             <Sliders className="w-3.5 h-3.5 text-white" />
             <span className="hidden sm:inline">Studio</span>
-            {!proLicense.isPro && <Lock className="w-2.5 h-2.5 text-white/90" />}
+            {!hasStudioAccess && <Lock className="w-2.5 h-2.5 text-white/90" />}
           </button>
         </div>
       </header>
@@ -922,7 +938,7 @@ export const App: React.FC = () => {
           <VibeCanvas
             presets={presets}
             activePresetId={activePresetId}
-            isPro={proLicense.isPro}
+            isPro={hasStudioAccess}
             onSelectPreset={handleSelectPreset}
             onOpenStudioDrawer={handleOpenStudioDrawer}
             onOpenUpgradeModal={() => setIsUpgradeModalOpen(true)}
@@ -949,7 +965,7 @@ export const App: React.FC = () => {
               preset={activePreset}
               telemetry={telemetry}
               settings={visualizerSettings}
-              isPro={proLicense.isPro}
+              isPro={hasStudioAccess}
               onModeChange={(m) => setVisualizerMode(m)}
               onOpenUpgradeModal={() => setIsUpgradeModalOpen(true)}
               onOpenCustomBuilder={() => setIsCustomVisualizerModalOpen(true)}
@@ -1016,7 +1032,7 @@ export const App: React.FC = () => {
           saveDevices(d);
         }}
         zones={zones}
-        isPro={proLicense.isPro}
+        isPro={hasStudioAccess}
         onOpenUpgradeModal={() => {
           setIsBridgeModalOpen(false);
           setIsUpgradeModalOpen(true);
@@ -1130,7 +1146,7 @@ export const App: React.FC = () => {
         isOpen={isSettingsModalOpen}
         onClose={() => setIsSettingsModalOpen(false)}
         currentTheme={theme}
-        isPro={proLicense.isPro}
+        isPro={hasStudioAccess}
         onSelectTheme={(t) => setTheme(t)}
         onDataResetOrImported={handleDataResetOrImported}
         onOpenUpgradeModal={() => setIsUpgradeModalOpen(true)}

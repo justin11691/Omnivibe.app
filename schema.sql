@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS licenses (
     buyer_name TEXT,
     source TEXT NOT NULL,
     external_session_id TEXT UNIQUE,
-    amount_cents INTEGER DEFAULT 1900,
+    amount_cents INTEGER DEFAULT 999,
     activations_count INTEGER DEFAULT 0,
     max_activations INTEGER DEFAULT 5,
     created_at TEXT DEFAULT (datetime('now')),

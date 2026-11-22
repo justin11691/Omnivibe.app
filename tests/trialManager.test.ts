@@ -6,7 +6,7 @@ import { formatTrialRemaining } from '../src/utils/licenseEngine';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const trialManager = require('../electron/trialManager.cjs');
 
-describe('OmniVibe 7-Day Offline Free Trial Engine', () => {
+describe('OmniVibe 3-Day Offline Free Trial Engine', () => {
   let tempDir: string;
   const fixedFingerprint = 'test-machine-fp-123456';
 
@@ -18,7 +18,7 @@ describe('OmniVibe 7-Day Offline Free Trial Engine', () => {
     fs.rmSync(tempDir, { recursive: true, force: true });
   });
 
-  it('creates a signed 7-day offline trial on first launch', () => {
+  it('creates a signed 3-day offline trial on first launch', () => {
     const t0 = 1_795_000_000_000;
     const status = trialManager.getOrInitTrialStatus({
       userDataPath: tempDir,
@@ -29,12 +29,13 @@ describe('OmniVibe 7-Day Offline Free Trial Engine', () => {
     expect(status.isActive).toBe(true);
     expect(status.isExpired).toBe(false);
     expect(status.tampered).toBe(false);
-    expect(status.daysRemaining).toBe(7);
+    expect(status.daysRemaining).toBe(3);
+    expect(status.trialDurationDays).toBe(3);
     expect(status.remainingMs).toBe(trialManager.TRIAL_DURATION_MS);
     expect(fs.existsSync(path.join(tempDir, 'omnivibe_trial.json'))).toBe(true);
   });
 
-  it('tracks elapsed time accurately and expires after 7 days', () => {
+  it('tracks elapsed time accurately and expires after 3 days', () => {
     const t0 = 1_795_000_000_000;
     trialManager.getOrInitTrialStatus({
       userDataPath: tempDir,
@@ -42,20 +43,20 @@ describe('OmniVibe 7-Day Offline Free Trial Engine', () => {
       fingerprint: fixedFingerprint,
     });
 
-    // Advance 3 days + 5 hours
-    const tMid = t0 + 3 * 24 * 60 * 60 * 1000 + 5 * 60 * 60 * 1000;
+    // Advance 1 day + 5 hours
+    const tMid = t0 + 1 * 24 * 60 * 60 * 1000 + 5 * 60 * 60 * 1000;
     const midStatus = trialManager.getOrInitTrialStatus({
       userDataPath: tempDir,
       nowMs: tMid,
       fingerprint: fixedFingerprint,
     });
     expect(midStatus.isActive).toBe(true);
-    expect(midStatus.daysRemaining).toBe(3);
+    expect(midStatus.daysRemaining).toBe(1);
     expect(midStatus.hoursRemaining).toBe(19);
-    expect(formatTrialRemaining(midStatus)).toBe('3d 19h left');
+    expect(formatTrialRemaining(midStatus)).toBe('1d 19h left');
 
-    // Advance past 7 days
-    const tEnd = t0 + 7 * 24 * 60 * 60 * 1000 + 1000;
+    // Advance past 3 days
+    const tEnd = t0 + 3 * 24 * 60 * 60 * 1000 + 1000;
     const endStatus = trialManager.getOrInitTrialStatus({
       userDataPath: tempDir,
       nowMs: tEnd,
@@ -75,11 +76,11 @@ describe('OmniVibe 7-Day Offline Free Trial Engine', () => {
       fingerprint: fixedFingerprint,
     });
 
-    // Advance 6 days
-    const day6 = t0 + 6 * 24 * 60 * 60 * 1000;
+    // Advance 2 days
+    const day2 = t0 + 2 * 24 * 60 * 60 * 1000;
     trialManager.getOrInitTrialStatus({
       userDataPath: tempDir,
-      nowMs: day6,
+      nowMs: day2,
       fingerprint: fixedFingerprint,
     });
 
@@ -90,7 +91,7 @@ describe('OmniVibe 7-Day Offline Free Trial Engine', () => {
       fingerprint: fixedFingerprint,
     });
     expect(rolledBackStatus.clockTampered).toBe(true);
-    // Effective remaining time remains 1 day (cannot be reset to 7 days)
+    // Effective remaining time remains 1 day (cannot be reset to 3 days)
     expect(rolledBackStatus.daysRemaining).toBe(1);
   });
 

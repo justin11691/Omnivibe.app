@@ -360,7 +360,7 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
               className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-400 text-xs font-mono font-bold hover:bg-amber-500/20 transition-all whitespace-nowrap cursor-pointer"
             >
               <Key className="w-3.5 h-3.5" />
-              <span>PRO ($19)</span>
+              <span>GET KEY ($9.99)</span>
             </button>
           )}
 
@@ -388,26 +388,26 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
         </h1>
 
         <p className="text-xs sm:text-sm md:text-base font-subheading text-studio-textMuted max-w-2xl leading-relaxed">
-          Run all 9 WebGL visualizers and 8 generative soundscapes instantly in your browser—or download our Desktop App &amp; Local Companion Bridge for native Philips Hue Entertainment API v2, Govee LAN UDP, and WiZ UDP sync.
+          Install OmniVibe Studio directly on Windows or macOS for 100% offline 60fps 3D shaders, system audio loopback, and built-in Philips Hue, Govee LAN, and WiZ lighting sync. Includes a full 3-day free trial, then $9.99 once — or try the live browser demo first.
         </p>
 
         {/* Dual-Path CTAs */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 mt-2 w-full max-w-3xl">
-          <button
-            onClick={onEnterStudio}
-            className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-mono font-bold text-xs sm:text-sm uppercase tracking-wider whitespace-nowrap flex items-center justify-center gap-2.5 shadow-xl shadow-indigo-500/30 transition-all transform hover:scale-[1.02] active:scale-95 cursor-pointer shrink-0"
-          >
-            <Sparkles className="w-4 h-4 text-white shrink-0" />
-            <span>TRY WEB STUDIO (SCREEN + SOUNDSCAPES)</span>
-          </button>
-
           <a
             href="#downloads"
+            className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-mono font-bold text-xs sm:text-sm uppercase tracking-wider whitespace-nowrap flex items-center justify-center gap-2.5 shadow-xl shadow-indigo-500/30 transition-all transform hover:scale-[1.02] active:scale-95 cursor-pointer shrink-0"
+          >
+            <Download className="w-4 h-4 text-white shrink-0" />
+            <span>DOWNLOAD OFFLINE APP (3-DAY FREE TRIAL)</span>
+          </a>
+
+          <button
+            onClick={onEnterStudio}
             className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-studio-surface border border-studio-border hover:border-studio-accent text-white font-mono font-bold text-xs sm:text-sm uppercase tracking-wider whitespace-nowrap flex items-center justify-center gap-2 transition-all cursor-pointer shrink-0"
           >
-            <Download className="w-4 h-4 text-studio-accent shrink-0" />
-            <span>DOWNLOAD LOCAL COMPANION BRIDGE</span>
-          </a>
+            <Sparkles className="w-4 h-4 text-studio-accent shrink-0" />
+            <span>TRY INTERACTIVE WEB DEMO</span>
+          </button>
         </div>
 
         {/* Compatible Lights Pill Bar (Honest Protocols Only) */}
@@ -438,7 +438,7 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
           <span>•</span>
           <span>Guided Local Network Diagnostics</span>
           <span>•</span>
-          <span>Unified $19 Lifetime Pro Key (Web, Desktop &amp; Mobile)</span>
+          <span>100% Offline Desktop App — 3-Day Free Trial, then $9.99 Once</span>
         </p>
       </section>
 
@@ -692,7 +692,7 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
                 Standard browser tabs cannot open raw UDP multicast or DTLS 1.2 sockets. Download and run the standalone Local Companion Bridge (<code>ws://127.0.0.1:47890</code>) to drive smart lights and desktop audio loopback.
               </p>
               <ul className="space-y-1.5 text-xs font-mono text-studio-textMuted pt-1">
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" /><span><strong>7-Day Offline Free Trial</strong> — full access with zero internet or login</span></li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" /><span><strong>3-Day Offline Free Trial</strong> — full access with zero internet or login</span></li>
                 <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-sky-400 shrink-0" /><span>Built-in System Audio Loopback (Windows WASAPI &amp; macOS) + Embedded Bridge</span></li>
                 <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-sky-400 shrink-0" /><span>Philips Hue Entertainment API v2 (DTLS UDP 2100), Govee LAN (4001–4003), WiZ (38899)</span></li>
                 <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-sky-400 shrink-0" /><span>Zero cloud-API rate limits — runs 100% offline on your home LAN</span></li>
@@ -706,7 +706,7 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
                 className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-md shadow-indigo-500/20"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>Download 7-Day Trial (Windows .exe / macOS .dmg)</span>
+                <span>Download 3-Day Free Trial (Windows .exe / macOS .dmg)</span>
                 <ExternalLink className="w-3 h-3" />
               </a>
               <a
@@ -876,13 +876,13 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
         >
           <div className="space-y-2.5 max-w-lg text-center md:text-left">
             <span className={`text-xs font-mono uppercase font-bold tracking-wider ${isPro ? 'text-emerald-400' : 'text-amber-400'}`}>
-              {isPro ? 'Lifetime Pro License Active' : 'Unified Offline Ownership'}
+              {isPro ? 'Offline Lifetime License Active' : '100% Offline Desktop Ownership'}
             </span>
             <h2 className="text-2xl sm:text-3xl font-heading tracking-wider uppercase text-white">
-              {isPro ? 'OmniVibe Studio Pro Is Unlocked' : 'Unlock OmniVibe Studio Pro — $19'}
+              {isPro ? 'OmniVibe Studio Is Unlocked' : '3-Day Free Trial, Then $9.99 Once'}
             </h2>
             <p className="text-xs font-mono text-studio-textMuted leading-relaxed">
-              One-time $19 payment. Unlocks all 9 shaders, all 9 Studio skins, TV Stage Casting, and the Local Companion Bridge across Web, Windows, macOS, iOS, and Android.
+              Download and install the 100% offline Windows or macOS program with a full 3-day free trial. Keep it forever with a one-time $9.99 offline key — all 9 shaders, all 9 Studio skins, TV Stage Casting, and built-in Hue, Govee &amp; WiZ lighting sync included with zero tiers or subscriptions.
             </p>
             <div className="flex items-center justify-center md:justify-start gap-2.5 text-xs font-mono text-emerald-400 pt-1">
               <CheckCircle2 className="w-4 h-4 shrink-0" />
@@ -914,7 +914,7 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
                   disabled={isCheckingOut}
                   className="px-6 sm:px-8 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 text-black font-mono font-bold text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl shadow-amber-500/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-60 cursor-pointer whitespace-nowrap"
                 >
-                  <span>{isCheckingOut ? 'LOADING STRIPE...' : 'GET LIFETIME PRO — $19'}</span>
+                  <span>{isCheckingOut ? 'LOADING STRIPE...' : 'BUY LIFETIME KEY — $9.99'}</span>
                   <ExternalLink className="w-4 h-4 shrink-0" />
                 </button>
                 <button

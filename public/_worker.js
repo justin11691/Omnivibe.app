@@ -207,7 +207,7 @@ async function sendMailChannelsReceipt({ toEmail, toName, licenseKey, source, se
       body: JSON.stringify({
         personalizations: [{ to: [{ email: toEmail, name: toName || 'OmniVibe Studio Member' }] }],
         from: { email: 'no-reply@omnivibe.app', name: 'OmniVibe Studio Licensing' },
-        subject: `Your OmniVibe Pro Lifetime License Key (${licenseKey})`,
+        subject: `Your OmniVibe Studio — Offline Lifetime License Key (${licenseKey})`,
         content: [
           {
             type: 'text/plain',
@@ -238,7 +238,7 @@ async function issueAndStoreLicense({
   tier = 'LIFETIME_PRO',
   buyerEmail = '',
   buyerName = 'OmniVibe Pro Customer',
-  amountCents = 1900,
+  amountCents = 999,
 }) {
   const sessionKey = String(externalSessionId || `${source}_${Date.now()}`);
   const licenseKey = issueDeterministicLicenseKey(sessionKey);
@@ -563,7 +563,7 @@ export default {
                 ok: true,
                 checkoutUrl: 'https://buy.stripe.com/fZufZjfEz48ggCN58T08g0n',
                 mode: 'payment_link',
-                priceUsd: 19,
+                priceUsd: 9.99,
               }),
               {
                 status: 200,
@@ -578,8 +578,8 @@ export default {
           const sessionParams = new URLSearchParams({
             'payment_method_types[0]': 'card',
             'line_items[0][price_data][currency]': 'usd',
-            'line_items[0][price_data][unit_amount]': '1900',
-            'line_items[0][price_data][product_data][name]': 'OmniVibe Pro Lifetime License',
+            'line_items[0][price_data][unit_amount]': '999',
+            'line_items[0][price_data][product_data][name]': 'OmniVibe Studio — Offline Lifetime License',
             'mode': 'payment',
             'success_url': 'https://omnivibe.app/?pro_activated=true&session_id={CHECKOUT_SESSION_ID}',
             'cancel_url': 'https://omnivibe.app/',
@@ -862,7 +862,7 @@ export default {
               source: 'stripe_checkout',
               buyerEmail: session.customer_details?.email || session.customer_email || '',
               buyerName: session.customer_details?.name || 'OmniVibe Pro Customer',
-              amountCents: session.amount_total || 1900,
+              amountCents: session.amount_total || 999,
             });
             return new Response(
               JSON.stringify({ ok: true, paid: true, licenseKey: issued.licenseKey, tier: issued.tier }),
@@ -882,7 +882,7 @@ export default {
             env,
             externalSessionId: trimmedSession,
             source: 'stripe_payment_link',
-            amountCents: 1900,
+            amountCents: 999,
           });
           return new Response(
             JSON.stringify({ ok: true, paid: true, licenseKey: issued.licenseKey, tier: issued.tier }),
@@ -933,7 +933,7 @@ export default {
               source: 'stripe_webhook',
               buyerEmail,
               buyerName,
-              amountCents: session.amount_total || 1900,
+              amountCents: session.amount_total || 999,
             });
             await sendMailChannelsReceipt({
               toEmail: buyerEmail,
@@ -982,7 +982,7 @@ export default {
             source: platform,
             buyerEmail: String(payload.buyerEmail || ''),
             buyerName: `${platform === 'google_play' ? 'Google Play' : 'Microsoft Store'} Pro Owner`,
-            amountCents: 1900,
+            amountCents: 999,
           });
           return new Response(
             JSON.stringify({

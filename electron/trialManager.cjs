@@ -3,7 +3,7 @@ const path = require('node:path');
 const os = require('node:os');
 const crypto = require('node:crypto');
 
-const TRIAL_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days in ms
+const TRIAL_DURATION_MS = 3 * 24 * 60 * 60 * 1000; // 3 days in ms
 const CLOCK_ROLLBACK_TOLERANCE_MS = 60 * 60 * 1000; // 1 hour DST/NTP drift allowance
 const TRIAL_SECRET = 'OMNIVIBE_OFFLINE_TRIAL_2026_HMAC_KEY';
 const TRIAL_FILENAME = 'omnivibe_trial.json';
@@ -41,7 +41,7 @@ function formatTrialStatus(record, effectiveNow, tampered = false) {
       remainingMs: 0,
       daysRemaining: 0,
       hoursRemaining: 0,
-      trialDurationDays: 7,
+      trialDurationDays: 3,
     };
   }
 
@@ -64,7 +64,7 @@ function formatTrialStatus(record, effectiveNow, tampered = false) {
     daysRemaining,
     hoursRemaining,
     totalHoursRemaining: totalHours,
-    trialDurationDays: 7,
+    trialDurationDays: 3,
   };
 }
 

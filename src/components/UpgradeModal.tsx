@@ -246,10 +246,10 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
             </div>
             <div>
               <h2 className="text-2xl font-mono font-bold text-emerald-300">
-                LIFETIME PRO UNLOCKED!
+                LIFETIME LICENSE UNLOCKED!
               </h2>
               <p className="text-xs font-mono text-studio-textMuted mt-1">
-                All WMP shaders, multi-zone smart lighting, and studio features are now permanently enabled offline.
+                All 9 visualizers, smart lighting sync, system audio loopback, and skins are permanently enabled offline.
               </p>
             </div>
           </div>
@@ -264,34 +264,33 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 
               <h2 id="upgrade-modal-title" className="text-2xl font-mono font-bold text-studio-text tracking-tight">
                 {isPermanentPro
-                  ? 'OmniVibe Pro License Active'
+                  ? 'OmniVibe Studio — Offline License Active'
                   : isTrial
-                    ? `7-Day Free Trial (${formatTrialRemaining(trialStatus)})`
+                    ? `3-Day Free Trial (${formatTrialRemaining(trialStatus)})`
                     : trialStatus?.isExpired
-                      ? '7-Day Free Trial Ended — Activate Key'
-                      : 'Unlock OmniVibe Pro Forever'}
+                      ? '3-Day Free Trial Ended — Unlock for $9.99'
+                      : 'OmniVibe Studio — Lifetime Offline Key'}
               </h2>
               <p className="text-xs font-mono text-studio-textMuted max-w-md">
                 {isPermanentPro
-                  ? 'Your lifetime license is permanently verified and securely stored offline on this device.'
+                  ? 'Your lifetime license is permanently verified and securely stored offline on this computer.'
                   : isTrial
-                    ? 'You have full offline access to all 9 shaders, system audio loopback, and Hue/Govee/WiZ lighting sync during your 7-day trial. Enter an offline key anytime to unlock forever.'
-                    : 'The ultimate 100% offline smart atmosphere control deck. Pay once ($19) at omnivibe.app, paste your offline key, and own forever.'}
+                    ? 'You have full offline access to all 9 shaders, system audio loopback, and Hue/Govee/WiZ lighting sync during your 3-day free trial. Enter your $9.99 offline key anytime to keep forever.'
+                    : '100% offline downloadable Windows & macOS program. Try free for 3 days, then $9.99 one-time for lifetime ownership — zero subscriptions.'}
               </p>
 
               {/* Price Tag or Active Status */}
               {!isPermanentPro ? (
                 <div className="flex items-baseline gap-2.5 mt-2">
-                  <span className="text-3xl font-mono font-extrabold text-studio-accent">$19</span>
-                  <span className="text-sm font-mono line-through text-studio-textMuted">$29.99</span>
+                  <span className="text-3xl font-mono font-extrabold text-studio-accent">$9.99</span>
                   <span className="text-xs font-mono text-emerald-400 font-semibold bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
-                    LIFETIME OFFLINE KEY
+                    3-DAY FREE TRIAL · ONE-TIME UNLOCK
                   </span>
                 </div>
               ) : (
                 <div className="mt-2 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono">
                   <ShieldCheck className="w-4 h-4" />
-                  <span>Verified Lifetime Pro License Active</span>
+                  <span>Verified Offline Lifetime License Active</span>
                 </div>
               )}
             </div>
@@ -315,36 +314,26 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
               </div>
             )}
 
-            {/* Feature Comparison Table */}
-            <div className="hardware-card p-4 rounded-2xl flex flex-col gap-2.5 border border-studio-borderSubtle">
-              <div className="grid grid-cols-12 text-[11px] font-mono font-bold text-studio-textMuted border-b border-studio-borderSubtle pb-2">
-                <span className="col-span-8">CAPABILITY</span>
-                <span className="col-span-2 text-center">FREE</span>
-                <span className="col-span-2 text-center text-studio-accent">PRO</span>
+            {/* Unified Everything-Included Checklist (No Tier Splitting) */}
+            <div className="hardware-card p-4 rounded-2xl flex flex-col gap-2 border border-studio-borderSubtle">
+              <div className="text-[11px] font-mono font-bold text-studio-accent border-b border-studio-borderSubtle pb-2">
+                INCLUDED IN YOUR 100% OFFLINE INSTALLER (3-DAY TRIAL → $9.99 ONCE)
               </div>
 
               {[
-                { feature: 'Core Vibe Presets (Focus, Lounge, Solar, Bass)', free: true, pro: true, icon: <Sparkles className="w-3 h-3 text-studio-accent" /> },
-                { feature: 'Full Vibe Library (Cyberpunk, Cabin, Aurora + Custom)', free: false, pro: true, icon: <Layers className="w-3 h-3 text-studio-accent" /> },
-                { feature: 'Generative Synthesized Soundscapes (Rain, Fire, Drones)', free: true, pro: true, icon: <Zap className="w-3 h-3 text-studio-accent" /> },
-                { feature: 'Interactive Studio Drawer (Palette & Reactivity Editor)', free: false, pro: true, icon: <Sliders className="w-3 h-3 text-studio-accent" /> },
-                { feature: '9 WMP Visualizer Modes & Custom User Shader Studio', free: 'Basic', pro: 'All 9', icon: <Tv className="w-3 h-3 text-studio-accent" /> },
-                { feature: 'Dual-Screen / TV Big-Stage Cast (Multi-Monitor)', free: false, pro: true, icon: <Tv className="w-3 h-3 text-studio-accent" /> },
-                { feature: 'Local Companion Bridge (Hue DTLS, Govee LAN, WiZ UDP)', free: 'Preview', pro: 'Unlimited', icon: <Zap className="w-3 h-3 text-studio-accent" /> },
-                { feature: 'Circadian Vibe Shifts & Multi-Zone Whole Home Sync', free: false, pro: true, icon: <Sun className="w-3 h-3 text-studio-accent" /> },
-                { feature: 'Swappable Studio Skins (Obsidian, Cool Slate + 7 Pro)', free: '2 Skins', pro: 'All 9 Skins', icon: <Palette className="w-3 h-3 text-studio-accent" /> },
+                { feature: 'All 9 60fps 3D WebGL Shaders & Custom Shader Studio', icon: <Tv className="w-3.5 h-3.5 text-studio-accent" /> },
+                { feature: '1-Click System Audio Loopback (Spotify, YouTube, Games)', icon: <Zap className="w-3.5 h-3.5 text-studio-accent" /> },
+                { feature: 'Built-in Local Hardware Bridge (Hue DTLS, Govee LAN, WiZ UDP)', icon: <Layers className="w-3.5 h-3.5 text-studio-accent" /> },
+                { feature: '8 Generative Soundscapes, Circadian Guardrails & Multi-Zone Sync', icon: <Sun className="w-3.5 h-3.5 text-studio-accent" /> },
+                { feature: 'All 18+ Atmosphere Presets, Studio Drawer & 9 Swappable Skins', icon: <Palette className="w-3.5 h-3.5 text-studio-accent" /> },
+                { feature: 'Dual-Screen / TV Big-Stage Cast — Runs 100% Offline Forever', icon: <Sliders className="w-3.5 h-3.5 text-studio-accent" /> },
               ].map((row, idx) => (
-                <div key={idx} className="grid grid-cols-12 items-center text-xs font-mono py-1">
-                  <span className="col-span-8 flex items-center gap-2 text-studio-text text-[11px]">
+                <div key={idx} className="flex items-center justify-between text-xs font-mono py-1">
+                  <span className="flex items-center gap-2 text-studio-text text-[11px]">
                     {row.icon}
                     {row.feature}
                   </span>
-                  <span className="col-span-2 text-center text-[10px] text-studio-textMuted">
-                    {row.free === true ? <Check className="w-3.5 h-3.5 text-emerald-400 mx-auto" /> : row.free === false ? '—' : row.free}
-                  </span>
-                  <span className="col-span-2 text-center text-[10px] text-studio-accent font-bold">
-                    {row.pro === true ? <Check className="w-3.5 h-3.5 text-studio-accent mx-auto" /> : row.pro}
-                  </span>
+                  <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                 </div>
               ))}
             </div>
@@ -358,7 +347,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
                     disabled={isCheckingOut}
                     className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-sky-400 via-cyan-400 to-emerald-400 text-black font-mono font-bold text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-sky-500/20 hover:scale-[1.01] active:scale-95 transition-all disabled:opacity-60 cursor-pointer whitespace-nowrap"
                   >
-                    <span>{isCheckingOut ? 'PROCESSING GOOGLE PLAY...' : 'UNLOCK VIA GOOGLE PLAY — $19'}</span>
+                    <span>{isCheckingOut ? 'PROCESSING...' : 'UNLOCK LIFETIME LICENSE — $9.99'}</span>
                     <ShieldCheck className="w-4 h-4 shrink-0" />
                   </button>
                 )}
@@ -368,7 +357,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
                   disabled={isCheckingOut}
                   className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-300 to-studio-accent text-black font-mono font-bold text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 hover:scale-[1.01] active:scale-95 transition-all disabled:opacity-60 cursor-pointer whitespace-nowrap"
                 >
-                  <span>{isCheckingOut ? 'OPENING STRIPE...' : 'GET LIFETIME PRO — $19'}</span>
+                  <span>{isCheckingOut ? 'OPENING STRIPE...' : 'GET LIFETIME KEY — $9.99'}</span>
                   <ExternalLink className="w-4 h-4 shrink-0" />
                 </button>
 

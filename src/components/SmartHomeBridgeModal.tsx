@@ -400,7 +400,7 @@ export const SmartHomeBridgeModal: React.FC<SmartHomeBridgeModalProps> = ({
               className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-sky-400 hover:opacity-95 text-black font-mono font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
             >
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Upgrade to Pro to Sync Live ($19)</span>
+              <span>Unlock Full Offline App ($9.99)</span>
             </button>
           </div>
         )}

@@ -262,7 +262,7 @@ export async function loadPersistentLicense(): Promise<LicenseRecord> {
       // fallback
     }
 
-    // In Desktop Electron builds, automatically activate the tamper-resistant 7-day offline free trial
+    // In Desktop Electron builds, automatically activate the tamper-resistant 3-day offline free trial
     const electronApi = (window as unknown as {
       electronAPI?: { getTrialStatus?: () => Promise<TrialStatus> };
     }).electronAPI;
@@ -274,10 +274,10 @@ export async function loadPersistentLicense(): Promise<LicenseRecord> {
           return {
             isPro: true,
             isTrial: true,
-            licenseKey: 'TRIAL-7-DAY-OFFLINE',
+            licenseKey: 'TRIAL-3-DAY-OFFLINE',
             unlockedAt: new Date(trial.installedAt || Date.now()).toISOString(),
             tier: 'TRIAL_PRO',
-            buyerName: '7-Day Free Trial',
+            buyerName: '3-Day Free Trial',
             trialStatus: trial,
           };
         }
