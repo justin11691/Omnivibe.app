@@ -181,4 +181,17 @@ export interface ProLicenseState {
   isPro: boolean;
   licenseKey?: string;
   activatedAt?: string;
+  isTrial?: boolean;
+  trialStatus?: {
+    isActive: boolean;
+    isExpired: boolean;
+    tampered: boolean;
+    clockTampered: boolean;
+    installedAt: number;
+    expiresAt: number;
+    remainingMs: number;
+    daysRemaining: number;
+    hoursRemaining: number;
+    trialDurationDays: number;
+  };
 }

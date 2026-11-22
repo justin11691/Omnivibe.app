@@ -1,38 +1,160 @@
-const { app, BrowserWindow, ipcMain, screen, Tray, Menu, nativeImage } = require('electron');
+const {
+  app,
+  BrowserWindow,
+  ipcMain,
+  screen,
+  Tray,
+  Menu,
+  nativeImage,
+  protocol,
+  session,
+  desktopCapturer,
+  shell,
+  systemPreferences,
+} = require('electron');
 const path = require('path');
 const fs = require('fs');
+const { pathToFileURL } = require('url');
+const { getOrInitTrialStatus } = require('./trialManager.cjs');
 
 // Hardware acceleration flags for 60fps WebGL/Canvas rendering
 app.commandLine.appendSwitch('enable-gpu-rasterization');
 app.commandLine.appendSwitch('enable-zero-copy');
 app.commandLine.appendSwitch('ignore-gpu-blocklist');
 
+// Register secure custom app:// protocol before app ready so WebGL, WebAudio, localStorage, and ES modules work 100% offline
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: 'app',
+    privileges: {
+      standard: true,
+      secure: true,
+      supportFetchAPI: true,
+      corsEnabled: true,
+      stream: true,
+    },
+  },
+]);
+
 let mainWindow = null;
 let stageWindow = null;
 let tray = null;
 let isQuitting = false;
+let bridgeInstance = null;
+let bridgeActive = false;
+let trialHeartbeatTimer = null;
 
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
+const DIST_DIR = path.join(__dirname, '../dist');
+
+const MIME_TYPES = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'application/javascript; charset=utf-8',
+  '.mjs': 'application/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.webmanifest': 'application/manifest+json; charset=utf-8',
+  '.woff2': 'font/woff2',
+  '.woff': 'font/woff',
+  '.ttf': 'font/ttf',
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.webp': 'image/webp',
+  '.ico': 'image/x-icon',
+  '.webm': 'video/webm',
+  '.mp4': 'video/mp4',
+};
 
 function getLicenseFilePath() {
-  const userDataPath = app.getPath('userData');
-  return path.join(userDataPath, 'omnivibe_license.json');
+  return path.join(app.getPath('userData'), 'omnivibe_license.json');
+}
+
+function registerOfflineAppProtocol() {
+  protocol.handle('app', (request) => {
+    try {
+      const reqUrl = new URL(request.url);
+      let relPath = decodeURIComponent(reqUrl.pathname || '/');
+      if (relPath === '/' || relPath === '') {
+        relPath = '/index.html';
+      }
+
+      const resolved = path.normalize(path.join(DIST_DIR, relPath));
+      // Prevent directory traversal outside dist/
+      const safePath = resolved.startsWith(DIST_DIR) ? resolved : path.join(DIST_DIR, 'index.html');
+
+      const targetPath =
+        fs.existsSync(safePath) && fs.statSync(safePath).isFile()
+          ? safePath
+          : path.join(DIST_DIR, 'index.html');
+
+      const ext = path.extname(targetPath).toLowerCase();
+      const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+      const data = fs.readFileSync(targetPath);
+
+      return new Response(data, {
+        status: 200,
+        headers: {
+          'Content-Type': contentType,
+          'Cache-Control': 'no-cache',
+        },
+      });
+    } catch {
+      return new Response('Not Found', { status: 404 });
+    }
+  });
+}
+
+async function startEmbeddedBridge() {
+  try {
+    const bridgeEntry = path.join(__dirname, '../bridge/server.mjs');
+    const mod = await import(pathToFileURL(bridgeEntry).href);
+    if (typeof mod.startBridgeServer === 'function') {
+      bridgeInstance = mod.startBridgeServer(47890, { embedded: true });
+      bridgeActive = true;
+    }
+  } catch (err) {
+    console.error('[OmniVibe Desktop] Failed to start embedded hardware bridge:', err);
+    bridgeActive = false;
+  }
+}
+
+function setupOfflineAudioLoopback() {
+  session.defaultSession.setDisplayMediaRequestHandler((_request, callback) => {
+    desktopCapturer
+      .getSources({ types: ['screen'] })
+      .then((sources) => {
+        if (sources && sources.length > 0) {
+          callback({ video: sources[0], audio: 'loopback' });
+        } else {
+          callback({});
+        }
+      })
+      .catch(() => callback({}));
+  });
 }
 
 function createMainWindow() {
+  const isMac = process.platform === 'darwin';
+
   mainWindow = new BrowserWindow({
     width: 1440,
     height: 900,
     minWidth: 1024,
     minHeight: 700,
     backgroundColor: '#0D1117',
-    title: 'OmniVibe — Atmosphere & Visual Mood Studio',
-    titleBarStyle: 'hidden',
-    titleBarOverlay: {
-      color: '#0D1117',
-      symbolColor: '#E2E8F0',
-      height: 38,
-    },
+    title: 'OmniVibe Studio — Offline Atmosphere & Smart Lighting',
+    titleBarStyle: isMac ? 'hiddenInset' : 'hidden',
+    ...(isMac
+      ? {}
+      : {
+          titleBarOverlay: {
+            color: '#0D1117',
+            symbolColor: '#E2E8F0',
+            height: 38,
+          },
+        }),
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       nodeIntegration: false,
@@ -43,13 +165,10 @@ function createMainWindow() {
     show: false,
   });
 
-  const indexPath = path.join(__dirname, '../dist/index.html');
   if (isDev && process.env.VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
-  } else if (fs.existsSync(indexPath)) {
-    mainWindow.loadFile(indexPath);
   } else {
-    mainWindow.loadURL('http://localhost:5173');
+    mainWindow.loadURL('app://omnivibe.local/studio');
   }
 
   mainWindow.once('ready-to-show', () => {
@@ -96,9 +215,10 @@ function createStageWindow(targetDisplayIndex = 1) {
     },
   });
 
-  const stageUrl = isDev && process.env.VITE_DEV_SERVER_URL
-    ? `${process.env.VITE_DEV_SERVER_URL}?stage=true`
-    : `file://${path.join(__dirname, '../dist/index.html')}?stage=true`;
+  const stageUrl =
+    isDev && process.env.VITE_DEV_SERVER_URL
+      ? `${process.env.VITE_DEV_SERVER_URL}?stage=true`
+      : 'app://omnivibe.local/?stage=true';
 
   stageWindow.loadURL(stageUrl);
 
@@ -114,7 +234,7 @@ function setupTray() {
     : nativeImage.createEmpty();
 
   tray = new Tray(trayIcon);
-  tray.setToolTip('OmniVibe Studio — Audio Atmosphere Active');
+  tray.setToolTip('OmniVibe Studio — 100% Offline Audio & Lighting Engine');
 
   const contextMenu = Menu.buildFromTemplate([
     {
@@ -182,10 +302,52 @@ function setupIpcHandlers() {
       return null;
     }
   });
+
+  ipcMain.handle('trial:status', () => {
+    return getOrInitTrialStatus({ userDataPath: app.getPath('userData') });
+  });
+
+  ipcMain.handle('bridge:status', () => {
+    return {
+      embedded: true,
+      active: bridgeActive,
+      wsUrl: 'ws://127.0.0.1:47890',
+    };
+  });
+
+  ipcMain.handle('system:mac-screen-permission', () => {
+    if (process.platform !== 'darwin') return 'granted';
+    try {
+      return systemPreferences.getMediaAccessStatus('screen');
+    } catch {
+      return 'unknown';
+    }
+  });
+
+  ipcMain.handle('shell:open-external', (_event, targetUrl) => {
+    if (
+      typeof targetUrl === 'string' &&
+      (targetUrl.startsWith('https://omnivibe.app') || targetUrl.startsWith('https://buy.stripe.com'))
+    ) {
+      shell.openExternal(targetUrl);
+      return true;
+    }
+    return false;
+  });
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  registerOfflineAppProtocol();
+  setupOfflineAudioLoopback();
+  await startEmbeddedBridge();
   setupIpcHandlers();
+  getOrInitTrialStatus({ userDataPath: app.getPath('userData') });
+
+  // Update monotonic trial clock every 5 minutes
+  trialHeartbeatTimer = setInterval(() => {
+    getOrInitTrialStatus({ userDataPath: app.getPath('userData') });
+  }, 5 * 60 * 1000);
+
   createMainWindow();
   setupTray();
 
@@ -198,8 +360,17 @@ app.whenReady().then(() => {
   });
 });
 
-app.on('before-quit', () => {
+app.on('before-quit', async () => {
   isQuitting = true;
+  if (trialHeartbeatTimer) {
+    clearInterval(trialHeartbeatTimer);
+    trialHeartbeatTimer = null;
+  }
+  if (bridgeInstance && typeof bridgeInstance.cleanup === 'function') {
+    try {
+      await bridgeInstance.cleanup();
+    } catch {}
+  }
 });
 
 app.on('window-all-closed', () => {

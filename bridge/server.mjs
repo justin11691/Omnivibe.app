@@ -152,11 +152,12 @@ async function handleRpcCommand(cmd) {
   }
 }
 
-export function startBridgeServer(port = BRIDGE_PORT) {
+export function startBridgeServer(port = BRIDGE_PORT, options = {}) {
   const server = http.createServer((req, res) => {
     const origin = req.headers.origin || '';
     const allowedOrigin =
       origin === 'https://omnivibe.app' ||
+      origin.startsWith('app://') ||
       origin.startsWith('http://localhost:') ||
       origin.startsWith('http://127.0.0.1:')
         ? origin
@@ -230,6 +231,14 @@ export function startBridgeServer(port = BRIDGE_PORT) {
     });
   });
 
+  server.on('error', (err) => {
+    if (err && err.code === 'EADDRINUSE') {
+      console.warn(`[OmniVibe Local Bridge] Port ${port} already in use; reusing existing bridge instance.`);
+    } else {
+      console.error('[OmniVibe Local Bridge] Server error:', err);
+    }
+  });
+
   server.listen(port, BRIDGE_HOST, () => {
     console.log(`[OmniVibe Local Bridge] Listening on ws://${BRIDGE_HOST}:${port} (Hue DTLS:2100, Govee UDP:4001-4003, WiZ UDP:38899)`);
   });
@@ -238,11 +247,15 @@ export function startBridgeServer(port = BRIDGE_PORT) {
     await hueSession.stop();
     goveeController.close();
     wizController.close();
-    server.close();
+    try {
+      server.close();
+    } catch {}
   };
 
-  process.on('SIGINT', () => cleanup().finally(() => process.exit(0)));
-  process.on('SIGTERM', () => cleanup().finally(() => process.exit(0)));
+  if (!options.embedded) {
+    process.on('SIGINT', () => cleanup().finally(() => process.exit(0)));
+    process.on('SIGTERM', () => cleanup().finally(() => process.exit(0)));
+  }
 
   return { server, cleanup };
 }

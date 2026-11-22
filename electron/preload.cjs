@@ -7,4 +7,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getAllDisplays: () => ipcRenderer.invoke('display:get-all'),
   saveLicense: (licenseData) => ipcRenderer.invoke('license:save', licenseData),
   readLicense: () => ipcRenderer.invoke('license:read'),
+  getTrialStatus: () => ipcRenderer.invoke('trial:status'),
+  getBridgeStatus: () => ipcRenderer.invoke('bridge:status'),
+  getMacScreenPermission: () => ipcRenderer.invoke('system:mac-screen-permission'),
+  openExternal: (url) => ipcRenderer.invoke('shell:open-external', url),
 });

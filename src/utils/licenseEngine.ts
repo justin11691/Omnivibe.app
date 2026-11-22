@@ -2,12 +2,40 @@
 // Supports keys of any length, offline deterministic signatures, and persistent native storage sync.
 import { Preferences } from '@capacitor/preferences';
 
+export interface TrialStatus {
+  isActive: boolean;
+  isExpired: boolean;
+  tampered: boolean;
+  clockTampered: boolean;
+  installedAt: number;
+  expiresAt: number;
+  remainingMs: number;
+  daysRemaining: number;
+  hoursRemaining: number;
+  trialDurationDays: number;
+}
+
 export interface LicenseRecord {
   isPro: boolean;
   licenseKey: string;
   unlockedAt: string;
-  tier: 'LIFETIME_PRO' | 'FOUNDER_VIP' | 'ENTERPRISE_STUDIO';
+  tier: 'LIFETIME_PRO' | 'FOUNDER_VIP' | 'ENTERPRISE_STUDIO' | 'TRIAL_PRO';
   buyerName?: string;
+  isTrial?: boolean;
+  trialStatus?: TrialStatus;
+}
+
+export function formatTrialRemaining(trial?: TrialStatus): string {
+  if (!trial) return '';
+  if (trial.isExpired || !trial.isActive) return 'Trial Expired';
+  if (trial.daysRemaining >= 1) {
+    return `${trial.daysRemaining}d ${trial.hoursRemaining}h left`;
+  }
+  const mins = Math.max(1, Math.ceil((trial.remainingMs % (60 * 60 * 1000)) / 60000));
+  if (trial.hoursRemaining >= 1) {
+    return `${trial.hoursRemaining}h ${mins}m left`;
+  }
+  return `${mins}m left`;
 }
 
 const STORAGE_KEY = 'omnivibe_pro_license';
@@ -232,6 +260,37 @@ export async function loadPersistentLicense(): Promise<LicenseRecord> {
       }
     } catch {
       // fallback
+    }
+
+    // In Desktop Electron builds, automatically activate the tamper-resistant 7-day offline free trial
+    const electronApi = (window as unknown as {
+      electronAPI?: { getTrialStatus?: () => Promise<TrialStatus> };
+    }).electronAPI;
+
+    if (electronApi?.getTrialStatus) {
+      try {
+        const trial = await electronApi.getTrialStatus();
+        if (trial && trial.isActive) {
+          return {
+            isPro: true,
+            isTrial: true,
+            licenseKey: 'TRIAL-7-DAY-OFFLINE',
+            unlockedAt: new Date(trial.installedAt || Date.now()).toISOString(),
+            tier: 'TRIAL_PRO',
+            buyerName: '7-Day Free Trial',
+            trialStatus: trial,
+          };
+        }
+        if (trial) {
+          return {
+            ...defaultFree,
+            isTrial: false,
+            trialStatus: trial,
+          };
+        }
+      } catch {
+        // fallback to defaultFree
+      }
     }
   }
 

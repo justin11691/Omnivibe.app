@@ -17,7 +17,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { STRIPE_PAYMENT_LINK_URL } from '../data/defaultPresets';
-import { validateLicenseKey, normalizeLicenseKey } from '../utils/licenseEngine';
+import { validateLicenseKey, normalizeLicenseKey, formatTrialRemaining, TrialStatus } from '../utils/licenseEngine';
 
 interface UpgradeModalProps {
   isOpen: boolean;
@@ -25,6 +25,8 @@ interface UpgradeModalProps {
   onActivatePro: (licenseKey: string) => void;
   isPro: boolean;
   currentLicenseKey?: string;
+  isTrial?: boolean;
+  trialStatus?: TrialStatus;
 }
 
 export const UpgradeModal: React.FC<UpgradeModalProps> = ({
@@ -33,7 +35,11 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
   onActivatePro,
   isPro,
   currentLicenseKey = '',
+  isTrial = false,
+  trialStatus,
 }) => {
+  const isPermanentPro = isPro && !isTrial;
+  const isElectronEnv = Boolean((window as unknown as { electronAPI?: { isElectron?: boolean } }).electronAPI?.isElectron);
   const [licenseKeyInput, setLicenseKeyInput] = useState('');
   const [keyError, setKeyError] = useState<string | null>(null);
   const [showKeyInput, setShowKeyInput] = useState(false);
@@ -104,6 +110,13 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
   };
 
   const handleCreateCheckout = async () => {
+    if (isElectronEnv) {
+      const electronApi = (window as unknown as { electronAPI?: { openExternal?: (u: string) => void } }).electronAPI;
+      if (electronApi?.openExternal) {
+        electronApi.openExternal(STRIPE_PAYMENT_LINK_URL);
+        return;
+      }
+    }
     setIsCheckingOut(true);
     try {
       const res = await fetch('/api/create-checkout', {
@@ -133,32 +146,36 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
     setIsVerifying(true);
     setKeyError(null);
 
-    // 1. Verify against Cloudflare Worker API edge verification
-    try {
-      const res = await fetch('/api/verify-license', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ licenseKey: rawKey }),
-      });
+    // 1. In web browsers, verify against Cloudflare Worker API edge verification first
+    if (!isElectronEnv) {
+      try {
+        const res = await fetch('/api/verify-license', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ licenseKey: rawKey }),
+        });
 
-      if (res.ok) {
-        const data = await res.json();
-        if (data.valid) {
-          onActivatePro(data.licenseKey || normalizeLicenseKey(rawKey));
-          setKeyError(null);
-          setJustUnlocked(true);
-          setTimeout(() => {
-            setJustUnlocked(false);
-            onClose();
-          }, 1800);
-          return;
+        if (res.ok) {
+          const data = await res.json();
+          if (data.valid) {
+            onActivatePro(data.licenseKey || normalizeLicenseKey(rawKey));
+            setKeyError(null);
+            setJustUnlocked(true);
+            setTimeout(() => {
+              setJustUnlocked(false);
+              onClose();
+            }, 1800);
+            setIsVerifying(false);
+            return;
+          }
         }
+      } catch {
+        // Offline or network error: transparently fall through to offline cryptographic engine
       }
-    } catch {
-      // Offline or network error: transparently fall through to offline cryptographic engine
-    } finally {
-      setIsVerifying(false);
     }
+
+    // 2. 100% Offline deterministic polynomial / HMAC signature validation
+    setIsVerifying(false);
 
     // 2. Offline deterministic polynomial / HMAC signature validation
     const validation = validateLicenseKey(rawKey);
@@ -229,21 +246,29 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
               </div>
 
               <h2 className="text-2xl font-mono font-bold text-studio-text tracking-tight">
-                {isPro ? 'OmniVibe Pro License Active' : 'Unlock OmniVibe Pro Forever'}
+                {isPermanentPro
+                  ? 'OmniVibe Pro License Active'
+                  : isTrial
+                    ? `7-Day Free Trial (${formatTrialRemaining(trialStatus)})`
+                    : trialStatus?.isExpired
+                      ? '7-Day Free Trial Ended — Activate Key'
+                      : 'Unlock OmniVibe Pro Forever'}
               </h2>
               <p className="text-xs font-mono text-studio-textMuted max-w-md">
-                {isPro
+                {isPermanentPro
                   ? 'Your lifetime license is permanently verified and securely stored offline on this device.'
-                  : 'The ultimate smart atmosphere control deck for physical spaces. Pay once, own forever — zero recurring subscription fees.'}
+                  : isTrial
+                    ? 'You have full offline access to all 9 shaders, system audio loopback, and Hue/Govee/WiZ lighting sync during your 7-day trial. Enter an offline key anytime to unlock forever.'
+                    : 'The ultimate 100% offline smart atmosphere control deck. Pay once ($19) at omnivibe.app, paste your offline key, and own forever.'}
               </p>
 
               {/* Price Tag or Active Status */}
-              {!isPro ? (
+              {!isPermanentPro ? (
                 <div className="flex items-baseline gap-2.5 mt-2">
                   <span className="text-3xl font-mono font-extrabold text-studio-accent">$19</span>
                   <span className="text-sm font-mono line-through text-studio-textMuted">$29.99</span>
                   <span className="text-xs font-mono text-emerald-400 font-semibold bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
-                    LIFETIME UNLOCK
+                    LIFETIME OFFLINE KEY
                   </span>
                 </div>
               ) : (
@@ -254,8 +279,8 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
               )}
             </div>
 
-            {/* If Pro, show license backup */}
-            {isPro && currentLicenseKey && (
+            {/* If Permanent Pro, show license backup */}
+            {isPermanentPro && currentLicenseKey && (
               <div className="p-4 rounded-2xl bg-black/50 border border-studio-border flex flex-col gap-2">
                 <span className="text-[11px] font-mono text-studio-textMuted uppercase">
                   Your Active Offline License Key:
@@ -308,7 +333,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
             </div>
 
             {/* Primary Stripe / Store Checkout CTA */}
-            {!isPro && (
+            {!isPermanentPro && (
               <div className="flex flex-col gap-2">
                 {hasGooglePlayBilling && (
                   <button
@@ -344,8 +369,9 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
             )}
 
             {/* License Key Toggle & Input */}
+            {!isPermanentPro && (
             <div className="border-t border-studio-borderSubtle pt-3 flex flex-col gap-2">
-              {!showKeyInput ? (
+              {!showKeyInput && !isElectronEnv ? (
                 <div className="flex items-center justify-between text-xs font-mono">
                   <span className="text-studio-textMuted">Have an unlock code?</span>
                   <button
@@ -396,6 +422,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
                 </form>
               )}
             </div>
+            )}
           </>
         )}
       </div>

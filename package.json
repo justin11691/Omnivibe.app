@@ -47,16 +47,34 @@
     },
     "mac": {
       "target": [
-        "dmg"
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
       ],
       "icon": "public/icon-512.png",
-      "category": "public.app-category.music"
+      "category": "public.app-category.music",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "electron/entitlements.mac.plist",
+      "entitlementsInherit": "electron/entitlements.mac.plist",
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "OmniVibe Studio uses audio input to drive real-time 60fps WebGL shaders and smart lighting.",
+        "NSLocalNetworkUsageDescription": "OmniVibe Studio communicates over your local Wi-Fi network with Philips Hue, Govee, and WiZ smart lights."
+      }
     }
   },
   "dependencies": {
     "@capacitor/core": "^8.6.2",
     "@capacitor/preferences": "^8.0.1",
     "@capacitor/status-bar": "^8.0.4",
+    "@fontsource/bebas-neue": "^5.3.0",
+    "@fontsource/inter": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "@fontsource/montserrat": "^5.3.0",
     "lucide-react": "^0.475.0",
     "qrcode": "^1.5.4",
     "react": "^19.0.0",

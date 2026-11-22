@@ -66,6 +66,7 @@ import {
   savePersistentLicense,
   validateLicenseKey,
   normalizeLicenseKey,
+  formatTrialRemaining,
 } from './utils/licenseEngine';
 import {
   Sliders,
@@ -255,11 +256,17 @@ export const App: React.FC = () => {
     };
   }, []);
 
-  // Load persistent license from native storage on mount
+  // Load persistent license or 7-day offline Electron trial from native storage on mount
   useEffect(() => {
     loadPersistentLicense().then((rec) => {
-      if (rec && rec.isPro) {
-        setProLicense(rec);
+      if (rec && (rec.isPro || rec.trialStatus)) {
+        setProLicense({
+          isPro: rec.isPro,
+          licenseKey: rec.licenseKey,
+          activatedAt: rec.unlockedAt,
+          isTrial: rec.isTrial,
+          trialStatus: rec.trialStatus,
+        });
       }
     });
   }, []);
@@ -838,15 +845,24 @@ export const App: React.FC = () => {
             {!proLicense.isPro && <Lock className="absolute top-0.5 right-0.5 w-2.5 h-2.5 text-amber-400" aria-label="Pro" />}
           </button>
 
-          {/* De-escalated Sleek PRO Badge on Right */}
+          {/* De-escalated Sleek PRO / 7-Day Trial Badge on Right */}
           {!proLicense.isPro ? (
             <button
               onClick={() => setIsUpgradeModalOpen(true)}
-              className="flex items-center gap-1 px-2.5 py-2 rounded-xl bg-amber-500/15 border border-amber-500/40 hover:bg-amber-500/25 text-amber-400 font-mono font-bold text-xs transition-all shadow-sm shadow-amber-500/10 ml-1 cursor-pointer"
-              title="Unlock Lifetime Pro ($19)"
+              className="flex items-center gap-1 px-2.5 py-2 rounded-xl bg-amber-500/15 border border-amber-500/40 hover:bg-amber-500/25 text-amber-400 font-mono font-bold text-xs transition-all shadow-sm shadow-amber-500/10 ml-1 cursor-pointer whitespace-nowrap"
+              title={proLicense.trialStatus?.isExpired ? '7-Day Free Trial Ended — Enter Offline License Key' : 'Unlock Lifetime Pro ($19)'}
             >
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>PRO</span>
+              <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <span>{proLicense.trialStatus?.isExpired ? 'TRIAL ENDED' : 'PRO'}</span>
+            </button>
+          ) : proLicense.isTrial ? (
+            <button
+              onClick={() => setIsUpgradeModalOpen(true)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-sky-500/15 border border-sky-400/40 hover:bg-sky-500/25 text-sky-300 font-mono font-bold text-[11px] ml-1 cursor-pointer whitespace-nowrap"
+              title="7-Day Offline Free Trial Active — Click to Enter Lifetime Key"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+              <span>TRIAL · {formatTrialRemaining(proLicense.trialStatus)}</span>
             </button>
           ) : (
             <button
@@ -1106,6 +1122,8 @@ export const App: React.FC = () => {
         onActivatePro={handleActivatePro}
         isPro={proLicense.isPro}
         currentLicenseKey={proLicense.licenseKey}
+        isTrial={proLicense.isTrial}
+        trialStatus={proLicense.trialStatus}
       />
 
       {import.meta.env.DEV && (

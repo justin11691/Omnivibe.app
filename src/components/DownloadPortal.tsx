@@ -692,9 +692,10 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
                 Standard browser tabs cannot open raw UDP multicast or DTLS 1.2 sockets. Download and run the standalone Local Companion Bridge (<code>ws://127.0.0.1:47890</code>) to drive smart lights and desktop audio loopback.
               </p>
               <ul className="space-y-1.5 text-xs font-mono text-studio-textMuted pt-1">
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-sky-400 shrink-0" /><span>Guided local network setup with built-in diagnostics</span></li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" /><span><strong>7-Day Offline Free Trial</strong> — full access with zero internet or login</span></li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-sky-400 shrink-0" /><span>Built-in System Audio Loopback (Windows WASAPI &amp; macOS) + Embedded Bridge</span></li>
                 <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-sky-400 shrink-0" /><span>Philips Hue Entertainment API v2 (DTLS UDP 2100), Govee LAN (4001–4003), WiZ (38899)</span></li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-sky-400 shrink-0" /><span>Zero cloud-API rate limits — runs 100% on your home LAN</span></li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-sky-400 shrink-0" /><span>Zero cloud-API rate limits — runs 100% offline on your home LAN</span></li>
               </ul>
             </div>
             <div className="flex flex-col gap-2">
@@ -705,7 +706,7 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
                 className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-md shadow-indigo-500/20"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>Desktop App Installers (Windows .exe / macOS .dmg)</span>
+                <span>Download 7-Day Trial (Windows .exe / macOS .dmg)</span>
                 <ExternalLink className="w-3 h-3" />
               </a>
               <a
