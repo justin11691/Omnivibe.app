@@ -201,6 +201,7 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
   const [isDemoPlaying, setIsDemoPlaying] = useState<boolean>(false);
   const [demoMix, setDemoMix] = useState({ rain: 45, thunder: 35, fire: 0, train: 20 });
   const [isCheckingOut, setIsCheckingOut] = useState<boolean>(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [installNotice, setInstallNotice] = useState<'installed' | 'ios' | 'android' | 'desktop' | null>(null);
 
   // Searchable Compatibility Matrix state
@@ -286,20 +287,23 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
 
   const handleBuyUnlockCode = async () => {
     setIsCheckingOut(true);
+    setCheckoutError(null);
     try {
       const res = await fetch('/api/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.checkoutUrl) {
-          window.location.href = data.checkoutUrl;
-          return;
-        }
+      const data = await res.json().catch(() => null);
+      if (res.ok && data?.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+        return;
+      }
+      if (!res.ok) {
+        setCheckoutError(data?.error || 'Unable to start Stripe Checkout. Please try again shortly.');
+        return;
       }
     } catch {
-      // Fallback to direct payment link
+      // Network failure fallback to checkout redirect route
     } finally {
       setIsCheckingOut(false);
     }
@@ -921,6 +925,9 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
                   <span>{isCheckingOut ? 'LOADING STRIPE...' : 'BUY LIFETIME KEY — $9.99'}</span>
                   <ExternalLink className="w-4 h-4 shrink-0" />
                 </button>
+                {checkoutError && (
+                  <p className="text-[11px] font-mono text-amber-400 text-center max-w-xs">{checkoutError}</p>
+                )}
                 <button
                   onClick={onOpenUnlockModal}
                   className="text-xs font-mono text-studio-textMuted hover:text-white text-center underline cursor-pointer py-1"

@@ -129,20 +129,23 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
       }
     }
     setIsCheckingOut(true);
+    setKeyError(null);
     try {
       const res = await fetch('/api/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.checkoutUrl) {
-          window.location.href = data.checkoutUrl;
-          return;
-        }
+      const data = await res.json().catch(() => null);
+      if (res.ok && data?.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+        return;
+      }
+      if (!res.ok) {
+        setKeyError(data?.error || 'Unable to start Stripe Checkout. Please try again shortly.');
+        return;
       }
     } catch {
-      // Fallback to direct payment link
+      // Network failure fallback to checkout redirect route
     } finally {
       setIsCheckingOut(false);
     }
@@ -360,6 +363,10 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
                   <span>{isCheckingOut ? 'OPENING STRIPE...' : 'GET LIFETIME KEY — $9.99'}</span>
                   <ExternalLink className="w-4 h-4 shrink-0" />
                 </button>
+
+                {keyError && !showKeyInput && !isElectronEnv && (
+                  <p className="text-[11px] font-mono text-amber-400 text-center">{keyError}</p>
+                )}
 
                 <div className="flex items-center justify-center gap-4 text-[10px] font-mono text-studio-textMuted">
                   <span className="flex items-center gap-1">

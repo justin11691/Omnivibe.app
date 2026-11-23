@@ -347,7 +347,7 @@ function attachSecurityHeaders(headers, url) {
   headers.set('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
   headers.set(
     'Permissions-Policy',
-    'camera=(), geolocation=(), microphone=(self), payment=(self "https://buy.stripe.com" "https://js.stripe.com")'
+    'camera=(), geolocation=(), microphone=(self), payment=(self "https://buy.stripe.com" "https://checkout.stripe.com" "https://js.stripe.com")'
   );
   headers.set('X-Edge-Protection', 'omnivibe-cloudflare-waf-active');
 
@@ -358,11 +358,11 @@ function attachSecurityHeaders(headers, url) {
     "font-src 'self' https://fonts.gstatic.com data:",
     "img-src 'self' data: blob: https://omnivibe.app https://*.stripe.com",
     "media-src 'self' blob: data:",
-    "connect-src 'self' https://api.stripe.com https://buy.stripe.com https://discovery.meethue.com ws: wss: http://192.168.* http://10.* http://172.16.*",
-    "frame-src 'self' https://js.stripe.com https://buy.stripe.com",
+    "connect-src 'self' https://api.stripe.com https://buy.stripe.com https://checkout.stripe.com https://discovery.meethue.com ws: wss: http://192.168.* http://10.* http://172.16.*",
+    "frame-src 'self' https://js.stripe.com https://buy.stripe.com https://checkout.stripe.com",
     "object-src 'none'",
     "base-uri 'self'",
-    "form-action 'self' https://buy.stripe.com",
+    "form-action 'self' https://buy.stripe.com https://checkout.stripe.com",
   ].join('; ');
   headers.set('Content-Security-Policy', csp);
 
@@ -556,8 +556,11 @@ export default {
 
         // B. Real Stripe Checkout Creation Endpoint (/api/create-checkout and /api/checkout)
         if (url.pathname === '/api/create-checkout' || url.pathname === '/api/checkout') {
-          const stripeKey = env.STRIPE_SECRET_KEY;
+          const stripeKey = env.STRIPE_SECRET_KEY || env.STRIPE_API_KEY;
           if (!stripeKey) {
+            if (request.method === 'GET') {
+              return Response.redirect('https://buy.stripe.com/fZufZjfEz48ggCN58T08g0n', 303);
+            }
             return new Response(
               JSON.stringify({
                 ok: true,
@@ -580,6 +583,8 @@ export default {
             'line_items[0][price_data][currency]': 'usd',
             'line_items[0][price_data][unit_amount]': '999',
             'line_items[0][price_data][product_data][name]': 'OmniVibe Studio — Offline Lifetime License',
+            'line_items[0][price_data][product_data][description]': '100% offline Windows & macOS desktop app permanent license key (after 3-day free trial)',
+            'line_items[0][quantity]': '1',
             'mode': 'payment',
             'success_url': 'https://omnivibe.app/?pro_activated=true&session_id={CHECKOUT_SESSION_ID}',
             'cancel_url': 'https://omnivibe.app/',
@@ -595,14 +600,37 @@ export default {
           });
 
           const sessionData = await stripeRes.json();
+          if (stripeRes.ok && sessionData.url) {
+            if (request.method === 'GET') {
+              return Response.redirect(sessionData.url, 303);
+            }
+            return new Response(
+              JSON.stringify({
+                ok: true,
+                mode: 'checkout_session',
+                priceUsd: 9.99,
+                amountTotal: sessionData.amount_total ?? 999,
+                sessionId: sessionData.id,
+                checkoutUrl: sessionData.url,
+              }),
+              {
+                status: 200,
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Access-Control-Allow-Origin': '*',
+                },
+              }
+            );
+          }
+
           return new Response(
             JSON.stringify({
-              ok: stripeRes.ok,
-              checkoutUrl: sessionData.url || 'https://buy.stripe.com/fZufZjfEz48ggCN58T08g0n',
-              sessionData,
+              ok: false,
+              mode: 'checkout_session_error',
+              error: sessionData?.error?.message || 'Stripe checkout session creation failed',
             }),
             {
-              status: stripeRes.status,
+              status: stripeRes.ok ? 502 : stripeRes.status,
               headers: {
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*',
@@ -837,8 +865,8 @@ export default {
             } catch {}
           }
 
-          // 3. Verify directly with Stripe API when STRIPE_SECRET_KEY is configured
-          const stripeKey = env.STRIPE_SECRET_KEY;
+          // 3. Verify directly with Stripe API when STRIPE_SECRET_KEY / STRIPE_API_KEY is configured
+          const stripeKey = env.STRIPE_SECRET_KEY || env.STRIPE_API_KEY;
           if (stripeKey && trimmedSession.startsWith('cs_')) {
             const stripeRes = await fetch(`https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(trimmedSession)}`, {
               headers: { Authorization: `Bearer ${stripeKey}` },

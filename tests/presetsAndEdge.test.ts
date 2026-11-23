@@ -219,4 +219,61 @@ describe('Cloudflare Worker Edge Logic & License Endpoints', () => {
     expect(data.paid).toBe(true);
     expect(data.licenseKey).toBeDefined();
   });
+
+  it('creates $9.99 Stripe Checkout sessions with STRIPE_API_KEY and redirects GET /api/checkout', async () => {
+    const originalFetch = globalThis.fetch;
+    const capturedCalls: Array<{ url: string; auth: string | null; body: string }> = [];
+
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const headers = new Headers(init?.headers);
+      capturedCalls.push({
+        url: String(input),
+        auth: headers.get('Authorization'),
+        body: String(init?.body || ''),
+      });
+      return new Response(
+        JSON.stringify({
+          id: 'cs_test_123',
+          url: 'https://checkout.stripe.com/c/pay/cs_test_123',
+          amount_total: 999,
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
+    }) as typeof fetch;
+
+    try {
+      const postReq = new Request('https://omnivibe.app/api/create-checkout', {
+        method: 'POST',
+        headers: { 'cf-connecting-ip': '1.2.3.10' },
+      });
+      const postRes = await worker.fetch(postReq, { STRIPE_API_KEY: 'sk_test_mock_key' } as any, {} as any);
+      expect(postRes.status).toBe(200);
+      const postJson = await postRes.json();
+      expect(postJson.ok).toBe(true);
+      expect(postJson.mode).toBe('checkout_session');
+      expect(postJson.priceUsd).toBe(9.99);
+      expect(postJson.amountTotal).toBe(999);
+      expect(postJson.sessionId).toBe('cs_test_123');
+      expect(postJson.checkoutUrl).toBe('https://checkout.stripe.com/c/pay/cs_test_123');
+
+      const getReq = new Request('https://omnivibe.app/api/checkout', {
+        method: 'GET',
+        headers: { 'cf-connecting-ip': '1.2.3.11' },
+      });
+      const getRes = await worker.fetch(getReq, { STRIPE_API_KEY: 'sk_test_mock_key' } as any, {} as any);
+      expect(getRes.status).toBe(303);
+      expect(getRes.headers.get('location')).toBe('https://checkout.stripe.com/c/pay/cs_test_123');
+
+      expect(capturedCalls).toHaveLength(2);
+      for (const call of capturedCalls) {
+        expect(call.url).toBe('https://api.stripe.com/v1/checkout/sessions');
+        expect(call.auth).toBe('Bearer sk_test_mock_key');
+        const params = new URLSearchParams(call.body);
+        expect(params.get('line_items[0][price_data][unit_amount]')).toBe('999');
+        expect(params.get('line_items[0][quantity]')).toBe('1');
+      }
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
 });
