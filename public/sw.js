@@ -1,11 +1,12 @@
-// OmniVibe Service Worker — v6 (Network-First Navigation + Offline Fallback)
-const CACHE_NAME = 'omnivibe-v6-20261119';
+// OmniVibe Service Worker — v7 (Network-First Navigation + Offline Fallback)
+const CACHE_NAME = 'omnivibe-v7-20261124';
 
 const PRECACHE_ASSETS = [
   '/manifest.webmanifest',
   '/favicon.ico',
   '/icon-192.png',
   '/icon-512.png',
+  '/omnivibe-logo.jpg',
 ];
 
 self.addEventListener('install', (event) => {

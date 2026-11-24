@@ -16,8 +16,11 @@ import {
   DEFAULT_GUARDRAILS,
   DEFAULT_CIRCADIAN,
   DEFAULT_VISUALIZER_SETTINGS,
-  DEMO_PRO_TEST_KEY,
 } from '../data/defaultPresets';
+import {
+  normalizeLicenseKey,
+  validateLicenseKey as validateLicenseKeyCrypto,
+} from './licenseEngine';
 
 const STORAGE_KEYS = {
   THEME: 'omnivibe_theme',
@@ -72,40 +75,37 @@ function safeParse<T>(key: string, fallback: T): T {
   }
 }
 
-// PRO LICENSE MANAGEMENT
+// LICENSE MANAGEMENT (Cryptographically Verified — Rejects Arbitrary localStorage Forgery)
+export function validateLicenseKey(inputKey: string): boolean {
+  return validateLicenseKeyCrypto(inputKey).isValid;
+}
+
 export function loadProLicense(): ProLicenseState {
   const loaded = safeParse<ProLicenseState>(STORAGE_KEYS.PRO_LICENSE, {
     isPro: false,
     licenseKey: '',
   });
-  if (
-    !loaded ||
-    loaded.licenseKey === 'OMNI-BETA-TESTER' ||
-    loaded.licenseKey === 'SIMULATED-FREE-TIER'
-  ) {
+  if (!loaded || !loaded.isPro || !loaded.licenseKey || !validateLicenseKey(loaded.licenseKey)) {
     return {
       isPro: false,
       licenseKey: '',
     };
   }
   return {
-    isPro: Boolean(loaded.isPro),
-    licenseKey: loaded.licenseKey || '',
+    isPro: true,
+    licenseKey: normalizeLicenseKey(loaded.licenseKey),
     activatedAt: loaded.activatedAt,
   };
 }
 
 export function saveProLicense(state: ProLicenseState): void {
-  localStorage.setItem(STORAGE_KEYS.PRO_LICENSE, JSON.stringify(state));
-}
-
-export function validateLicenseKey(inputKey: string): boolean {
-  if (!inputKey) return false;
-  const clean = inputKey.trim().toUpperCase();
-  if (clean === DEMO_PRO_TEST_KEY) return true;
-  // Format check: OMNI-PRO-XXXX-XXXX
-  const pattern = /^OMNI-PRO-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
-  return pattern.test(clean);
+  if (state.isPro && (!state.licenseKey || !validateLicenseKey(state.licenseKey))) {
+    return;
+  }
+  const normalized: ProLicenseState = state.isPro
+    ? { ...state, licenseKey: normalizeLicenseKey(state.licenseKey || '') }
+    : { isPro: false, licenseKey: '' };
+  localStorage.setItem(STORAGE_KEYS.PRO_LICENSE, JSON.stringify(normalized));
 }
 
 // THEME
@@ -306,7 +306,9 @@ export function importFromJson(jsonStr: string): boolean {
     if (data.guardrails) saveGuardrails(data.guardrails);
     if (data.circadian) saveCircadian(data.circadian);
     if (data.visualizerSettings) saveVisualizerSettings(data.visualizerSettings);
-    if (data.proLicense) saveProLicense(data.proLicense);
+    if (data.proLicense?.isPro && data.proLicense.licenseKey && validateLicenseKey(data.proLicense.licenseKey)) {
+      saveProLicense(data.proLicense);
+    }
     return true;
   } catch (e) {
     console.error('[OmniVibe Storage] Import error:', e);

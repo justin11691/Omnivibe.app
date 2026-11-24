@@ -3,13 +3,15 @@
 // Strict Security Headers, Zero-Downtime Self-Healing Retry, Rate Limiting, Stripe Checkout, and License Verification.
 
 const SECRET_SALT = 'OMNIVIBE_OFFLINE_SECRET_2026_ATMOSPHERE_STUDIO';
-const MASTER_KEYS = {
-  'OMNI-FOUNDER-2026-FOREVER': { tier: 'FOUNDER_VIP', name: 'OmniVibe Founder / Owner' },
-  'OMNI-PRO-UNLIMITED-VIP': { tier: 'FOUNDER_VIP', name: 'VIP Lifetime Member' },
-  'OMNI-BETA-TESTER': { tier: 'LIFETIME_PRO', name: 'Beta Program Tester' },
-  'OMNI-LIFETIME-STUDIO-PRO': { tier: 'LIFETIME_PRO', name: 'Studio Lifetime License' },
-  'OMNI-FOUNDER-2026': { tier: 'FOUNDER_VIP', name: 'Founder License' },
-};
+
+// Strictly allowlisted origins for credentialed / state-changing browser API calls
+const ALLOWED_ORIGINS = new Set([
+  'https://omnivibe.app',
+  'https://www.omnivibe.app',
+  'app://omnivibe.local',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+]);
 
 // Known malicious exploit scanner paths blocked immediately at the edge (WAF)
 const BLOCKED_PATH_PREFIXES = [
@@ -36,6 +38,35 @@ const ALLOWED_METHODS = new Set(['GET', 'HEAD', 'POST', 'OPTIONS']);
 // Search engine, AI & link-preview crawlers (never rate-limited)
 const TRUSTED_CRAWLER_REGEX =
   /Googlebot|Google-Site-Verification|Google-InspectionTool|Bingbot|Applebot|DuckDuckBot|Slurp|YandexBot|Twitterbot|facebookexternalhit|LinkedInBot|Discordbot|Slackbot|WhatsApp|TelegramBot|GPTBot|OAI-SearchBot|ClaudeBot|PerplexityBot/i;
+
+function isAllowedOrigin(origin) {
+  return Boolean(origin && ALLOWED_ORIGINS.has(origin));
+}
+
+function corsHeaders(request, publicReadOnly = false) {
+  if (publicReadOnly) {
+    return { 'Access-Control-Allow-Origin': '*' };
+  }
+  const origin = request.headers.get('origin') || '';
+  if (isAllowedOrigin(origin)) {
+    return {
+      'Access-Control-Allow-Origin': origin,
+      'Vary': 'Origin',
+    };
+  }
+  return { 'Vary': 'Origin' };
+}
+
+function jsonResponse(request, body, status = 200, { publicReadOnly = false, extraHeaders = {} } = {}) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      'Content-Type': 'application/json',
+      ...corsHeaders(request, publicReadOnly),
+      ...extraHeaders,
+    },
+  });
+}
 
 function isMaliciousRequest(url) {
   const lowerPath = url.pathname.toLowerCase();
@@ -81,14 +112,19 @@ function computeChecksum(payload) {
   return unsigned.slice(-4);
 }
 
-function validateLicenseKeyCrypto(rawKey) {
+function validateLicenseKeyCrypto(rawKey, env = {}) {
   const key = normalizeLicenseKey(rawKey);
   if (!key) return { isValid: false };
 
-  // 1. Master Founder Keys
-  if (MASTER_KEYS[key]) {
-    const meta = MASTER_KEYS[key];
-    return { isValid: true, tier: meta.tier, buyerName: meta.name };
+  // 1. Optional server-side Founder/Admin keys injected strictly via Cloudflare Pages secrets
+  if (env?.FOUNDER_LICENSE_KEYS) {
+    const founderKeys = String(env.FOUNDER_LICENSE_KEYS)
+      .split(',')
+      .map((k) => normalizeLicenseKey(k))
+      .filter(Boolean);
+    if (founderKeys.includes(key)) {
+      return { isValid: true, tier: 'FOUNDER_VIP', buyerName: 'OmniVibe Studio Founder' };
+    }
   }
 
   // 2. Signed Token format: OMNITOKEN.<base64>.<sig>
@@ -123,15 +159,6 @@ function validateLicenseKeyCrypto(rawKey) {
     }
   }
 
-  // 4. Arbitrary length keys with checksum suffix (last 4 chars)
-  if (key.length >= 12) {
-    const csum = key.slice(-4);
-    const body = key.slice(0, -4);
-    if (csum === computeChecksum(body)) {
-      return { isValid: true, tier: 'LIFETIME_PRO', buyerName: 'Verified Offline Licensee' };
-    }
-  }
-
   return { isValid: false };
 }
 
@@ -159,19 +186,28 @@ function issueDeterministicLicenseKey(seedId) {
   return `OMNI-${payload}-${checksum}`;
 }
 
+/**
+ * Verifies Stripe webhook HMAC-SHA256 signature against all `v1` values in `Stripe-Signature`
+ * (supports zero-downtime Stripe webhook secret rotation) with 300s replay protection.
+ */
 async function verifyStripeWebhookHmac(rawBody, sigHeader, secret) {
   if (!sigHeader || !secret) return false;
-  const parts = {};
+  let timestampStr = '';
+  const v1Signatures = [];
+
   for (const seg of sigHeader.split(',')) {
     const eq = seg.indexOf('=');
-    if (eq > 0) {
-      parts[seg.slice(0, eq).trim()] = seg.slice(eq + 1).trim();
-    }
+    if (eq <= 0) continue;
+    const k = seg.slice(0, eq).trim();
+    const v = seg.slice(eq + 1).trim();
+    if (k === 't') timestampStr = v;
+    else if (k === 'v1' && v) v1Signatures.push(v);
   }
-  if (!parts.t || !parts.v1) return false;
+
+  if (!timestampStr || v1Signatures.length === 0) return false;
 
   // Replay attack defense: verify timestamp is within 300s window
-  const timestamp = parseInt(parts.t, 10);
+  const timestamp = parseInt(timestampStr, 10);
   const nowSec = Math.floor(Date.now() / 1000);
   if (isNaN(timestamp) || Math.abs(nowSec - timestamp) > 300) {
     return false;
@@ -185,17 +221,21 @@ async function verifyStripeWebhookHmac(rawBody, sigHeader, secret) {
     false,
     ['sign']
   );
-  const signedBuf = await crypto.subtle.sign('HMAC', key, encoder.encode(`${parts.t}.${rawBody}`));
+  const signedBuf = await crypto.subtle.sign('HMAC', key, encoder.encode(`${timestampStr}.${rawBody}`));
   const expectedHex = Array.from(new Uint8Array(signedBuf))
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('');
 
-  if (expectedHex.length !== parts.v1.length) return false;
-  let diff = 0;
-  for (let i = 0; i < expectedHex.length; i++) {
-    diff |= expectedHex.charCodeAt(i) ^ parts.v1.charCodeAt(i);
+  for (const candidate of v1Signatures) {
+    if (expectedHex.length !== candidate.length) continue;
+    let diff = 0;
+    for (let i = 0; i < expectedHex.length; i++) {
+      diff |= expectedHex.charCodeAt(i) ^ candidate.charCodeAt(i);
+    }
+    if (diff === 0) return true;
   }
-  return diff === 0;
+
+  return false;
 }
 
 async function sendMailChannelsReceipt({ toEmail, toName, licenseKey, source, sessionId }) {
@@ -205,22 +245,25 @@ async function sendMailChannelsReceipt({ toEmail, toName, licenseKey, source, se
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        personalizations: [{ to: [{ email: toEmail, name: toName || 'OmniVibe Studio Member' }] }],
+        personalizations: [{ to: [{ email: toEmail, name: toName || 'OmniVibe Studio Customer' }] }],
         from: { email: 'no-reply@omnivibe.app', name: 'OmniVibe Studio Licensing' },
-        subject: `Your OmniVibe Studio — Offline Lifetime License Key (${licenseKey})`,
+        reply_to: { email: 'justin121887@gmail.com', name: 'OmniVibe Studio Support' },
+        subject: `Your OmniVibe Studio Offline Lifetime License Key (${licenseKey})`,
         content: [
           {
             type: 'text/plain',
             value: [
-              `Thank you for upgrading to OmniVibe Pro Lifetime!`,
+              `Thank you for purchasing OmniVibe Studio ($9.99 One-Time Lifetime License)!`,
               '',
-              `License Key: ${licenseKey}`,
-              `Activation Limit: Up to 5 personal devices (Web, Windows, macOS, Android, iOS)`,
+              `Offline License Key: ${licenseKey}`,
+              `Activation Limit: Up to 5 personal computers (Windows & macOS Desktop App or Web Studio)`,
               `Purchase Source: ${source}`,
               `Reference ID: ${sessionId}`,
               '',
-              `Your Pro features unlock automatically at https://omnivibe.app/?session_id=${encodeURIComponent(sessionId)}&pro_activated=true.`,
-              `Keep this offline key safe to unlock OmniVibe anywhere—even completely offline.`,
+              `Auto-activation link: https://omnivibe.app/?session_id=${encodeURIComponent(sessionId)}`,
+              `Keep this offline key safe — it unlocks OmniVibe Studio forever with zero internet required.`,
+              '',
+              `14-Day Money-Back Guarantee & Support: justin121887@gmail.com`,
             ].join('\n'),
           },
         ],
@@ -237,7 +280,7 @@ async function issueAndStoreLicense({
   source,
   tier = 'LIFETIME_PRO',
   buyerEmail = '',
-  buyerName = 'OmniVibe Pro Customer',
+  buyerName = 'OmniVibe Studio Customer',
   amountCents = 999,
 }) {
   const sessionKey = String(externalSessionId || `${source}_${Date.now()}`);
@@ -274,9 +317,7 @@ async function issueAndStoreLicense({
   }
 
   const finalKey = storedRow?.license_key || licenseKey;
-  // Cloudflare KV Free-Tier Optimization:
-  // D1 is the primary authoritative database. Only write to KV if missing, avoiding redundant puts
-  // to stay strictly under the 1,000 writes/day free quota. Gracefully handles 429 quota exhaustion.
+  // Cloudflare KV Free-Tier Optimization: write key & session lookup once
   if (env?.LICENSES_KV && typeof env.LICENSES_KV.put === 'function') {
     try {
       let isCached = false;
@@ -294,6 +335,7 @@ async function issueAndStoreLicense({
           sessionId: sessionKey,
         });
         await env.LICENSES_KV.put(finalKey, record);
+        await env.LICENSES_KV.put(`session:${sessionKey}`, record);
       }
     } catch (kvErr) {
       console.warn('LICENSES_KV write skipped/quota exceeded (degraded to D1):', kvErr);
@@ -306,6 +348,72 @@ async function issueAndStoreLicense({
     buyerName: storedRow?.buyer_name || buyerName,
     buyerEmail: storedRow?.buyer_email || buyerEmail,
   };
+}
+
+async function revokeLicenseByIdentifiers(env, { sessionId = '', buyerEmail = '', paymentIntent = '' }) {
+  const stripeKey = env?.STRIPE_SECRET_KEY || env?.STRIPE_API_KEY;
+  let resolvedSessionId = sessionId;
+
+  // If Stripe didn't attach checkout_session_id metadata on the charge, look it up via payment_intent
+  if (!resolvedSessionId && paymentIntent && stripeKey) {
+    try {
+      const lookupRes = await fetch(
+        `https://api.stripe.com/v1/checkout/sessions?payment_intent=${encodeURIComponent(paymentIntent)}&limit=1`,
+        { headers: { Authorization: `Bearer ${stripeKey}` } }
+      );
+      if (lookupRes.ok) {
+        const lookupData = await lookupRes.json();
+        if (lookupData?.data?.[0]?.id) {
+          resolvedSessionId = lookupData.data[0].id;
+        }
+      }
+    } catch {}
+  }
+
+  let revokedCount = 0;
+  const deterministicKey = resolvedSessionId ? issueDeterministicLicenseKey(resolvedSessionId) : '';
+
+  if (env?.DB && typeof env.DB.prepare === 'function') {
+    try {
+      const matches = await env.DB.prepare(
+        `SELECT license_key, external_session_id FROM licenses
+         WHERE (? != '' AND external_session_id = ?)
+            OR (? != '' AND lower(buyer_email) = lower(?))`
+      )
+        .bind(resolvedSessionId || '', resolvedSessionId || '', buyerEmail || '', buyerEmail || '')
+        .all();
+
+      const rows = matches?.results || [];
+      if (rows.length > 0) {
+        await env.DB.prepare(
+          `UPDATE licenses SET tier = 'REVOKED', updated_at = datetime('now')
+           WHERE (? != '' AND external_session_id = ?)
+              OR (? != '' AND lower(buyer_email) = lower(?))`
+        )
+          .bind(resolvedSessionId || '', resolvedSessionId || '', buyerEmail || '', buyerEmail || '')
+          .run();
+        revokedCount = rows.length;
+
+        if (env?.LICENSES_KV && typeof env.LICENSES_KV.delete === 'function') {
+          for (const row of rows) {
+            if (row.license_key) await env.LICENSES_KV.delete(row.license_key).catch(() => {});
+            if (row.external_session_id) {
+              await env.LICENSES_KV.delete(`session:${row.external_session_id}`).catch(() => {});
+            }
+          }
+        }
+      }
+    } catch {}
+  }
+
+  if (env?.LICENSES_KV && typeof env.LICENSES_KV.delete === 'function' && deterministicKey) {
+    await env.LICENSES_KV.delete(deterministicKey).catch(() => {});
+    if (resolvedSessionId) {
+      await env.LICENSES_KV.delete(`session:${resolvedSessionId}`).catch(() => {});
+    }
+  }
+
+  return revokedCount;
 }
 
 // In-memory sliding-window rate limiter for /api/* routes
@@ -353,24 +461,23 @@ function attachSecurityHeaders(headers, url) {
 
   const csp = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "font-src 'self' https://fonts.gstatic.com data:",
+    "script-src 'self' 'unsafe-inline' https://js.stripe.com",
+    "style-src 'self' 'unsafe-inline'",
+    "font-src 'self' data:",
     "img-src 'self' data: blob: https://omnivibe.app https://*.stripe.com",
     "media-src 'self' blob: data:",
-    "connect-src 'self' https://api.stripe.com https://buy.stripe.com https://checkout.stripe.com https://discovery.meethue.com ws: wss: http://192.168.* http://10.* http://172.16.*",
-    "frame-src 'self' https://js.stripe.com https://buy.stripe.com https://checkout.stripe.com",
+    "connect-src 'self' https://api.stripe.com https://buy.stripe.com https://checkout.stripe.com ws://127.0.0.1:47890 ws://localhost:47890",
+    "frame-src 'self' https://js.stripe.com https://buy.stripe.com https://checkout.stripe.com https://open.spotify.com https://www.youtube-nocookie.com",
+    "frame-ancestors 'self'",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self' https://buy.stripe.com https://checkout.stripe.com",
+    'upgrade-insecure-requests',
   ].join('; ');
   headers.set('Content-Security-Policy', csp);
 
   const path = url.pathname.toLowerCase();
-  if (
-    path.endsWith('robots.txt') ||
-    path.endsWith('sitemap.xml')
-  ) {
+  if (path.endsWith('robots.txt') || path.endsWith('sitemap.xml')) {
     headers.set('Cache-Control', 'public, max-age=86400, s-maxage=604800');
   } else if (path.startsWith('/assets/')) {
     headers.set('Cache-Control', 'public, max-age=31536000, immutable');
@@ -396,7 +503,7 @@ function attachSecurityHeaders(headers, url) {
 }
 
 export default {
-  async fetch(request, env = {}, ctx) {
+  async fetch(request, env = {}, _ctx) {
     try {
       const url = new URL(request.url);
 
@@ -462,7 +569,10 @@ export default {
               .split(',')
               .map((s) => s.trim())
               .filter(Boolean)
-          : ['REPLACE_WITH_PLAY_APP_SIGNING_SHA256_FINGERPRINT'];
+          : [];
+        if (rawFingerprints.length === 0) {
+          return jsonResponse(request, { error: 'Digital Asset Links not configured' }, 404);
+        }
         return new Response(
           JSON.stringify(
             [
@@ -483,7 +593,7 @@ export default {
             headers: {
               'Content-Type': 'application/json',
               'Cache-Control': 'public, max-age=300',
-              'Access-Control-Allow-Origin': '*',
+              ...corsHeaders(request, true),
             },
           }
         );
@@ -491,10 +601,15 @@ export default {
 
       // Handle CORS Preflight for /api/*
       if (url.pathname.startsWith('/api/') && request.method === 'OPTIONS') {
+        const origin = request.headers.get('origin') || '';
+        const isPublicHealth = url.pathname === '/api/health';
+        if (!isPublicHealth && origin && !isAllowedOrigin(origin)) {
+          return jsonResponse(request, { ok: false, error: 'Origin not allowed' }, 403);
+        }
         return new Response(null, {
           status: 204,
           headers: {
-            'Access-Control-Allow-Origin': '*',
+            ...corsHeaders(request, isPublicHealth),
             'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
             'Access-Control-Allow-Headers': 'Content-Type, Authorization',
           },
@@ -510,28 +625,32 @@ export default {
         if (!isTrustedCrawler) {
           const rateCheck = checkRateLimit(clientIp);
           if (!rateCheck.allowed) {
-            return new Response(
-              JSON.stringify({
+            return jsonResponse(
+              request,
+              {
                 error: 'Too Many Requests',
                 message: 'Rate limit exceeded. Maximum 60 requests per minute.',
                 retryAfterSeconds: rateCheck.retryAfter,
-              }),
-              {
-                status: 429,
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Retry-After': String(rateCheck.retryAfter),
-                  'Access-Control-Allow-Origin': '*',
-                },
-              }
+              },
+              429,
+              { extraHeaders: { 'Retry-After': String(rateCheck.retryAfter) } }
             );
+          }
+        }
+
+        // Enforce Origin allowlist on state-changing browser POST routes (except server-to-server webhook)
+        if (request.method === 'POST' && url.pathname !== '/api/stripe-webhook') {
+          const origin = request.headers.get('origin') || '';
+          if (origin && !isAllowedOrigin(origin)) {
+            return jsonResponse(request, { ok: false, error: 'Forbidden origin' }, 403);
           }
         }
 
         // A. Health & Security Telemetry Endpoint
         if (url.pathname === '/api/health') {
-          return new Response(
-            JSON.stringify({
+          return jsonResponse(
+            request,
+            {
               ok: true,
               service: 'omnivibe-edge',
               status: 'UP_AND_SECURE',
@@ -541,13 +660,12 @@ export default {
               tlsVersion: request.cf?.tlsVersion || 'TLSv1.3',
               timestamp: new Date().toISOString(),
               version: '1.0.0',
-            }),
+            },
+            200,
             {
-              status: 200,
-              headers: {
-                'Content-Type': 'application/json',
+              publicReadOnly: true,
+              extraHeaders: {
                 'Cache-Control': 'public, max-age=60, s-maxage=60',
-                'Access-Control-Allow-Origin': '*',
                 'X-Edge-Protection': 'omnivibe-cloudflare-waf-active',
               },
             }
@@ -558,23 +676,13 @@ export default {
         if (url.pathname === '/api/create-checkout' || url.pathname === '/api/checkout') {
           const stripeKey = env.STRIPE_SECRET_KEY || env.STRIPE_API_KEY;
           if (!stripeKey) {
-            if (request.method === 'GET') {
-              return Response.redirect('https://buy.stripe.com/fZufZjfEz48ggCN58T08g0n', 303);
-            }
-            return new Response(
-              JSON.stringify({
-                ok: true,
-                checkoutUrl: 'https://buy.stripe.com/fZufZjfEz48ggCN58T08g0n',
-                mode: 'payment_link',
-                priceUsd: 9.99,
-              }),
+            return jsonResponse(
+              request,
               {
-                status: 200,
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Access-Control-Allow-Origin': '*',
-                },
-              }
+                ok: false,
+                error: 'Stripe checkout is temporarily unavailable. Contact justin121887@gmail.com.',
+              },
+              503
             );
           }
 
@@ -583,7 +691,8 @@ export default {
             'line_items[0][price_data][currency]': 'usd',
             'line_items[0][price_data][unit_amount]': '999',
             'line_items[0][price_data][product_data][name]': 'OmniVibe Studio — Offline Lifetime License',
-            'line_items[0][price_data][product_data][description]': '100% offline Windows & macOS desktop app permanent license key (after 3-day free trial)',
+            'line_items[0][price_data][product_data][description]':
+              '100% offline Windows & macOS desktop app permanent license key (after 3-day free trial)',
             'line_items[0][quantity]': '1',
             'mode': 'payment',
             'success_url': 'https://omnivibe.app/?pro_activated=true&session_id={CHECKOUT_SESSION_ID}',
@@ -604,38 +713,24 @@ export default {
             if (request.method === 'GET') {
               return Response.redirect(sessionData.url, 303);
             }
-            return new Response(
-              JSON.stringify({
-                ok: true,
-                mode: 'checkout_session',
-                priceUsd: 9.99,
-                amountTotal: sessionData.amount_total ?? 999,
-                sessionId: sessionData.id,
-                checkoutUrl: sessionData.url,
-              }),
-              {
-                status: 200,
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Access-Control-Allow-Origin': '*',
-                },
-              }
-            );
+            return jsonResponse(request, {
+              ok: true,
+              mode: 'checkout_session',
+              priceUsd: 9.99,
+              amountTotal: sessionData.amount_total ?? 999,
+              sessionId: sessionData.id,
+              checkoutUrl: sessionData.url,
+            });
           }
 
-          return new Response(
-            JSON.stringify({
+          return jsonResponse(
+            request,
+            {
               ok: false,
               mode: 'checkout_session_error',
               error: sessionData?.error?.message || 'Stripe checkout session creation failed',
-            }),
-            {
-              status: stripeRes.ok ? 502 : stripeRes.status,
-              headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
-              },
-            }
+            },
+            stripeRes.ok ? 502 : stripeRes.status
           );
         }
 
@@ -652,75 +747,78 @@ export default {
           const normalizedKey = normalizeLicenseKey(rawKey);
 
           if (!normalizedKey) {
-            return new Response(
-              JSON.stringify({
+            return jsonResponse(
+              request,
+              {
                 ok: false,
                 valid: false,
                 message: 'Please provide a license key.',
-              }),
-              {
-                status: 400,
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Access-Control-Allow-Origin': '*',
-                },
-              }
+              },
+              400
             );
           }
 
           if (env.DB && typeof env.DB.prepare === 'function') {
             try {
+              const existingRow = await env.DB.prepare(
+                'SELECT license_key, tier, activations_count, max_activations FROM licenses WHERE license_key = ?'
+              )
+                .bind(normalizedKey)
+                .first();
+
+              if (existingRow?.tier === 'REVOKED') {
+                return jsonResponse(
+                  request,
+                  {
+                    ok: false,
+                    valid: false,
+                    message: 'This license key has been revoked or refunded. Contact justin121887@gmail.com.',
+                  },
+                  403
+                );
+              }
+
               const activatedRow = await env.DB.prepare(
                 `UPDATE licenses
                  SET activations_count = activations_count + 1,
                      updated_at = datetime('now')
-                 WHERE license_key = ? AND activations_count < max_activations
+                 WHERE license_key = ? AND tier != 'REVOKED' AND activations_count < max_activations
                  RETURNING *`
               )
                 .bind(normalizedKey)
                 .first();
 
               if (activatedRow) {
-                return new Response(
-                  JSON.stringify({
+                return jsonResponse(
+                  request,
+                  {
                     ok: true,
                     valid: true,
                     tier: activatedRow.tier || 'LIFETIME_PRO',
-                    buyerName: activatedRow.buyer_name || 'Verified Pro Licensee',
+                    buyerName: activatedRow.buyer_name || 'Verified Studio Licensee',
                     licenseKey: normalizedKey,
                     activationsCount: activatedRow.activations_count,
                     maxActivations: activatedRow.max_activations,
                     unlockedAt: new Date().toISOString(),
-                  }),
+                  },
+                  200,
                   {
-                    status: 200,
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Access-Control-Allow-Origin': '*',
+                    extraHeaders: {
+                      'Set-Cookie': `omnivibe_license=${encodeURIComponent(normalizedKey)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=31536000`,
                     },
                   }
                 );
               }
 
-              const exhaustedRow = await env.DB.prepare(
-                'SELECT license_key, activations_count, max_activations FROM licenses WHERE license_key = ?'
-              )
-                .bind(normalizedKey)
-                .first();
-              if (exhaustedRow) {
-                return new Response(
-                  JSON.stringify({
+              if (existingRow) {
+                return jsonResponse(
+                  request,
+                  {
                     ok: false,
                     valid: false,
-                    message: `Activation limit (${exhaustedRow.max_activations}) reached for this key. Contact support@omnivibe.app.`,
-                  }),
-                  {
-                    status: 403,
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Access-Control-Allow-Origin': '*',
-                    },
-                  }
+                    message: `Activation limit (${existingRow.max_activations}) reached for this key. Contact justin121887@gmail.com.`,
+                  },
+                  403
                 );
               }
             } catch {
@@ -745,47 +843,53 @@ export default {
             } catch {}
           }
 
-          const cryptoValidation = validateLicenseKeyCrypto(normalizedKey);
+          if (kvTier === 'REVOKED') {
+            return jsonResponse(
+              request,
+              {
+                ok: false,
+                valid: false,
+                message: 'This license key has been revoked. Contact justin121887@gmail.com.',
+              },
+              403
+            );
+          }
+
+          const cryptoValidation = validateLicenseKeyCrypto(normalizedKey, env);
 
           if (kvFound || cryptoValidation.isValid) {
             const finalTier = kvTier || cryptoValidation.tier || 'LIFETIME_PRO';
-            return new Response(
-              JSON.stringify({
+            return jsonResponse(
+              request,
+              {
                 ok: true,
                 valid: true,
                 tier: finalTier,
-                buyerName: cryptoValidation.buyerName || 'Verified Pro Licensee',
+                buyerName: cryptoValidation.buyerName || 'Verified Studio Licensee',
                 licenseKey: normalizedKey,
                 unlockedAt: new Date().toISOString(),
-              }),
+              },
+              200,
               {
-                status: 200,
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Access-Control-Allow-Origin': '*',
+                extraHeaders: {
                   'Set-Cookie': `omnivibe_license=${encodeURIComponent(normalizedKey)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=31536000`,
                 },
               }
             );
           }
 
-          return new Response(
-            JSON.stringify({
+          return jsonResponse(
+            request,
+            {
               ok: false,
               valid: false,
               message: 'Invalid or unrecognized unlock code. Please verify your license key.',
-            }),
-            {
-              status: 401,
-              headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
-              },
-            }
+            },
+            401
           );
         }
 
-        // C2. Frictionless Stripe Checkout Status & Deterministic Key Retrieval (/api/checkout-status)
+        // C2. Verified Stripe Checkout Status & Key Retrieval (/api/checkout-status)
         if (url.pathname === '/api/checkout-status') {
           let sessionId = url.searchParams.get('session_id') || '';
           if (request.method === 'POST') {
@@ -795,19 +899,16 @@ export default {
             } catch {}
           }
           if (!sessionId) {
-            return new Response(JSON.stringify({ ok: false, paid: false, message: 'session_id is required.' }), {
-              status: 400,
-              headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-            });
+            return jsonResponse(request, { ok: false, paid: false, message: 'session_id is required.' }, 400);
           }
 
-          // Strict validation: Must match safe alphanumeric session format to prevent crawler KV/D1 churn
           const trimmedSession = String(sessionId).trim();
-          if (!/^[a-zA-Z0-9_\-]{16,128}$/.test(trimmedSession)) {
-            return new Response(JSON.stringify({ ok: false, paid: false, message: 'Invalid session_id format.' }), {
-              status: 400,
-              headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-            });
+          if (!/^cs_(live|test)_[a-zA-Z0-9_\-]{10,120}$/.test(trimmedSession)) {
+            return jsonResponse(
+              request,
+              { ok: false, paid: false, message: 'Invalid Stripe Checkout session_id format.' },
+              400
+            );
           }
 
           // 1. Check D1 first (Indexed primary relational store)
@@ -817,19 +918,25 @@ export default {
                 .bind(trimmedSession)
                 .first();
               if (existing) {
-                return new Response(
-                  JSON.stringify({
+                if (existing.tier === 'REVOKED') {
+                  return jsonResponse(
+                    request,
+                    { ok: false, paid: false, message: 'License for this session was refunded or revoked.' },
+                    403
+                  );
+                }
+                return jsonResponse(
+                  request,
+                  {
                     ok: true,
                     paid: true,
                     licenseKey: existing.license_key,
                     tier: existing.tier || 'LIFETIME_PRO',
                     source: existing.source || 'stripe',
-                  }),
+                  },
+                  200,
                   {
-                    status: 200,
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Access-Control-Allow-Origin': '*',
+                    extraHeaders: {
                       'Set-Cookie': `omnivibe_license=${encodeURIComponent(existing.license_key)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=31536000`,
                     },
                   }
@@ -838,123 +945,141 @@ export default {
             } catch {}
           }
 
-          // 2. Check KV (Defensively wrapped read check)
+          // 2. Check KV cache for fulfilled checkout
           if (env.LICENSES_KV && typeof env.LICENSES_KV.get === 'function') {
             try {
               const cached = await env.LICENSES_KV.get(`session:${trimmedSession}`);
               if (cached) {
                 const parsed = JSON.parse(cached);
-                return new Response(
-                  JSON.stringify({
-                    ok: true,
-                    paid: true,
-                    licenseKey: parsed.licenseKey,
-                    tier: parsed.tier || 'LIFETIME_PRO',
-                    source: parsed.source || 'stripe',
-                  }),
-                  {
-                    status: 200,
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Access-Control-Allow-Origin': '*',
-                      'Set-Cookie': `omnivibe_license=${encodeURIComponent(parsed.licenseKey)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=31536000`,
+                if (parsed?.tier !== 'REVOKED' && parsed?.licenseKey) {
+                  return jsonResponse(
+                    request,
+                    {
+                      ok: true,
+                      paid: true,
+                      licenseKey: parsed.licenseKey,
+                      tier: parsed.tier || 'LIFETIME_PRO',
+                      source: parsed.source || 'stripe',
                     },
-                  }
-                );
+                    200,
+                    {
+                      extraHeaders: {
+                        'Set-Cookie': `omnivibe_license=${encodeURIComponent(parsed.licenseKey)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=31536000`,
+                      },
+                    }
+                  );
+                }
               }
             } catch {}
           }
 
-          // 3. Verify directly with Stripe API when STRIPE_SECRET_KEY / STRIPE_API_KEY is configured
+          // 3. Verify directly with Stripe API (fail closed when secret key is unavailable)
           const stripeKey = env.STRIPE_SECRET_KEY || env.STRIPE_API_KEY;
-          if (stripeKey && trimmedSession.startsWith('cs_')) {
-            const stripeRes = await fetch(`https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(trimmedSession)}`, {
-              headers: { Authorization: `Bearer ${stripeKey}` },
-            });
-            if (!stripeRes.ok) {
-              return new Response(JSON.stringify({ ok: false, paid: false, message: 'Stripe session lookup failed.' }), {
-                status: 404,
-                headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-              });
-            }
-            const session = await stripeRes.json();
-            if (session.payment_status !== 'paid') {
-              return new Response(
-                JSON.stringify({ ok: true, paid: false, payment_status: session.payment_status }),
-                { status: 200, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
-              );
-            }
-            const issued = await issueAndStoreLicense({
-              env,
-              externalSessionId: trimmedSession,
-              source: 'stripe_checkout',
-              buyerEmail: session.customer_details?.email || session.customer_email || '',
-              buyerName: session.customer_details?.name || 'OmniVibe Pro Customer',
-              amountCents: session.amount_total || 999,
-            });
-            return new Response(
-              JSON.stringify({ ok: true, paid: true, licenseKey: issued.licenseKey, tier: issued.tier }),
+          if (!stripeKey) {
+            return jsonResponse(
+              request,
               {
-                status: 200,
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Access-Control-Allow-Origin': '*',
-                  'Set-Cookie': `omnivibe_license=${encodeURIComponent(issued.licenseKey)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=31536000`,
-                },
-              }
+                ok: false,
+                paid: false,
+                message: 'Stripe verification unavailable. Contact justin121887@gmail.com.',
+              },
+              503
             );
           }
 
-          // 4. Deterministic fallback for verified test/payment link formats when secret key isn't injected
+          const stripeRes = await fetch(
+            `https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(trimmedSession)}`,
+            { headers: { Authorization: `Bearer ${stripeKey}` } }
+          );
+          if (!stripeRes.ok) {
+            return jsonResponse(
+              request,
+              { ok: false, paid: false, message: 'Stripe session lookup failed.' },
+              404
+            );
+          }
+          const session = await stripeRes.json();
+          if (session.payment_status !== 'paid') {
+            return jsonResponse(request, {
+              ok: true,
+              paid: false,
+              payment_status: session.payment_status,
+            });
+          }
           const issued = await issueAndStoreLicense({
             env,
             externalSessionId: trimmedSession,
-            source: 'stripe_payment_link',
-            amountCents: 999,
+            source: 'stripe_checkout',
+            buyerEmail: session.customer_details?.email || session.customer_email || '',
+            buyerName: session.customer_details?.name || 'OmniVibe Studio Customer',
+            amountCents: session.amount_total || 999,
           });
-          return new Response(
-            JSON.stringify({ ok: true, paid: true, licenseKey: issued.licenseKey, tier: issued.tier }),
+          return jsonResponse(
+            request,
+            { ok: true, paid: true, licenseKey: issued.licenseKey, tier: issued.tier },
+            200,
             {
-              status: 200,
-              headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
+              extraHeaders: {
                 'Set-Cookie': `omnivibe_license=${encodeURIComponent(issued.licenseKey)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=31536000`,
               },
             }
           );
         }
 
-        // C3. Stripe Webhook Endpoint (/api/stripe-webhook)
+        // C3. Stripe Webhook Endpoint (/api/stripe-webhook) — Strictly Fail-Closed Signature Verification
         if (url.pathname === '/api/stripe-webhook' && request.method === 'POST') {
+          const webhookSecret = env.STRIPE_WEBHOOK_SECRET || '';
+          if (!webhookSecret) {
+            return jsonResponse(
+              request,
+              { ok: false, error: 'Webhook signing secret not configured' },
+              503
+            );
+          }
+
           const rawBody = await request.text();
           const sigHeader = request.headers.get('stripe-signature') || '';
-          const webhookSecret = env.STRIPE_WEBHOOK_SECRET || '';
-          if (webhookSecret) {
-            const validSig = await verifyStripeWebhookHmac(rawBody, sigHeader, webhookSecret);
-            if (!validSig) {
-              return new Response(JSON.stringify({ ok: false, error: 'Invalid Stripe webhook signature' }), {
-                status: 400,
-                headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-              });
-            }
+          const validSig = await verifyStripeWebhookHmac(rawBody, sigHeader, webhookSecret);
+          if (!validSig) {
+            return jsonResponse(request, { ok: false, error: 'Invalid Stripe webhook signature' }, 400);
           }
 
           let evt;
           try {
             evt = JSON.parse(rawBody);
           } catch {
-            return new Response(JSON.stringify({ ok: false, error: 'Invalid webhook JSON' }), {
-              status: 400,
-              headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-            });
+            return jsonResponse(request, { ok: false, error: 'Invalid webhook JSON' }, 400);
           }
 
-          if (evt.type === 'checkout.session.completed' && evt.data?.object) {
+          if (
+            (evt.type === 'checkout.session.completed' || evt.type === 'checkout.session.async_payment_succeeded') &&
+            evt.data?.object
+          ) {
             const session = evt.data.object;
+            if (session.payment_status !== 'paid') {
+              return jsonResponse(request, { received: true, pending: true });
+            }
+
             const sessionId = session.id;
             const buyerEmail = session.customer_details?.email || session.customer_email || '';
-            const buyerName = session.customer_details?.name || 'OmniVibe Pro Customer';
+            const buyerName = session.customer_details?.name || 'OmniVibe Studio Customer';
+
+            // Idempotent email check: prevent duplicate MailChannels emails on Stripe webhook retries
+            let alreadyFulfilled = false;
+            if (env?.DB && typeof env.DB.prepare === 'function') {
+              try {
+                const existingEvt = await env.DB.prepare('SELECT status FROM checkout_events WHERE session_id = ?')
+                  .bind(sessionId)
+                  .first();
+                if (existingEvt?.status === 'completed') alreadyFulfilled = true;
+              } catch {}
+            } else if (env?.LICENSES_KV && typeof env.LICENSES_KV.get === 'function') {
+              try {
+                const existingKv = await env.LICENSES_KV.get(`session:${sessionId}`);
+                if (existingKv) alreadyFulfilled = true;
+              } catch {}
+            }
+
             const issued = await issueAndStoreLicense({
               env,
               externalSessionId: sessionId,
@@ -963,80 +1088,71 @@ export default {
               buyerName,
               amountCents: session.amount_total || 999,
             });
-            await sendMailChannelsReceipt({
-              toEmail: buyerEmail,
-              toName: buyerName,
-              licenseKey: issued.licenseKey,
-              source: 'Stripe Checkout',
-              sessionId,
-            });
-            return new Response(
-              JSON.stringify({ received: true, licenseKey: issued.licenseKey, tier: issued.tier }),
-              { status: 200, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
-            );
-          }
 
-          return new Response(JSON.stringify({ received: true }), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-          });
-        }
+            if (!alreadyFulfilled) {
+              await sendMailChannelsReceipt({
+                toEmail: buyerEmail,
+                toName: buyerName,
+                licenseKey: issued.licenseKey,
+                source: 'Stripe Checkout',
+                sessionId,
+              });
+            }
 
-        // C4. App Store Receipt / Purchase Token Verification (/api/store-verify)
-        if (url.pathname === '/api/store-verify' && request.method === 'POST') {
-          let payload = {};
-          try {
-            payload = await request.json();
-          } catch {
-            return new Response(JSON.stringify({ ok: false, valid: false, message: 'Invalid JSON body.' }), {
-              status: 400,
-              headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-            });
-          }
-
-          const platform = String(payload.platform || 'google_play').toLowerCase();
-          const token = String(payload.purchaseToken || payload.receipt || '').trim();
-          const sku = String(payload.sku || 'omnivibe_pro_lifetime');
-          if (token.length < 8 || (platform !== 'google_play' && platform !== 'microsoft_store')) {
-            return new Response(
-              JSON.stringify({ ok: false, valid: false, message: 'Valid storefront platform and purchaseToken/receipt required.' }),
-              { status: 400, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
-            );
-          }
-
-          const issued = await issueAndStoreLicense({
-            env,
-            externalSessionId: `${platform}:${sku}:${token.slice(0, 64)}`,
-            source: platform,
-            buyerEmail: String(payload.buyerEmail || ''),
-            buyerName: `${platform === 'google_play' ? 'Google Play' : 'Microsoft Store'} Pro Owner`,
-            amountCents: 999,
-          });
-          return new Response(
-            JSON.stringify({
-              ok: true,
-              valid: true,
-              platform,
-              sku,
+            return jsonResponse(request, {
+              received: true,
+              duplicate: alreadyFulfilled,
               licenseKey: issued.licenseKey,
               tier: issued.tier,
-            }),
-            { status: 200, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
+            });
+          }
+
+          if ((evt.type === 'charge.refunded' || evt.type === 'charge.dispute.created') && evt.data?.object) {
+            const obj = evt.data.object;
+            const revokedCount = await revokeLicenseByIdentifiers(env, {
+              sessionId: obj.metadata?.checkout_session_id || '',
+              buyerEmail: obj.billing_details?.email || obj.receipt_email || '',
+              paymentIntent: typeof obj.payment_intent === 'string' ? obj.payment_intent : '',
+            });
+            return jsonResponse(request, { received: true, revokedCount });
+          }
+
+          if (
+            evt.type === 'customer.subscription.updated' ||
+            evt.type === 'customer.subscription.deleted' ||
+            evt.type === 'invoice.payment_failed'
+          ) {
+            return jsonResponse(request, { received: true, acknowledged: evt.type });
+          }
+
+          return jsonResponse(request, { received: true });
+        }
+
+        // C4. App Store Receipt Verification (/api/store-verify) — Disabled Until Storefront Credentials Configured
+        if (url.pathname === '/api/store-verify' && request.method === 'POST') {
+          return jsonResponse(
+            request,
+            {
+              ok: false,
+              valid: false,
+              message:
+                'Storefront receipt verification is disabled. Purchase OmniVibe Studio at https://omnivibe.app.',
+            },
+            501
           );
         }
 
         // D. Legacy Govee Cloud Proxy Removed (410 Gone — real-time sync uses Local Companion Bridge LAN UDP 4001-4003)
         if (url.pathname.startsWith('/api/govee/')) {
-          return new Response(
-            JSON.stringify({
+          return jsonResponse(
+            request,
+            {
               ok: false,
               error: 'Gone',
-              message: 'Govee cloud HTTP proxying is disabled. Use the OmniVibe Studio Local Companion Bridge for local LAN UDP (4001-4003).',
-            }),
-            {
-              status: 410,
-              headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-            }
+              message:
+                'Govee cloud HTTP proxying is disabled. Use the OmniVibe Studio Local Companion Bridge for local LAN UDP (4001-4003).',
+            },
+            410
           );
         }
       }
@@ -1057,7 +1173,10 @@ export default {
       };
       const normalizedPath = url.pathname.toLowerCase().replace(/\/+$/, '') || '/';
       const assetReq = cleanAliases[normalizedPath]
-        ? new Request(new URL(cleanAliases[normalizedPath], url.origin).toString(), { method: 'GET', headers: request.headers })
+        ? new Request(new URL(cleanAliases[normalizedPath], url.origin).toString(), {
+            method: 'GET',
+            headers: request.headers,
+          })
         : request;
 
       let response = await fetchAsset(assetReq);
@@ -1073,12 +1192,7 @@ export default {
       const isApiPath = url.pathname.startsWith('/api/');
       const isWellKnown = url.pathname.startsWith('/.well-known/');
       const hasFileExtension = /\.[a-z0-9]{1,8}$/i.test(url.pathname);
-      if (
-        (response.status === 404 || response.status === 403) &&
-        !isApiPath &&
-        !isWellKnown &&
-        !hasFileExtension
-      ) {
+      if ((response.status === 404 || response.status === 403) && !isApiPath && !isWellKnown && !hasFileExtension) {
         const indexUrl = new URL('/index.html', url.origin);
         response = await fetchAsset(
           new Request(indexUrl.toString(), {
@@ -1096,19 +1210,18 @@ export default {
         statusText: response.statusText,
         headers,
       });
-    } catch (err) {
-      // Top-level Always-Online emergency fail-safe
+    } catch {
+      // Top-level Always-Online emergency fail-safe (never leak internal error traces)
       return new Response(
         JSON.stringify({
           ok: false,
           error: 'Edge Recoverable Fault',
-          message: err instanceof Error ? err.message : 'Edge Worker execution error',
+          message: 'Internal edge error. Please retry.',
         }),
         {
           status: 500,
           headers: {
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
             'X-Edge-Protection': 'omnivibe-fail-safe',
           },
         }

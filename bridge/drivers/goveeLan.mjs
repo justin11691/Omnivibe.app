@@ -1,8 +1,9 @@
 // OmniVibe Studio — Govee Local LAN UDP Driver (Ports 4001/4002/4003 + Razer/Dreamview 0xB1)
-// Strictly local UDP only — zero fallback to Govee cloud HTTP API (10,000 req/24h limit).
+// Strictly local RFC-1918 LAN UDP only — zero fallback to Govee cloud HTTP API (10,000 req/24h limit).
 
 import dgram from 'node:dgram';
 import os from 'node:os';
+import { isPrivateLanIp } from './hueEntertainment.mjs';
 
 export const GOVEE_MULTICAST_ADDR = '239.255.255.250';
 export const GOVEE_SCAN_PORT = 4001;
@@ -115,7 +116,10 @@ export async function discoverGoveeDevices(timeoutMs = 2500) {
     let bindError = null;
 
     listener.on('error', (err) => {
-      bindError = err.code === 'EADDRINUSE' ? 'UDP port 4002 is occupied by another app (Home Assistant / Govee Desktop).' : err.message;
+      bindError =
+        err.code === 'EADDRINUSE'
+          ? 'UDP port 4002 is occupied by another app (Home Assistant / Govee Desktop).'
+          : err.message;
       try {
         listener.close();
       } catch {}
@@ -126,7 +130,7 @@ export async function discoverGoveeDevices(timeoutMs = 2500) {
       try {
         const parsed = JSON.parse(msg.toString('utf8'));
         const data = parsed?.msg?.data;
-        if (data?.ip) {
+        if (data?.ip && isPrivateLanIp(data.ip)) {
           devices.set(data.ip, {
             ip: data.ip,
             sku: data.sku || 'GOVEE-LAN',
@@ -194,10 +198,12 @@ export class GoveeLanController {
   constructor() {
     this.socket = dgram.createSocket('udp4');
     this.lastSendAt = new Map();
-    this.minIntervalMs = 28; // ~35 Hz cap
+    this.lastBrightnessByIp = new Map();
+    this.minIntervalMs = 40; // ~25 Hz cap to prevent UDP packet drops on ESP8266/Wi-Fi bulbs
   }
 
   sendRaw(ip, payloadObj) {
+    if (!isPrivateLanIp(ip)) return false;
     const buf = Buffer.from(JSON.stringify(payloadObj));
     try {
       this.socket.send(buf, 0, buf.length, GOVEE_CONTROL_PORT, ip);
@@ -208,6 +214,7 @@ export class GoveeLanController {
   }
 
   setRazerMode(ip, enabled = true) {
+    if (!isPrivateLanIp(ip)) return false;
     return this.sendRaw(ip, {
       msg: {
         cmd: 'razer',
@@ -217,18 +224,38 @@ export class GoveeLanController {
   }
 
   sendColor(ip, r, g, b, brightnessPercent = 80) {
+    if (!isPrivateLanIp(ip)) return false;
     const now = Date.now();
     const last = this.lastSendAt.get(ip) || 0;
     if (now - last < this.minIntervalMs) return false;
     this.lastSendAt.set(ip, now);
 
+    // Handle explicit blackout / panic (0%)
+    if (brightnessPercent <= 0) {
+      this.lastBrightnessByIp.set(ip, 0);
+      return this.sendRaw(ip, {
+        msg: { cmd: 'turn', data: { value: 0 } },
+      });
+    }
+
     const clampedBri = Math.max(1, Math.min(100, Math.round(brightnessPercent)));
-    this.sendRaw(ip, {
-      msg: {
-        cmd: 'brightness',
-        data: { value: clampedBri },
-      },
-    });
+    const prevBri = this.lastBrightnessByIp.get(ip);
+
+    if (prevBri === 0) {
+      this.sendRaw(ip, { msg: { cmd: 'turn', data: { value: 1 } } });
+    }
+
+    // Delta-skip unchanged brightness (< 2%) to cut UDP traffic in half
+    if (prevBri === undefined || Math.abs(clampedBri - prevBri) >= 2) {
+      this.lastBrightnessByIp.set(ip, clampedBri);
+      this.sendRaw(ip, {
+        msg: {
+          cmd: 'brightness',
+          data: { value: clampedBri },
+        },
+      });
+    }
+
     return this.sendRaw(ip, {
       msg: {
         cmd: 'colorwc',

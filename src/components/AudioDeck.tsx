@@ -29,6 +29,7 @@ interface AudioDeckProps {
   onMixChange: (mix: SoundscapeMix) => void;
   dspCalibration?: DspCalibrationSettings;
   onUpdateDspCalibration?: (next: DspCalibrationSettings) => void;
+  onTrackTitleChange?: (title: string) => void;
 }
 
 export const AudioDeck: React.FC<AudioDeckProps> = ({
@@ -36,6 +37,7 @@ export const AudioDeck: React.FC<AudioDeckProps> = ({
   onMixChange,
   dspCalibration = DEFAULT_DSP_CALIBRATION,
   onUpdateDspCalibration,
+  onTrackTitleChange,
 }) => {
   const [sourceType, setSourceType] = useState<AudioSourceType>('soundscapes');
   const [inputDevices, setInputDevices] = useState<Array<{ deviceId: string; label: string }>>([]);
@@ -68,6 +70,24 @@ export const AudioDeck: React.FC<AudioDeckProps> = ({
   const [showEmbedModal, setShowEmbedModal] = useState<boolean>(false);
   const [embedUrl, setEmbedUrl] = useState<string>('');
   const [embedError, setEmbedError] = useState<string | null>(null);
+  const [activeEmbed, setActiveEmbed] = useState<{ provider: 'spotify' | 'youtube'; src: string } | null>(null);
+  const [audioNotice, setAudioNotice] = useState<{ type: 'error' | 'info'; message: string } | null>(null);
+
+  useEffect(() => {
+    const unsubSource = globalAudioEngine.subscribeSourceEvent((evt) => {
+      if (evt.status === 'error' && evt.message) {
+        setIsPlaying(false);
+        setAudioNotice({ type: 'error', message: evt.message });
+      } else if (evt.status === 'stopped' && evt.message) {
+        setIsPlaying(false);
+        setAudioNotice({ type: 'info', message: evt.message });
+      } else if (evt.status === 'started') {
+        setIsPlaying(true);
+        setAudioNotice(null);
+      }
+    });
+    return unsubSource;
+  }, []);
 
   const handleEmbedSubmit = () => {
     const trimmed = embedUrl.trim();
@@ -75,17 +95,32 @@ export const AudioDeck: React.FC<AudioDeckProps> = ({
       setEmbedError('Please paste a Spotify track/playlist URL or YouTube video URL / ID.');
       return;
     }
-    const isSpotify = /^https?:\/\/(open\.)?spotify\.com\/(track|playlist|album|episode|show)\/[A-Za-z0-9]+/i.test(trimmed);
-    const isYouTubeUrl = /^https?:\/\/(www\.|m\.)?(youtube\.com\/(watch\?v=|embed\/|shorts\/)|youtu\.be\/)[A-Za-z0-9_-]{11}/i.test(trimmed);
+    const spotifyMatch = trimmed.match(/^https?:\/\/(?:open\.)?spotify\.com\/(track|playlist|album|episode|show)\/([A-Za-z0-9]+)/i);
+    const ytUrlMatch = trimmed.match(/^https?:\/\/(?:www\.|m\.)?(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/i);
     const isYouTubeId = /^[A-Za-z0-9_-]{11}$/.test(trimmed);
 
-    if (!isSpotify && !isYouTubeUrl && !isYouTubeId) {
+    if (spotifyMatch) {
+      setActiveEmbed({
+        provider: 'spotify',
+        src: `https://open.spotify.com/embed/${spotifyMatch[1].toLowerCase()}/${spotifyMatch[2]}`,
+      });
+    } else if (ytUrlMatch || isYouTubeId) {
+      const vidId = ytUrlMatch ? ytUrlMatch[1] : trimmed;
+      setActiveEmbed({
+        provider: 'youtube',
+        src: `https://www.youtube-nocookie.com/embed/${vidId}?rel=0`,
+      });
+    } else {
       setEmbedError('Invalid link. Enter a Spotify URL (open.spotify.com/...) or YouTube video URL / 11-character ID.');
       return;
     }
 
     setEmbedError(null);
     setShowEmbedModal(false);
+    setAudioNotice({
+      type: 'info',
+      message: 'Embed loaded below. Select "Loopback" to sync lights & visualizers to tab audio.',
+    });
   };
 
   // Bedtime Sleep Timer (Auto Fade-Out) State
@@ -189,9 +224,11 @@ export const AudioDeck: React.FC<AudioDeckProps> = ({
     if (!files || files.length === 0) return;
     const file = files[0];
     await globalAudioEngine.playLocalFile(file);
+    const cleanTitle = file.name.replace(/\.[^/.]+$/, '');
     setSourceType('local_file');
     setIsPlaying(true);
-    setTrackTitle(file.name.replace(/\.[^/.]+$/, ''));
+    setTrackTitle(cleanTitle);
+    onTrackTitleChange?.(cleanTitle);
   };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -223,7 +260,7 @@ export const AudioDeck: React.FC<AudioDeckProps> = ({
         </div>
 
         {/* Source Mode Selector Pills */}
-        <div className="flex items-center gap-1 bg-black/40 p-1 rounded-xl border border-studio-borderSubtle">
+        <div className="flex flex-wrap items-center gap-1 bg-black/40 p-1 rounded-xl border border-studio-borderSubtle max-w-full">
           <button
             onClick={handleSelectSoundscapes}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono transition-all ${
@@ -747,9 +784,63 @@ export const AudioDeck: React.FC<AudioDeckProps> = ({
         </div>
       )}
 
+      {/* Inline Mic/System Audio Permission & Embed Banner */}
+      {audioNotice && (
+        <div
+          role={audioNotice.type === 'error' ? 'alert' : 'status'}
+          className={`p-2.5 rounded-xl text-xs font-mono flex items-center justify-between gap-2 border ${
+            audioNotice.type === 'error'
+              ? 'bg-amber-500/15 border-amber-400/40 text-amber-200'
+              : 'bg-sky-500/10 border-sky-400/30 text-sky-200'
+          }`}
+        >
+          <span>{audioNotice.message}</span>
+          <button
+            type="button"
+            onClick={() => setAudioNotice(null)}
+            className="text-[10px] uppercase font-bold underline shrink-0 cursor-pointer"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {/* Persistent Spotify / YouTube Embed Deck Player */}
+      {activeEmbed && (
+        <div className="hardware-card p-3 rounded-xl flex flex-col gap-2 border border-studio-border">
+          <div className="flex items-center justify-between text-xs font-mono">
+            <span className="text-studio-accent font-bold uppercase">
+              {activeEmbed.provider === 'spotify' ? 'Spotify Embed Player' : 'YouTube Embed Player'}
+            </span>
+            <button
+              type="button"
+              onClick={() => setActiveEmbed(null)}
+              className="text-studio-textMuted hover:text-studio-text text-[11px] cursor-pointer"
+            >
+              Close Player
+            </button>
+          </div>
+          <div className="w-full aspect-video max-h-56 rounded-lg overflow-hidden bg-black">
+            <iframe
+              src={activeEmbed.src}
+              width="100%"
+              height="100%"
+              allow="autoplay; encrypted-media; picture-in-picture"
+              title="OmniVibe Media Embed"
+              className="border-0 w-full h-full"
+            />
+          </div>
+        </div>
+      )}
+
       {/* Spotify / YouTube Embed Modal */}
       {showEmbedModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Connect Spotify or YouTube Embed"
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <div className="hardware-panel max-w-lg w-full p-5 rounded-2xl flex flex-col gap-4 border border-studio-border">
             <div className="flex items-center justify-between border-b border-studio-borderSubtle pb-2">
               <h4 className="text-sm font-mono font-bold text-studio-text">

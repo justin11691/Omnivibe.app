@@ -1,5 +1,5 @@
-// OmniVibe Permanent Offline License Validation & Generation Engine
-// Supports keys of any length, offline deterministic signatures, and persistent native storage sync.
+// OmniVibe Permanent Offline License Validation Engine
+// Validates cryptographically checksummed offline keys & signed OMNITOKEN payloads without hardcoded master keys.
 import { Preferences } from '@capacitor/preferences';
 
 export interface TrialStatus {
@@ -40,15 +40,6 @@ export function formatTrialRemaining(trial?: TrialStatus): string {
 
 const STORAGE_KEY = 'omnivibe_pro_license';
 const SECRET_SALT = 'OMNIVIBE_OFFLINE_SECRET_2026_ATMOSPHERE_STUDIO';
-export const OWNER_PIN = '2026';
-
-// Built-in Lifetime Founder & Master Keys
-const MASTER_KEYS: Record<string, { tier: LicenseRecord['tier']; name: string }> = {
-  'OMNI-FOUNDER-2026-FOREVER': { tier: 'FOUNDER_VIP', name: 'OmniVibe Founder / Owner' },
-  'OMNI-PRO-UNLIMITED-VIP': { tier: 'FOUNDER_VIP', name: 'VIP Lifetime Member' },
-  'OMNI-BETA-TESTER': { tier: 'LIFETIME_PRO', name: 'Beta Program Tester' },
-  'OMNI-LIFETIME-STUDIO-PRO': { tier: 'LIFETIME_PRO', name: 'Studio Lifetime License' },
-};
 
 /**
  * Normalizes user-entered license key:
@@ -80,12 +71,10 @@ function computeChecksum(payload: string): string {
 }
 
 /**
- * Validates a license key of any length offline without internet.
+ * Validates a license key offline without internet.
  * Supports:
- * 1. Master/founder keys (instant unlock)
- * 2. Standard format keys: OMNI-XXXX-XXXX-...-CSUM (where CSUM matches payload checksum)
- * 3. Base64 / Signed JSON tokens: OMNITOKEN.<base64>.<sig>
- * 4. Raw deterministic codes with checksum suffix
+ * 1. Signed JSON tokens: OMNITOKEN.<base64>.<sig>
+ * 2. Formatted block keys: OMNI-XXXX-XXXX-...-CSUM (where CSUM matches payload checksum)
  */
 export function validateLicenseKey(rawKey: string): {
   isValid: boolean;
@@ -99,13 +88,7 @@ export function validateLicenseKey(rawKey: string): {
     return { isValid: false, error: 'Please enter a license key or unlock code.' };
   }
 
-  // 1. Check Master / Founder Keys
-  if (MASTER_KEYS[key]) {
-    const meta = MASTER_KEYS[key];
-    return { isValid: true, tier: meta.tier, buyerName: meta.name };
-  }
-
-  // 2. Check Signed Token format: OMNITOKEN.<base64>.<sig>
+  // 1. Check Signed Token format: OMNITOKEN.<base64>.<sig>
   if (key.startsWith('OMNITOKEN.')) {
     const parts = key.split('.');
     if (parts.length === 3) {
@@ -130,7 +113,7 @@ export function validateLicenseKey(rawKey: string): {
     }
   }
 
-  // 3. Check Formatted Block Keys: OMNI-XXXX-...-CSUM
+  // 2. Check Formatted Block Keys: OMNI-XXXX-...-CSUM
   const clean = key.startsWith('OMNI-') ? key.slice(5) : key;
   const segments = clean.split('-');
 
@@ -148,33 +131,34 @@ export function validateLicenseKey(rawKey: string): {
     }
   }
 
-  // 4. Check arbitrary length keys with embedded checksum suffix (last 4 chars)
-  if (key.length >= 12) {
-    const csum = key.slice(-4);
-    const body = key.slice(0, -4);
-    if (csum === computeChecksum(body)) {
-      return {
-        isValid: true,
-        tier: 'LIFETIME_PRO',
-        buyerName: 'Verified Offline Licensee',
-      };
-    }
-  }
-
   return {
     isValid: false,
     error: 'Invalid unlock code. Please double-check your code or purchase a lifetime key.',
   };
 }
 
+function hasVerifiedLicenseRecord(parsed: unknown): parsed is LicenseRecord {
+  if (!parsed || typeof parsed !== 'object') return false;
+  const candidate = parsed as Partial<LicenseRecord>;
+  if (!candidate.isPro || typeof candidate.licenseKey !== 'string') return false;
+  return validateLicenseKey(candidate.licenseKey).isValid;
+}
+
 /**
  * Persistently saves a validated license across:
  * 1. Web LocalStorage
- * 2. Mobile Capacitor Preferences (iOS / Android persistent keychain/preferences)
- * 3. Desktop Electron userData JSON file (if running under Electron)
+ * 2. Mobile Capacitor Preferences
+ * 3. Desktop Electron HMAC-verified userData JSON file
  */
 export async function savePersistentLicense(record: LicenseRecord): Promise<void> {
-  const jsonStr = JSON.stringify(record);
+  if (!hasVerifiedLicenseRecord(record)) {
+    return;
+  }
+  const normalizedRecord: LicenseRecord = {
+    ...record,
+    licenseKey: normalizeLicenseKey(record.licenseKey),
+  };
+  const jsonStr = JSON.stringify(normalizedRecord);
 
   // 1. LocalStorage
   if (typeof window !== 'undefined') {
@@ -195,7 +179,7 @@ export async function savePersistentLicense(record: LicenseRecord): Promise<void
   // 3. Electron Native Storage
   if (typeof window !== 'undefined' && (window as any).electronAPI?.saveLicense) {
     try {
-      await (window as any).electronAPI.saveLicense(record);
+      await (window as any).electronAPI.saveLicense(normalizedRecord);
     } catch {
       // Ignore if IPC unavailable
     }
@@ -203,7 +187,8 @@ export async function savePersistentLicense(record: LicenseRecord): Promise<void
 }
 
 /**
- * Reads persistent license from native storage, mobile preferences, or localStorage.
+ * Reads persistent license from native storage, mobile preferences, or localStorage,
+ * cryptographically re-verifying every stored key before trusting unlocked status.
  */
 export async function loadPersistentLicense(): Promise<LicenseRecord> {
   const defaultFree: LicenseRecord = {
@@ -213,11 +198,11 @@ export async function loadPersistentLicense(): Promise<LicenseRecord> {
     tier: 'LIFETIME_PRO',
   };
 
-  // Try Electron native storage first if in desktop app
+  // Try Electron native HMAC-verified storage first if in desktop app
   if (typeof window !== 'undefined' && (window as any).electronAPI?.readLicense) {
     try {
       const electronData = await (window as any).electronAPI.readLicense();
-      if (electronData && electronData.isPro) {
+      if (hasVerifiedLicenseRecord(electronData)) {
         return electronData;
       }
     } catch {
@@ -230,12 +215,7 @@ export async function loadPersistentLicense(): Promise<LicenseRecord> {
     const { value } = await Preferences.get({ key: STORAGE_KEY });
     if (value) {
       const parsed = JSON.parse(value);
-      if (
-        parsed &&
-        parsed.isPro &&
-        parsed.licenseKey !== 'OMNI-BETA-TESTER' &&
-        parsed.licenseKey !== 'SIMULATED-FREE-TIER'
-      ) {
+      if (hasVerifiedLicenseRecord(parsed)) {
         return parsed;
       }
     }
@@ -249,12 +229,7 @@ export async function loadPersistentLicense(): Promise<LicenseRecord> {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (
-          parsed &&
-          parsed.isPro &&
-          parsed.licenseKey !== 'OMNI-BETA-TESTER' &&
-          parsed.licenseKey !== 'SIMULATED-FREE-TIER'
-        ) {
+        if (hasVerifiedLicenseRecord(parsed)) {
           return parsed;
         }
       }
@@ -298,15 +273,14 @@ export async function loadPersistentLicense(): Promise<LicenseRecord> {
 }
 
 /**
- * OWNER KEY GENERATOR UTILITY (ADMIN TOOL)
- * Generates mathematically valid unlock codes of customizable format and length.
+ * Generates deterministic/random checksum-signed license keys (tree-shaken out of client UI bundle).
  */
 export function generateCustomerLicenseKey(
   type: 'standard_4' | 'long_6' | 'signed_token' = 'standard_4',
   buyerName = 'Valued Customer',
   tier: LicenseRecord['tier'] = 'LIFETIME_PRO'
 ): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // excluding ambiguous chars (0, O, 1, I)
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
   const randomBlock = (len = 4) => {
     let result = '';

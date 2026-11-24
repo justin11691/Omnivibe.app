@@ -103,7 +103,12 @@ export const AboutDownloadModal: React.FC<AboutDownloadModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 select-none animate-in fade-in duration-200">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Save and Install OmniVibe Studio"
+      className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 select-none animate-in fade-in duration-200"
+    >
       <div className="hardware-panel max-w-2xl w-full p-6 rounded-3xl flex flex-col gap-5 border border-studio-border max-h-[92vh] overflow-hidden shadow-2xl bg-[#0D1117]">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-studio-borderSubtle pb-3">
@@ -137,12 +142,12 @@ export const AboutDownloadModal: React.FC<AboutDownloadModalProps> = ({
                 About OmniVibe
               </span>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">
-                VERSION 1.0 BETA
+                VERSION 1.0
               </span>
             </div>
 
             <p className="text-xs font-subheading text-[#E2E8F0] leading-relaxed">
-              <strong>OmniVibe Studio</strong> is an offline-first atmosphere and visual mood studio. The web app runs 60fps 3D shaders and synthesized soundscapes directly in your browser, while the Local Companion Bridge / Desktop App handles sub-50 ms Philips Hue Entertainment API, Govee LAN UDP, and WiZ UDP smart-light sync.
+              <strong>OmniVibe Studio</strong> is an offline-first atmosphere and visual mood studio. The web demo runs 60fps 3D-projected visualizers and synthesized soundscapes in your browser, while the downloadable Desktop App bundles the Local Companion Bridge for sub-50 ms Philips Hue Entertainment API, Govee LAN UDP, and WiZ UDP sync.
             </p>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-studio-borderSubtle text-[11px] font-mono text-[#A6B0BF]">
@@ -155,12 +160,12 @@ export const AboutDownloadModal: React.FC<AboutDownloadModalProps> = ({
                 <span>Local Storage</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <Bluetooth className="w-3.5 h-3.5 text-blue-400" />
-                <span>Native Web BLE</span>
+                <Bluetooth className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Local LAN Bridge</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Wifi className="w-3.5 h-3.5 text-amber-400" />
-                <span>LAN Subnet Sync</span>
+                <span>Sub-50ms UDP/DTLS</span>
               </div>
             </div>
           </div>
@@ -225,15 +230,30 @@ export const AboutDownloadModal: React.FC<AboutDownloadModalProps> = ({
               </button>
             </div>
 
-            {/* Option 3: Windows Batch / Icon Setup */}
-            <div className="hardware-card p-4 rounded-2xl flex flex-col gap-2 border border-studio-borderSubtle bg-[#141A22]">
-              <h4 className="text-sm font-subheading font-bold text-[#E2E8F0] flex items-center gap-2">
-                <HardDrive className="w-4 h-4 text-amber-400" />
-                <span>3. Windows Desktop Icon Already Created</span>
-              </h4>
-              <p className="text-[11px] font-subheading text-[#A6B0BF]">
-                If you are running on your local machine, a custom Windows Desktop icon has already been created at <code className="text-studio-accent font-mono bg-black/50 px-1 py-0.5 rounded">C:\Users\justi\Desktop\OmniVibe Studio.lnk</code>. Double-click it anytime to launch the studio deck immediately.
-              </p>
+            {/* Option 3: 100% Offline Desktop Installers */}
+            <div className="hardware-card p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border border-studio-borderSubtle bg-[#141A22]">
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-amber-400 shrink-0 mt-0.5">
+                  <HardDrive className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-subheading font-bold text-[#E2E8F0]">
+                    3. Offline Desktop Program (.exe / .dmg — 3-Day Free Trial)
+                  </h4>
+                  <p className="text-[11px] font-subheading text-[#A6B0BF] mt-0.5">
+                    Includes system audio loopback (Windows &amp; macOS) and the embedded Local Companion Bridge with zero setup.
+                  </p>
+                </div>
+              </div>
+              <a
+                href="https://github.com/justin11691/Omnivibe.app/releases"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#1E2933] border border-[#4A5568]/50 text-studio-accent font-mono font-bold text-xs shrink-0 hover:border-studio-accent flex items-center justify-center gap-1.5 whitespace-nowrap"
+              >
+                <ExternalLink className="w-4 h-4" />
+                <span>Get Installer</span>
+              </a>
             </div>
           </div>
 

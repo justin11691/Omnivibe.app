@@ -15,7 +15,11 @@ const {
 const path = require('path');
 const fs = require('fs');
 const { pathToFileURL } = require('url');
-const { getOrInitTrialStatus } = require('./trialManager.cjs');
+const {
+  getOrInitTrialStatus,
+  saveSignedLicense,
+  readVerifiedLicense,
+} = require('./trialManager.cjs');
 
 // Hardware acceleration flags for 60fps WebGL/Canvas rendering
 app.commandLine.appendSwitch('enable-gpu-rasterization');
@@ -143,14 +147,14 @@ function createMainWindow() {
     height: 900,
     minWidth: 1024,
     minHeight: 700,
-    backgroundColor: '#0D1117',
+    backgroundColor: '#0B111A',
     title: 'OmniVibe Studio — Offline Atmosphere & Smart Lighting',
     titleBarStyle: isMac ? 'hiddenInset' : 'hidden',
     ...(isMac
       ? {}
       : {
           titleBarOverlay: {
-            color: '#0D1117',
+            color: '#0B111A',
             symbolColor: '#E2E8F0',
             height: 38,
           },
@@ -282,25 +286,17 @@ function setupIpcHandlers() {
 
   ipcMain.handle('license:save', (_event, licenseData) => {
     try {
-      const filePath = getLicenseFilePath();
-      fs.writeFileSync(filePath, JSON.stringify(licenseData, null, 2), 'utf8');
-      return { success: true };
+      return saveSignedLicense({
+        userDataPath: app.getPath('userData'),
+        licenseData,
+      });
     } catch (err) {
       return { success: false, error: err.message };
     }
   });
 
   ipcMain.handle('license:read', () => {
-    try {
-      const filePath = getLicenseFilePath();
-      if (fs.existsSync(filePath)) {
-        const raw = fs.readFileSync(filePath, 'utf8');
-        return JSON.parse(raw);
-      }
-      return null;
-    } catch {
-      return null;
-    }
+    return readVerifiedLicense({ userDataPath: app.getPath('userData') });
   });
 
   ipcMain.handle('trial:status', () => {
@@ -324,14 +320,22 @@ function setupIpcHandlers() {
     }
   });
 
+  const ALLOWED_EXTERNAL_HOSTS = new Set([
+    'omnivibe.app',
+    'www.omnivibe.app',
+    'buy.stripe.com',
+    'checkout.stripe.com',
+  ]);
+
   ipcMain.handle('shell:open-external', (_event, targetUrl) => {
-    if (
-      typeof targetUrl === 'string' &&
-      (targetUrl.startsWith('https://omnivibe.app') || targetUrl.startsWith('https://buy.stripe.com'))
-    ) {
-      shell.openExternal(targetUrl);
-      return true;
-    }
+    if (typeof targetUrl !== 'string') return false;
+    try {
+      const parsed = new URL(targetUrl);
+      if (parsed.protocol === 'https:' && ALLOWED_EXTERNAL_HOSTS.has(parsed.hostname.toLowerCase())) {
+        shell.openExternal(parsed.toString());
+        return true;
+      }
+    } catch {}
     return false;
   });
 }

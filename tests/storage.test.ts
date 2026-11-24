@@ -15,7 +15,8 @@ import {
   saveProLicense,
   validateLicenseKey,
 } from '../src/utils/storage';
-import { DEFAULT_PRESETS, DEMO_PRO_TEST_KEY } from '../src/data/defaultPresets';
+import { DEFAULT_PRESETS } from '../src/data/defaultPresets';
+import { generateCustomerLicenseKey } from '../src/utils/licenseEngine';
 import { VibePreset } from '../src/types';
 
 // In-memory mock for localStorage in Node test runner
@@ -69,40 +70,45 @@ describe('OmniVibe Local Storage & State Persistence', () => {
     expect(cyberpunk?.isPro).toBe(true);
   });
 
-  it('defaults to Free Starter Deck license state for new visitors and unlocks with key', () => {
+  it('defaults to locked/demo license state and rejects unverified or forged storage records', () => {
     const lic = loadProLicense();
     expect(lic.isPro).toBe(false);
     expect(lic.licenseKey).toBe('');
 
-    saveProLicense({ isPro: true, licenseKey: 'OMNI-FOUNDER-2026-FOREVER' });
+    // Forged save attempt must be ignored
+    saveProLicense({ isPro: true, licenseKey: 'FAKE-FORGED-KEY' });
+    expect(loadProLicense().isPro).toBe(false);
+
+    const validKey = generateCustomerLicenseKey('standard_4');
+    saveProLicense({ isPro: true, licenseKey: validKey });
     expect(loadProLicense().isPro).toBe(true);
   });
 
-  it('validates demo license key and standard Pro license format', () => {
-    // Demo key check
-    expect(validateLicenseKey(DEMO_PRO_TEST_KEY)).toBe(true);
-    expect(validateLicenseKey('omni-founder-2026')).toBe(true);
+  it('validates cryptographically signed license keys and rejects bogus keys', () => {
+    const validStd = generateCustomerLicenseKey('standard_4');
+    const validToken = generateCustomerLicenseKey('signed_token', 'Test Owner');
+    expect(validateLicenseKey(validStd)).toBe(true);
+    expect(validateLicenseKey(validStd.toLowerCase())).toBe(true);
+    expect(validateLicenseKey(validToken)).toBe(true);
 
-    // Standard pattern OMNI-PRO-XXXX-XXXX
-    expect(validateLicenseKey('OMNI-PRO-A1B2-C3D4')).toBe(true);
-    expect(validateLicenseKey('omni-pro-9988-7766')).toBe(true);
-
-    // Invalid keys
+    // Invalid / old hardcoded keys
     expect(validateLicenseKey('')).toBe(false);
     expect(validateLicenseKey('RANDOM-KEY')).toBe(false);
     expect(validateLicenseKey('OMNI-PRO-INVALID')).toBe(false);
+    expect(validateLicenseKey('OMNI-FOUNDER-2026-FOREVER')).toBe(false);
   });
 
-  it('activates and persists Pro status', () => {
+  it('activates and persists valid offline license status', () => {
+    const validKey = generateCustomerLicenseKey('standard_4');
     saveProLicense({
       isPro: true,
-      licenseKey: DEMO_PRO_TEST_KEY,
+      licenseKey: validKey,
       activatedAt: new Date().toISOString(),
     });
 
     const reloaded = loadProLicense();
     expect(reloaded.isPro).toBe(true);
-    expect(reloaded.licenseKey).toBe(DEMO_PRO_TEST_KEY);
+    expect(reloaded.licenseKey).toBe(validKey);
   });
 
   it('saves and loads active skin theme including new free studio skins', () => {
@@ -130,9 +136,10 @@ describe('OmniVibe Local Storage & State Persistence', () => {
     expect(reloaded[0].active).toBe(false);
   });
 
-  it('exports and restores complete JSON backup including Pro status', () => {
+  it('exports and restores complete JSON backup including verified license and rejects forged backups', () => {
+    const validKey = generateCustomerLicenseKey('standard_4');
     saveTheme('clean-daylight');
-    saveProLicense({ isPro: true, licenseKey: 'BACKUP-KEY' });
+    saveProLicense({ isPro: true, licenseKey: validKey });
     const jsonStr = exportAllToJson();
     const parsed = JSON.parse(jsonStr);
 
@@ -146,6 +153,11 @@ describe('OmniVibe Local Storage & State Persistence', () => {
     expect(success).toBe(true);
     expect(loadTheme()).toBe('clean-daylight');
     expect(loadProLicense().isPro).toBe(true);
+
+    // Forged backup must not grant isPro: true
+    globalThis.localStorage.clear();
+    importFromJson(JSON.stringify({ version: 1, proLicense: { isPro: true, licenseKey: 'FAKE-BACKUP-KEY' } }));
+    expect(loadProLicense().isPro).toBe(false);
   });
 
   it('encodes and decodes shareable URL vibe hashes correctly', () => {
@@ -191,8 +203,9 @@ describe('OmniVibe Local Storage & State Persistence', () => {
   });
 
   it('resets all local storage keys to factory defaults', () => {
+    const validKey = generateCustomerLicenseKey('standard_4');
     saveTheme('warm-amber');
-    saveProLicense({ isPro: true });
+    saveProLicense({ isPro: true, licenseKey: validKey });
     resetToFactoryDefaults();
     expect(loadTheme()).toBe('obsidian');
     expect(loadProLicense().isPro).toBe(false);

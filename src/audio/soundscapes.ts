@@ -272,6 +272,14 @@ export class SynthesizedSoundscapes {
     bp.connect(burstGain);
     burstGain.connect(this.outputNode);
 
+    osc.onended = () => {
+      try {
+        osc.disconnect();
+        bp.disconnect();
+        burstGain.disconnect();
+      } catch {}
+    };
+
     osc.start(now);
     osc.stop(now + burstDuration + 0.01);
   }
@@ -302,6 +310,14 @@ export class SynthesizedSoundscapes {
     rumbleOsc.connect(rumbleFilter);
     rumbleFilter.connect(rumbleGain);
     rumbleGain.connect(this.thunderGain);
+
+    rumbleOsc.onended = () => {
+      try {
+        rumbleOsc.disconnect();
+        rumbleFilter.disconnect();
+        rumbleGain.disconnect();
+      } catch {}
+    };
 
     rumbleOsc.start(now);
     rumbleOsc.stop(now + rumbleDuration + 0.05);
@@ -335,6 +351,14 @@ export class SynthesizedSoundscapes {
         filter.connect(clickGain);
         clickGain.connect(this.trainGain);
 
+        clickOsc.onended = () => {
+          try {
+            clickOsc.disconnect();
+            filter.disconnect();
+            clickGain.disconnect();
+          } catch {}
+        };
+
         clickOsc.start(now);
         clickOsc.stop(now + 0.07);
       }
@@ -357,6 +381,13 @@ export class SynthesizedSoundscapes {
 
     osc.connect(gain);
     gain.connect(this.vinylGain);
+
+    osc.onended = () => {
+      try {
+        osc.disconnect();
+        gain.disconnect();
+      } catch {}
+    };
 
     osc.start(now);
     osc.stop(now + dur + 0.005);

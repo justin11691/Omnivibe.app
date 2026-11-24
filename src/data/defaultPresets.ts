@@ -406,4 +406,3 @@ export const DEFAULT_VISUALIZER_SETTINGS: VisualizerSettings = {
 };
 
 export const STRIPE_PAYMENT_LINK_URL = 'https://omnivibe.app/api/checkout';
-export const DEMO_PRO_TEST_KEY = 'OMNI-FOUNDER-2026';

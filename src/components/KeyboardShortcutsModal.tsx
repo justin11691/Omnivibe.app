@@ -56,9 +56,9 @@ export const KeyboardShortcutsModal: React.FC<KeyboardShortcutsModalProps> = ({
         { keyCombo: ['B'], description: 'Open Local Companion Bridge (Hue DTLS, Govee LAN, WiZ UDP)' },
         { keyCombo: ['C'], description: 'Open Circadian Biological Clock' },
         { keyCombo: ['S'], description: 'Open Share Vibe Code & Party QR' },
-        { keyCombo: ['D'], description: 'Download & Save App to Computer (PWA/HTML)' },
+        { keyCombo: ['D'], description: 'Download & Save App to Computer (Desktop/PWA)' },
+        { keyCombo: ['X'], description: 'Instant Blackout / Panic (cuts lighting & pauses audio)' },
         { keyCombo: ['?'], description: 'Show / Hide Keyboard Shortcuts Cheatsheet' },
-        { keyCombo: ['Ctrl', 'Shift', 'K'], description: 'Owner Offline License Key Generator (PIN: 2026)' },
         { keyCombo: ['Esc'], description: 'Close any active modal dialog' },
       ],
     },
@@ -66,6 +66,9 @@ export const KeyboardShortcutsModal: React.FC<KeyboardShortcutsModalProps> = ({
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Studio Console Hotkeys"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
       onClick={onClose}
     >

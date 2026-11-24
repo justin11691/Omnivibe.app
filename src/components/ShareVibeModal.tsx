@@ -71,7 +71,12 @@ export const ShareVibeModal: React.FC<ShareVibeModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 select-none">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Share Vibe Code and Party Guest QR"
+      className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 select-none"
+    >
       <div className="hardware-panel max-w-xl w-full p-6 rounded-2xl flex flex-col gap-5 border border-studio-border max-h-[92vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-studio-borderSubtle pb-3">

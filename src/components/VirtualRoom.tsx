@@ -260,7 +260,7 @@ export const VirtualRoom: React.FC<VirtualRoomProps> = ({
       </div>
 
       {/* Interactive Zone Indicator Toggles */}
-      <div className="flex items-center justify-center gap-2 z-20">
+      <div className="flex flex-wrap items-center justify-center gap-2 z-20">
         {zones.map((zone) => (
           <button
             key={zone.id}

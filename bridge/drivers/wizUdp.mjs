@@ -1,8 +1,9 @@
 // OmniVibe Studio — WiZ Local Raw JSON over UDP Driver (Ports 38899 / 38900)
 // Supports broadcast discovery (255.255.255.255:38899), static IP unicast list,
-// and exponential smoothing/interpolation to eliminate step jitter.
+// strict RFC-1918 LAN IP validation, and exponential smoothing to eliminate step jitter.
 
 import dgram from 'node:dgram';
+import { isPrivateLanIp } from './hueEntertainment.mjs';
 
 export const WIZ_CONTROL_PORT = 38899;
 export const WIZ_DISCOVERY_REPLY_PORT = 38900;
@@ -19,7 +20,7 @@ export async function discoverWizBulbs(timeoutMs = 2200) {
     sock.on('message', (msg, rinfo) => {
       try {
         const parsed = JSON.parse(msg.toString('utf8'));
-        if (parsed?.result?.mac || parsed?.method === 'getPilot') {
+        if ((parsed?.result?.mac || parsed?.method === 'getPilot') && isPrivateLanIp(rinfo.address)) {
           found.set(rinfo.address, {
             ip: rinfo.address,
             mac: parsed.result?.mac || rinfo.address,
@@ -79,10 +80,25 @@ export class WizUdpController {
   }
 
   sendPilotSmoothed(ip, targetR, targetG, targetB, targetDimming) {
+    if (!isPrivateLanIp(ip)) return false;
+
     const now = Date.now();
     const last = this.lastSendAt.get(ip) || 0;
     if (now - last < this.minIntervalMs) return false;
     this.lastSendAt.set(ip, now);
+
+    // Explicit blackout / panic turns bulb off cleanly
+    if (targetDimming <= 0) {
+      const offPacket = Buffer.from(
+        JSON.stringify({ id: 1, method: 'setPilot', params: { state: false } })
+      );
+      try {
+        this.socket.send(offPacket, 0, offPacket.length, WIZ_CONTROL_PORT, ip);
+        return true;
+      } catch {
+        return false;
+      }
+    }
 
     const prev = this.bulbState.get(ip) || {
       r: targetR,

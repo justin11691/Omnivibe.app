@@ -4,3 +4,5 @@ release
 .wrangler
 .DS_Store
 *.local
+.env
+.env.*

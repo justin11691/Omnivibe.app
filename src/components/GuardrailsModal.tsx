@@ -18,7 +18,12 @@ export const GuardrailsModal: React.FC<GuardrailsModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 select-none">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Safety and Comfort Guardrails"
+      className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 select-none"
+    >
       <div className="hardware-panel max-w-lg w-full p-6 rounded-2xl flex flex-col gap-5 border border-studio-border">
         {/* Modal Header */}
         <div className="flex items-center justify-between border-b border-studio-borderSubtle pb-3">

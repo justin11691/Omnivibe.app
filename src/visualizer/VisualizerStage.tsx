@@ -30,6 +30,7 @@ interface VisualizerStageProps {
   settings: VisualizerSettings;
   isStageWindow?: boolean;
   isPro?: boolean;
+  isBlackout?: boolean;
   onModeChange?: (mode: VisualizerMode) => void;
   onOpenUpgradeModal?: () => void;
   onOpenCustomBuilder?: () => void;
@@ -42,10 +43,22 @@ export const VisualizerStage: React.FC<VisualizerStageProps> = ({
   settings,
   isStageWindow = false,
   isPro = false,
+  isBlackout = false,
   onModeChange,
   onOpenUpgradeModal,
   onOpenCustomBuilder,
 }) => {
+  const modeRef = useRef(mode);
+  const presetRef = useRef(preset);
+  const telemetryRef = useRef(telemetry);
+  const settingsRef = useRef(settings);
+  const isBlackoutRef = useRef(isBlackout);
+
+  modeRef.current = mode;
+  presetRef.current = preset;
+  telemetryRef.current = telemetry;
+  settingsRef.current = settings;
+  isBlackoutRef.current = isBlackout;
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -167,43 +180,66 @@ export const VisualizerStage: React.FC<VisualizerStageProps> = ({
     particlesRef.current = particles;
   }, [preset.colors, settings.particleDensity]);
 
-  // Main Canvas Render Loop (60 FPS)
+  // Main Canvas Render Loop (Continuous 60 FPS — reads live refs so telemetry updates never reset animation clock)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    let animId: number;
+    let animId = 0;
     let time = 0;
 
     const render = () => {
-      time += 0.015 * settings.cameraDriftSpeed;
+      const curMode = modeRef.current;
+      const curPreset = presetRef.current;
+      const curTelemetry = telemetryRef.current;
+      const curSettings = settingsRef.current;
+
+      time += 0.015 * (curSettings.cameraDriftSpeed || 1);
 
       const dpr = window.devicePixelRatio || 1;
       const width = canvas.clientWidth;
       const height = canvas.clientHeight;
 
-      if (canvas.width !== width * dpr || canvas.height !== height * dpr) {
+      if (width > 0 && height > 0 && (canvas.width !== width * dpr || canvas.height !== height * dpr)) {
         canvas.width = width * dpr;
         canvas.height = height * dpr;
       }
 
+      if (width === 0 || height === 0) {
+        animId = requestAnimationFrame(render);
+        return;
+      }
+
       ctx.save();
       ctx.scale(dpr, dpr);
+
+      // Instant Blackout / Panic Standby Screen
+      if (isBlackoutRef.current) {
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, width, height);
+        ctx.fillStyle = 'rgba(226, 232, 240, 0.28)';
+        ctx.font = '12px JetBrains Mono';
+        ctx.textAlign = 'center';
+        ctx.fillText('BLACKOUT ACTIVE • PRESS X OR CLICK BLACKOUT TO RESUME', width / 2, height / 2);
+        ctx.restore();
+        animId = requestAnimationFrame(render);
+        return;
+      }
 
       // OLED Pixel Shift
       ctx.translate(pixelShiftRef.current.x, pixelShiftRef.current.y);
 
       // Raw FFT data
       const rawFft = globalAudioEngine.getRawFrequencyData();
-      const bassEnergy = telemetry.bass / 100;
-      const midEnergy = telemetry.mids / 100;
-      const trebleEnergy = telemetry.treble / 100;
-      const colors = preset.colors;
+      const bassEnergy = curTelemetry.bass / 100;
+      const midEnergy = curTelemetry.mids / 100;
+      const trebleEnergy = curTelemetry.treble / 100;
+      const colors = curPreset.colors;
 
       // OLED Silence Screensaver
-      if (telemetry.isSilent && settings.oledBurnInProtection) {
+      if (curTelemetry.isSilent && curSettings.oledBurnInProtection) {
         ctx.fillStyle = '#050608';
         ctx.fillRect(0, 0, width, height);
 
@@ -211,14 +247,14 @@ export const VisualizerStage: React.FC<VisualizerStageProps> = ({
         const cy = height / 2;
         const glowRad = 40 + Math.sin(time * 0.5) * 15;
         const grad = ctx.createRadialGradient(cx, cy, 2, cx, cy, glowRad);
-        grad.addColorStop(0, 'rgba(56, 189, 248, 0.15)');
+        grad.addColorStop(0, 'rgba(34, 211, 238, 0.16)');
         grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
         ctx.fillStyle = grad;
         ctx.beginPath();
         ctx.arc(cx, cy, glowRad, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.24)';
         ctx.font = '12px JetBrains Mono';
         ctx.textAlign = 'center';
         ctx.fillText('OLED STANDBY • AUDIO QUIET', cx, cy + 80);
@@ -228,36 +264,70 @@ export const VisualizerStage: React.FC<VisualizerStageProps> = ({
         return;
       }
 
-      ctx.fillStyle = mode === 'liquid_waveforms' ? 'rgba(8, 9, 13, 0.24)' : 'rgba(8, 9, 13, 0.35)';
+      ctx.fillStyle = curMode === 'liquid_waveforms' ? 'rgba(8, 9, 13, 0.24)' : 'rgba(8, 9, 13, 0.35)';
       ctx.fillRect(0, 0, width, height);
 
-      switch (mode) {
+      switch (curMode) {
         case 'liquid_waveforms':
-          renderLiquidWaveforms(ctx, width, height, rawFft, bassEnergy, trebleEnergy, colors, time, settings);
+          renderLiquidWaveforms(ctx, width, height, rawFft, bassEnergy, trebleEnergy, colors, time, curSettings);
           break;
         case 'spectrum_3d':
-          render3dSpectrum(ctx, width, height, rawFft, colors, time, peaksRef.current, settings);
+          render3dSpectrum(ctx, width, height, rawFft, colors, time, peaksRef.current, curSettings);
           break;
         case 'geometric_particles':
-          renderGeometricParticles(ctx, width, height, rawFft, bassEnergy, midEnergy, colors, time, particlesRef.current, settings);
+          renderGeometricParticles(
+            ctx,
+            width,
+            height,
+            rawFft,
+            bassEnergy,
+            midEnergy,
+            colors,
+            time,
+            particlesRef.current,
+            curSettings
+          );
           break;
         case 'harmonic_nebula':
-          renderHarmonicNebula(ctx, width, height, bassEnergy, midEnergy, trebleEnergy, colors, time, settings);
+          renderHarmonicNebula(ctx, width, height, bassEnergy, midEnergy, trebleEnergy, colors, time, curSettings);
           break;
         case 'winamp_milkdrop':
-          renderWinampMilkdrop(ctx, width, height, rawFft, bassEnergy, midEnergy, trebleEnergy, colors, time, peaksRef.current, settings);
+          renderWinampMilkdrop(
+            ctx,
+            width,
+            height,
+            rawFft,
+            bassEnergy,
+            midEnergy,
+            trebleEnergy,
+            colors,
+            time,
+            peaksRef.current,
+            curSettings
+          );
           break;
         case 'cyber_tunnel_3d':
-          renderCyberTunnel3d(ctx, width, height, bassEnergy, midEnergy, trebleEnergy, colors, time, settings);
+          renderCyberTunnel3d(ctx, width, height, bassEnergy, midEnergy, trebleEnergy, colors, time, curSettings);
           break;
         case 'cube_matrix_3d':
-          renderCubeMatrix3d(ctx, width, height, rawFft, bassEnergy, midEnergy, colors, time, settings);
+          renderCubeMatrix3d(ctx, width, height, rawFft, bassEnergy, midEnergy, colors, time, curSettings);
           break;
         case 'lava_blobs_3d':
-          renderLavaBlobs3d(ctx, width, height, bassEnergy, midEnergy, colors, time, settings);
+          renderLavaBlobs3d(ctx, width, height, bassEnergy, midEnergy, colors, time, curSettings);
           break;
         case 'custom_user':
-          renderCustomUserVisualizer(ctx, width, height, rawFft, bassEnergy, midEnergy, trebleEnergy, colors, time, settings);
+          renderCustomUserVisualizer(
+            ctx,
+            width,
+            height,
+            rawFft,
+            bassEnergy,
+            midEnergy,
+            trebleEnergy,
+            colors,
+            time,
+            curSettings
+          );
           break;
       }
 
@@ -267,7 +337,7 @@ export const VisualizerStage: React.FC<VisualizerStageProps> = ({
 
     animId = requestAnimationFrame(render);
     return () => cancelAnimationFrame(animId);
-  }, [mode, preset, telemetry, settings]);
+  }, []);
 
   const renderLiquidWaveforms = (
     ctx: CanvasRenderingContext2D,
@@ -765,7 +835,7 @@ export const VisualizerStage: React.FC<VisualizerStageProps> = ({
     ctx.shadowBlur = 0;
   };
 
-  // 7. CUSTOM USER VISUALIZER
+  // 7. CUSTOM USER VISUALIZER (Respects all 6 archetypes, density, bloom, rotation & scanlines)
   const renderCustomUserVisualizer = (
     ctx: CanvasRenderingContext2D,
     w: number,
@@ -782,15 +852,51 @@ export const VisualizerStage: React.FC<VisualizerStageProps> = ({
     const effectiveColors = cfg?.colorScheme?.length ? cfg.colorScheme : colors;
     const sens = cfg?.audioSensitivity || 1.0;
     const spd = cfg?.speed || 1.0;
+    const customSettings: VisualizerSettings = {
+      ...settings,
+      particleDensity: cfg?.density ?? settings.particleDensity,
+      bloomIntensity: cfg?.bloom ?? settings.bloomIntensity,
+      cameraDriftSpeed: cfg?.rotationSpeed ?? settings.cameraDriftSpeed,
+    };
 
+    const effectiveTime = time * spd;
     if (cfg?.baseStyle === 'tunnel') {
-      renderCyberTunnel3d(ctx, w, h, bass * sens, mid * sens, treble * sens, effectiveColors, time * spd, settings);
+      renderCyberTunnel3d(ctx, w, h, bass * sens, mid * sens, treble * sens, effectiveColors, effectiveTime, customSettings);
     } else if (cfg?.baseStyle === 'cubes') {
-      renderCubeMatrix3d(ctx, w, h, fft, bass * sens, mid * sens, effectiveColors, time * spd, settings);
+      renderCubeMatrix3d(ctx, w, h, fft, bass * sens, mid * sens, effectiveColors, effectiveTime, customSettings);
     } else if (cfg?.baseStyle === 'lava') {
-      renderLavaBlobs3d(ctx, w, h, bass * sens, mid * sens, effectiveColors, time * spd, settings);
+      renderLavaBlobs3d(ctx, w, h, bass * sens, mid * sens, effectiveColors, effectiveTime, customSettings);
+    } else if (cfg?.baseStyle === 'waves') {
+      renderLiquidWaveforms(ctx, w, h, fft, bass * sens, treble * sens, effectiveColors, effectiveTime, customSettings);
+    } else if (cfg?.baseStyle === 'particles') {
+      renderGeometricParticles(
+        ctx,
+        w,
+        h,
+        fft,
+        bass * sens,
+        mid * sens,
+        effectiveColors,
+        effectiveTime,
+        particlesRef.current,
+        customSettings
+      );
+    } else if (cfg?.baseStyle === 'equalizer') {
+      render3dSpectrum(ctx, w, h, fft, effectiveColors, effectiveTime, peaksRef.current, customSettings);
     } else {
-      renderWinampMilkdrop(ctx, w, h, fft, bass * sens, mid * sens, treble * sens, effectiveColors, time * spd, peaksRef.current, settings);
+      renderWinampMilkdrop(
+        ctx,
+        w,
+        h,
+        fft,
+        bass * sens,
+        mid * sens,
+        treble * sens,
+        effectiveColors,
+        effectiveTime,
+        peaksRef.current,
+        customSettings
+      );
     }
 
     if (cfg?.crtScanlines) {

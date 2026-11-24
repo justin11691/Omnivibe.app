@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import {
   SkinTheme,
   VibePreset,
@@ -39,28 +39,15 @@ import {
   saveDspCalibration,
   decodeVibeFromUrlHash,
 } from './utils/storage';
-import { globalAudioEngine, computeCalibratedLightOutput } from './audio/AudioEngine';
+import { globalAudioEngine } from './audio/AudioEngine';
 import { companionBridge } from './utils/companionBridgeClient';
+import { LightSyncLimiter } from './utils/lightSyncEngine';
 import { VibeCanvas } from './components/VibeCanvas';
 import { AudioDeck } from './components/AudioDeck';
 import { AudioPulseMeter } from './components/AudioPulseMeter';
 import { VirtualRoom } from './components/VirtualRoom';
 import { VisualizerStage } from './visualizer/VisualizerStage';
-import { StageWindow } from './visualizer/StageWindow';
-import { StudioDrawer } from './components/StudioDrawer';
-import { SmartHomeBridgeModal } from './components/SmartHomeBridgeModal';
-import { GuardrailsModal } from './components/GuardrailsModal';
-import { CircadianModal } from './components/CircadianModal';
-import { ShareVibeModal } from './components/ShareVibeModal';
-import { SettingsModal } from './components/SettingsModal';
-import { UpgradeModal } from './components/UpgradeModal';
-import { ZoneManagerModal } from './components/ZoneManagerModal';
-import { CustomVisualizerModal } from './components/CustomVisualizerModal';
-import { AboutDownloadModal } from './components/AboutDownloadModal';
-import { KeyboardShortcutsModal } from './components/KeyboardShortcutsModal';
 import { DownloadPortal } from './components/DownloadPortal';
-import { AdminKeyGeneratorModal } from './components/AdminKeyGeneratorModal';
-import { QuickSetupModal } from './components/QuickSetupModal';
 import {
   loadPersistentLicense,
   savePersistentLicense,
@@ -80,16 +67,55 @@ import {
   Layers,
   CheckCircle2,
   Lock,
-  Paintbrush,
   Plus,
-  Download,
-  Keyboard,
   Volume2,
+  Power,
 } from 'lucide-react';
+
+// Code-split secondary windows & modals to keep initial bundle lightweight
+const StageWindow = lazy(() =>
+  import('./visualizer/StageWindow').then((m) => ({ default: m.StageWindow }))
+);
+const StudioDrawer = lazy(() =>
+  import('./components/StudioDrawer').then((m) => ({ default: m.StudioDrawer }))
+);
+const SmartHomeBridgeModal = lazy(() =>
+  import('./components/SmartHomeBridgeModal').then((m) => ({ default: m.SmartHomeBridgeModal }))
+);
+const GuardrailsModal = lazy(() =>
+  import('./components/GuardrailsModal').then((m) => ({ default: m.GuardrailsModal }))
+);
+const CircadianModal = lazy(() =>
+  import('./components/CircadianModal').then((m) => ({ default: m.CircadianModal }))
+);
+const ShareVibeModal = lazy(() =>
+  import('./components/ShareVibeModal').then((m) => ({ default: m.ShareVibeModal }))
+);
+const SettingsModal = lazy(() =>
+  import('./components/SettingsModal').then((m) => ({ default: m.SettingsModal }))
+);
+const UpgradeModal = lazy(() =>
+  import('./components/UpgradeModal').then((m) => ({ default: m.UpgradeModal }))
+);
+const ZoneManagerModal = lazy(() =>
+  import('./components/ZoneManagerModal').then((m) => ({ default: m.ZoneManagerModal }))
+);
+const CustomVisualizerModal = lazy(() =>
+  import('./components/CustomVisualizerModal').then((m) => ({ default: m.CustomVisualizerModal }))
+);
+const AboutDownloadModal = lazy(() =>
+  import('./components/AboutDownloadModal').then((m) => ({ default: m.AboutDownloadModal }))
+);
+const KeyboardShortcutsModal = lazy(() =>
+  import('./components/KeyboardShortcutsModal').then((m) => ({ default: m.KeyboardShortcutsModal }))
+);
+const QuickSetupModal = lazy(() =>
+  import('./components/QuickSetupModal').then((m) => ({ default: m.QuickSetupModal }))
+);
 
 export const App: React.FC = () => {
   // Check if we are running in standalone Stage Window mode
-  const [isStageMode, setIsStageMode] = useState<boolean>(() => {
+  const [isStageMode] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get('stage') === 'true';
@@ -98,7 +124,6 @@ export const App: React.FC = () => {
   // View mode: 'download_portal' for new web visitors, 'studio' for native apps and returning studio users
   const [viewMode, setViewMode] = useState<'studio' | 'download_portal'>(() => {
     if (typeof window === 'undefined') return 'studio';
-    // Native Electron or Capacitor mobile shell bypasses download portal directly into Studio
     if ((window as any).electronAPI?.isElectron) return 'studio';
     if ((window as any).Capacitor?.isNativePlatform?.()) return 'studio';
     const path = window.location.pathname.toLowerCase().replace(/\/+$/, '');
@@ -108,13 +133,6 @@ export const App: React.FC = () => {
     const saved = localStorage.getItem('omnivibe_view_mode');
     if (saved === 'studio') return 'studio';
     return 'download_portal';
-  });
-
-  // Admin Key Generator Modal state (triggered by ?admin=keygen or Ctrl+Shift+K)
-  const [isAdminKeygenOpen, setIsAdminKeygenOpen] = useState<boolean>(() => {
-    if (!import.meta.env.DEV || typeof window === 'undefined') return false;
-    const params = new URLSearchParams(window.location.search);
-    return params.get('admin') === 'keygen';
   });
 
   // State Management
@@ -130,7 +148,14 @@ export const App: React.FC = () => {
   const [circadian, setCircadian] = useState<CircadianRule>(loadCircadian);
   const [dspCalibration, setDspCalibration] = useState<DspCalibrationSettings>(loadDspCalibration);
 
-  // Pro Licensing State
+  // Instant Blackout / Panic & Multi-Tab Hardware Arbitration
+  const [isBlackout, setIsBlackout] = useState<boolean>(false);
+  const [isBridgeLeader, setIsBridgeLeader] = useState<boolean>(true);
+  const tabIdRef = useRef<string>(`tab-${Math.random().toString(36).slice(2, 10)}`);
+  const leaderChannelRef = useRef<BroadcastChannel | null>(null);
+  const lightLimiterRef = useRef<LightSyncLimiter>(new LightSyncLimiter());
+
+  // Licensing & Trial State
   const [proLicense, setProLicense] = useState<ProLicenseState>(loadProLicense);
   const [proCelebrationToast, setProCelebrationToast] = useState<string | null>(null);
 
@@ -209,7 +234,37 @@ export const App: React.FC = () => {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [isWakeLockActive, requestWakeLock]);
 
-  // Panel visit tracking to eliminate simultaneous yellow notification dots
+  // Multi-tab bridge arbitration so only one browser tab streams UDP/DTLS frames at a time
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof BroadcastChannel === 'undefined') return;
+    try {
+      const ch = new BroadcastChannel('omnivibe-bridge-leader');
+      leaderChannelRef.current = ch;
+      ch.postMessage({ type: 'CLAIM_LEADER', tabId: tabIdRef.current });
+
+      ch.onmessage = (evt) => {
+        if (evt.data?.type === 'CLAIM_LEADER' && evt.data.tabId !== tabIdRef.current) {
+          setIsBridgeLeader(false);
+        }
+      };
+
+      return () => {
+        ch.close();
+        leaderChannelRef.current = null;
+      };
+    } catch {
+      return undefined;
+    }
+  }, []);
+
+  const handleClaimBridgeControl = () => {
+    setIsBridgeLeader(true);
+    try {
+      leaderChannelRef.current?.postMessage({ type: 'CLAIM_LEADER', tabId: tabIdRef.current });
+    } catch {}
+  };
+
+  // Panel visit tracking
   const [visitedPanels, setVisitedPanels] = useState<Record<string, boolean>>(() => {
     try {
       const raw = localStorage.getItem('omnivibe_visited_panels');
@@ -228,6 +283,15 @@ export const App: React.FC = () => {
       } catch {}
       return updated;
     });
+  };
+
+  // Active preset object
+  const activePreset = presets.find((p) => p.id === activePresetId) || presets[0];
+
+  const handleUpdateActivePreset = (updated: VibePreset) => {
+    const nextPresets = presets.map((p) => (p.id === updated.id ? updated : p));
+    setPresets(nextPresets);
+    savePresets(nextPresets);
   };
 
   const handleTriggerTestScreenVibe = () => {
@@ -256,7 +320,7 @@ export const App: React.FC = () => {
     };
   }, []);
 
-  // Load persistent license or 7-day offline Electron trial from native storage on mount
+  // Load persistent license or 3-day offline Electron trial from native storage on mount
   useEffect(() => {
     loadPersistentLicense().then((rec) => {
       if (rec && (rec.isPro || rec.trialStatus)) {
@@ -281,45 +345,68 @@ export const App: React.FC = () => {
     return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
   }, []);
 
-  // Active preset object
-  const activePreset =
-    presets.find((p) => p.id === activePresetId) || presets[0];
-
   const isElectronEnv = Boolean((window as unknown as { electronAPI?: { isElectron?: boolean } }).electronAPI?.isElectron);
   // Web Studio acts as an open interactive demo; Desktop App enforces the 3-day offline trial + $9.99 lifetime key
   const hasStudioAccess = !isElectronEnv || proLicense.isPro;
 
-  // Subscribe to real-time audio FFT telemetry & stream calibrated frames to Local Companion Bridge
+  // Toggle Blackout / Panic Mode cleanly: cuts all hardware light output to 0% & pauses audio
+  const handleToggleBlackout = useCallback(() => {
+    setIsBlackout((prev) => {
+      const next = !prev;
+      const goveeIps = devices.filter((d) => d.enabled && d.type === 'govee').map((d) => d.ip);
+      const wizIps = devices.filter((d) => d.enabled && d.type === 'wiz').map((d) => d.ip);
+
+      if (next) {
+        globalAudioEngine.pause();
+        if (companionBridge.isConnected && isBridgeLeader) {
+          companionBridge.sendSyncFrame({
+            r: 0,
+            g: 0,
+            b: 0,
+            brightness: 0,
+            goveeIps,
+            wizIps,
+            smoothing: 0.1,
+          });
+        }
+      } else {
+        globalAudioEngine.resume(activePreset.soundscapeMix);
+      }
+      return next;
+    });
+  }, [activePreset.soundscapeMix, devices, isBridgeLeader]);
+
+  // Subscribe to real-time audio FFT telemetry & stream guardrail/circadian-calibrated multi-color frames to Bridge
   useEffect(() => {
     const unsubscribe = globalAudioEngine.subscribeTelemetry((t) => {
       setTelemetry(t);
-      if (companionBridge.isConnected) {
-        const primaryHex = (activePreset.colors[0] || '#38bdf8').replace('#', '');
-        const r = parseInt(primaryHex.slice(0, 2), 16) || 56;
-        const g = parseInt(primaryHex.slice(2, 4), 16) || 189;
-        const b = parseInt(primaryHex.slice(4, 6), 16) || 248;
-        const energy = t.bass * 0.5 + t.mids * 0.3 + t.treble * 0.2;
-        const brightness = computeCalibratedLightOutput(
-          energy,
-          dspCalibration.masterBrightness,
-          dspCalibration.minBlackFloor,
-          dspCalibration.experienceMode
-        );
+      if (companionBridge.isConnected && isBridgeLeader) {
+        const frame = lightLimiterRef.current.computeFrame({
+          preset: activePreset,
+          telemetry: t,
+          dspCalibration,
+          guardrails,
+          circadian,
+          zones,
+          isBlackout,
+        });
+
         const goveeIps = devices.filter((d) => d.enabled && d.type === 'govee').map((d) => d.ip);
         const wizIps = devices.filter((d) => d.enabled && d.type === 'wiz').map((d) => d.ip);
+
         companionBridge.sendSyncFrame({
-          r,
-          g,
-          b,
-          brightness,
+          r: frame.r,
+          g: frame.g,
+          b: frame.b,
+          brightness: frame.brightness,
           goveeIps,
           wizIps,
-          smoothing: dspCalibration.experienceMode === 'party' ? 0.55 : 0.25,
+          smoothing: frame.smoothing,
         });
       }
     });
     return () => unsubscribe();
-  }, [activePreset.colors, devices, dspCalibration]);
+  }, [activePreset, devices, dspCalibration, guardrails, circadian, zones, isBlackout, isBridgeLeader]);
 
   // Update theme class on HTML document root
   useEffect(() => {
@@ -339,39 +426,41 @@ export const App: React.FC = () => {
     saveTheme(theme);
   }, [theme]);
 
-  // Check URL query parameters on mount:
-  // 1. Detect Stripe checkout return (?pro_activated=true or ?session_id=...)
-  // 2. Detect URL hash shareable vibe (#vibe=...)
+  // Check URL query parameters on mount (Stripe checkout auto-activation & shared vibe hashes)
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Check Stripe checkout return
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('pro_activated') === 'true' || urlParams.has('session_id')) {
       const sessionId = urlParams.get('session_id') || '';
       window.history.replaceState({}, document.title, window.location.pathname);
 
-      const activateWithKey = async (key: string, tier: 'LIFETIME_PRO' | 'FOUNDER_VIP' | 'ENTERPRISE_STUDIO' = 'LIFETIME_PRO') => {
+      const activateWithKey = async (
+        key: string,
+        tier: 'LIFETIME_PRO' | 'FOUNDER_VIP' | 'ENTERPRISE_STUDIO' = 'LIFETIME_PRO'
+      ) => {
+        const normalized = normalizeLicenseKey(key);
+        if (!validateLicenseKey(normalized).isValid) return;
         const nowIso = new Date().toISOString();
         const newState: ProLicenseState = {
           isPro: true,
-          licenseKey: key,
+          licenseKey: normalized,
           activatedAt: nowIso,
         };
         saveProLicense(newState);
         setProLicense(newState);
         await savePersistentLicense({
           isPro: true,
-          licenseKey: key,
+          licenseKey: normalized,
           unlockedAt: nowIso,
           tier,
-          buyerName: 'Verified Pro Member',
+          buyerName: 'OmniVibe Studio Owner',
         });
-        setProCelebrationToast(`Welcome to OmniVibe Pro! License ${key} is active offline.`);
+        setProCelebrationToast(`Lifetime License Active! Key ${normalized} saved for offline use.`);
         setTimeout(() => setProCelebrationToast(null), 6000);
       };
 
-      if (sessionId && sessionId.length >= 8) {
+      if (sessionId && sessionId.length >= 16) {
         fetch(`/api/checkout-status?session_id=${encodeURIComponent(sessionId)}`)
           .then((res) => (res.ok ? res.json() : null))
           .then((data) => {
@@ -384,7 +473,6 @@ export const App: React.FC = () => {
       }
     }
 
-    // Check URL Hash for shared preset
     const hash = window.location.hash;
     if (hash && hash.startsWith('#vibe=')) {
       const code = hash.replace('#vibe=', '');
@@ -396,7 +484,7 @@ export const App: React.FC = () => {
           pack: 'Imported',
           tagline: imported.tagline || 'Imported via shared link',
           icon: 'Sparkles',
-          colors: imported.colors || ['#38bdf8', '#818cf8', '#f59e0b'],
+          colors: imported.colors || ['#22d3ee', '#d946ef', '#f59e0b'],
           transitionSpeedMs: imported.transitionSpeedMs || 3000,
           maxBrightness: imported.maxBrightness || 80,
           audioReactivity: imported.audioReactivity || {
@@ -416,20 +504,46 @@ export const App: React.FC = () => {
   }, []);
 
   // Handle Preset Selection
-  const handleSelectPreset = useCallback((preset: VibePreset) => {
-    if (preset.isPro && !hasStudioAccess) {
-      setIsUpgradeModalOpen(true);
-      return;
-    }
+  const handleSelectPreset = useCallback(
+    (preset: VibePreset) => {
+      if (preset.isPro && !hasStudioAccess) {
+        setIsUpgradeModalOpen(true);
+        return;
+      }
 
-    setActivePresetId(preset.id);
-    saveActivePresetId(preset.id);
+      setActivePresetId(preset.id);
+      saveActivePresetId(preset.id);
 
-    globalAudioEngine.updateSoundscapeMix(preset.soundscapeMix);
-    globalAudioEngine.bassGain = preset.audioReactivity.bassWeight;
-    globalAudioEngine.midGain = preset.audioReactivity.midWeight;
-    globalAudioEngine.trebleGain = preset.audioReactivity.trebleWeight;
-  }, [hasStudioAccess]);
+      globalAudioEngine.updateSoundscapeMix(preset.soundscapeMix);
+      globalAudioEngine.bassGain = preset.audioReactivity.bassWeight;
+      globalAudioEngine.midGain = preset.audioReactivity.midWeight;
+      globalAudioEngine.trebleGain = preset.audioReactivity.trebleWeight;
+    },
+    [hasStudioAccess]
+  );
+
+  // Evaluate Per-Song Vibe Rules when track changes
+  const handleTrackTitleChange = useCallback(
+    (trackTitle: string) => {
+      const normalizedTitle = trackTitle.toLowerCase();
+      const match = songRules.find((rule) => {
+        const q = rule.songQuery.trim().toLowerCase();
+        if (!q || !normalizedTitle.includes(q)) return false;
+        if (rule.artist && rule.artist.trim()) {
+          return normalizedTitle.includes(rule.artist.trim().toLowerCase());
+        }
+        return true;
+      });
+      if (!match) return;
+      const target = presets.find((p) => p.id === match.presetId);
+      if (target && target.id !== activePresetId) {
+        handleSelectPreset(target);
+        setProCelebrationToast(`Song Rule Matched "${match.songQuery}" → ${target.name}`);
+        setTimeout(() => setProCelebrationToast(null), 3500);
+      }
+    },
+    [songRules, presets, activePresetId, handleSelectPreset]
+  );
 
   // Toggle Room Zones
   const handleToggleZone = (zoneId: string) => {
@@ -461,7 +575,6 @@ export const App: React.FC = () => {
     window.open(`${window.location.origin}/?stage=true`, 'OmniVibeStage', 'width=1280,height=720,menubar=no,toolbar=no');
   };
 
-  // Open Studio Drawer
   const handleOpenStudioDrawer = () => {
     if (!hasStudioAccess) {
       setIsUpgradeModalOpen(true);
@@ -470,12 +583,10 @@ export const App: React.FC = () => {
     setIsStudioDrawerOpen(true);
   };
 
-  // Open Smart Home Bridge
   const handleOpenBridge = () => {
     setIsBridgeModalOpen(true);
   };
 
-  // Open Circadian Scheduler
   const handleOpenCircadian = () => {
     if (!hasStudioAccess) {
       setIsUpgradeModalOpen(true);
@@ -484,7 +595,6 @@ export const App: React.FC = () => {
     setIsCircadianModalOpen(true);
   };
 
-  // Open Share Modal
   const handleOpenShare = () => {
     if (!hasStudioAccess) {
       setIsUpgradeModalOpen(true);
@@ -493,32 +603,32 @@ export const App: React.FC = () => {
     setIsShareModalOpen(true);
   };
 
-  // Activate Pro License Key
+  // Activate Offline License Key (enforces cryptographic checksum check before unlocking)
   const handleActivatePro = (key: string) => {
     const validation = validateLicenseKey(key);
+    if (!validation.isValid) {
+      setProCelebrationToast('Invalid or unrecognized offline license key.');
+      setTimeout(() => setProCelebrationToast(null), 4000);
+      return;
+    }
     const normalized = normalizeLicenseKey(key);
+    const nowIso = new Date().toISOString();
     const newState: ProLicenseState = {
       isPro: true,
       licenseKey: normalized,
-      activatedAt: new Date().toISOString(),
+      activatedAt: nowIso,
     };
     saveProLicense(newState);
     setProLicense(newState);
     savePersistentLicense({
       isPro: true,
       licenseKey: normalized,
-      unlockedAt: newState.activatedAt || new Date().toISOString(),
+      unlockedAt: nowIso,
       tier: validation.tier || 'LIFETIME_PRO',
       buyerName: validation.buyerName,
     });
-    setProCelebrationToast(`Welcome to OmniVibe Pro! (${validation.tier || 'LIFETIME_PRO'}) Lifetime license active.`);
+    setProCelebrationToast('OmniVibe Studio Unlocked! Offline lifetime license is now active.');
     setTimeout(() => setProCelebrationToast(null), 5000);
-  };
-
-  const handleUpdateActivePreset = (updated: VibePreset) => {
-    const nextPresets = presets.map((p) => (p.id === updated.id ? updated : p));
-    setPresets(nextPresets);
-    savePresets(nextPresets);
   };
 
   const handleSaveAsNewPreset = (newPreset: VibePreset) => {
@@ -554,6 +664,7 @@ export const App: React.FC = () => {
       const isInput =
         activeEl instanceof HTMLInputElement ||
         activeEl instanceof HTMLTextAreaElement ||
+        activeEl instanceof HTMLSelectElement ||
         (activeEl as HTMLElement)?.isContentEditable;
 
       if (e.key === 'Escape') {
@@ -568,14 +679,7 @@ export const App: React.FC = () => {
         setIsCustomVisualizerModalOpen(false);
         setIsAboutDownloadModalOpen(false);
         setIsShortcutsModalOpen(false);
-        setIsAdminKeygenOpen(false);
-        return;
-      }
-
-      // Secret Admin Keygen Shortcut: Ctrl+Shift+K or Cmd+Shift+K (Dev only)
-      if (import.meta.env.DEV && (e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'k' || e.key === 'K')) {
-        e.preventDefault();
-        setIsAdminKeygenOpen((prev) => !prev);
+        setIsQuickSetupOpen(false);
         return;
       }
 
@@ -588,6 +692,8 @@ export const App: React.FC = () => {
         } else {
           globalAudioEngine.playSoundscapes(activePreset.soundscapeMix);
         }
+      } else if (e.key === 'x' || e.key === 'X') {
+        handleToggleBlackout();
       } else if (e.key === 'm' || e.key === 'M') {
         globalAudioEngine.toggleMute();
       } else if (e.key === 'f' || e.key === 'F') {
@@ -604,10 +710,10 @@ export const App: React.FC = () => {
       } else if (e.key === 'b' || e.key === 'B') {
         setIsBridgeModalOpen((prev) => !prev);
       } else if (e.key === 'c' || e.key === 'C') {
-        if (proLicense.isPro) setIsCircadianModalOpen((prev) => !prev);
+        if (hasStudioAccess) setIsCircadianModalOpen((prev) => !prev);
         else setIsUpgradeModalOpen(true);
       } else if (e.key === 's' || e.key === 'S') {
-        if (proLicense.isPro) setIsShareModalOpen((prev) => !prev);
+        if (hasStudioAccess) setIsShareModalOpen((prev) => !prev);
         else setIsUpgradeModalOpen(true);
       } else if (e.key === 'd' || e.key === 'D') {
         setIsAboutDownloadModalOpen((prev) => !prev);
@@ -632,11 +738,15 @@ export const App: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activePreset.soundscapeMix, proLicense.isPro]);
+  }, [activePreset.soundscapeMix, hasStudioAccess, handleToggleBlackout]);
 
   // If in stage window mode, render dedicated zero-chrome stage view
   if (isStageMode) {
-    return <StageWindow />;
+    return (
+      <Suspense fallback={<div className="min-h-screen bg-black" />}>
+        <StageWindow />
+      </Suspense>
+    );
   }
 
   // If in web download portal mode, render landing & download hub
@@ -652,38 +762,51 @@ export const App: React.FC = () => {
           isPro={proLicense.isPro}
           deferredPrompt={deferredPrompt}
         />
-        <UpgradeModal
-          isOpen={isUpgradeModalOpen}
-          onClose={() => setIsUpgradeModalOpen(false)}
-          onActivatePro={handleActivatePro}
-          isPro={proLicense.isPro}
-          currentLicenseKey={proLicense.licenseKey}
-        />
-        {import.meta.env.DEV && (
-          <AdminKeyGeneratorModal
-            isOpen={isAdminKeygenOpen}
-            onClose={() => setIsAdminKeygenOpen(false)}
-            onApplyKeyToCurrentSession={handleActivatePro}
-          />
-        )}
+        <Suspense fallback={null}>
+          {isUpgradeModalOpen && (
+            <UpgradeModal
+              isOpen={isUpgradeModalOpen}
+              onClose={() => setIsUpgradeModalOpen(false)}
+              onActivatePro={handleActivatePro}
+              isPro={proLicense.isPro}
+              currentLicenseKey={proLicense.licenseKey}
+              isTrial={proLicense.isTrial}
+              trialStatus={proLicense.trialStatus}
+            />
+          )}
+        </Suspense>
       </>
     );
   }
 
   return (
     <div className="min-h-screen bg-studio-bg text-studio-text flex flex-col font-sans transition-colors duration-300">
-      {/* PRO CELEBRATION TOAST */}
+      {/* LICENSE ACTIVATION TOAST */}
       {proCelebrationToast && (
-        <div className="bg-gradient-to-r from-amber-500 via-amber-400 to-emerald-500 text-black px-4 py-2.5 text-center text-xs font-mono font-bold flex items-center justify-center gap-2 shadow-lg animate-in fade-in duration-300">
-          <CheckCircle2 className="w-4 h-4 fill-black text-white" />
+        <div className="bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-amber-400 text-black px-4 py-2.5 text-center text-xs font-mono font-bold flex items-center justify-center gap-2 shadow-lg animate-in fade-in duration-300">
+          <CheckCircle2 className="w-4 h-4 shrink-0" />
           <span>{proCelebrationToast}</span>
+        </div>
+      )}
+
+      {/* MULTI-TAB BRIDGE ARBITRATION BANNER */}
+      {devices.some((d) => d.enabled) && !isBridgeLeader && (
+        <div className="bg-amber-500/15 border-b border-amber-400/35 text-amber-200 px-4 py-1.5 text-xs font-mono flex flex-wrap items-center justify-between gap-2">
+          <span>Another OmniVibe tab is actively streaming to the Local Companion Bridge (preventing packet collisions).</span>
+          <button
+            type="button"
+            onClick={handleClaimBridgeControl}
+            className="px-2.5 py-0.5 rounded-lg bg-amber-400 text-black font-bold text-[11px] cursor-pointer"
+          >
+            Take Light Control
+          </button>
         </div>
       )}
 
       {/* MASTER TOP CONTROL BAR */}
       <header className="sticky top-0 z-40 bg-studio-surface/90 backdrop-blur-md border-b border-studio-border px-3 sm:px-4 py-2 flex flex-wrap items-center justify-between gap-2.5 select-none">
         {/* Brand, Live Pulse Aura & Top Status Pill */}
-        <div className="flex items-center gap-2.5 sm:gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
           <div
             className="w-10 h-10 rounded-xl bg-[#0B111A] border border-cyan-400/40 overflow-hidden flex items-center justify-center transition-all duration-200 shrink-0"
             style={{
@@ -708,10 +831,10 @@ export const App: React.FC = () => {
             </p>
           </div>
 
-          {/* Quick Setup Mode Status Pill (● Browser Mode / ● Lights Linked) */}
+          {/* Quick Setup Mode Status Pill */}
           <button
             onClick={() => setIsQuickSetupOpen(true)}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-semibold transition-all border shadow-sm ${
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-semibold transition-all border shadow-sm whitespace-nowrap ${
               devices.filter((d) => d.enabled).length > 0
                 ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/25'
                 : 'bg-studio-card border-studio-border hover:border-studio-accent text-studio-accent hover:bg-studio-surface'
@@ -727,8 +850,8 @@ export const App: React.FC = () => {
             />
             <span>
               {devices.filter((d) => d.enabled).length > 0
-                ? `● Lights Linked (${devices.filter((d) => d.enabled).length})`
-                : '● Browser Mode'}
+                ? `Lights Linked (${devices.filter((d) => d.enabled).length})`
+                : 'Browser Mode'}
             </span>
           </button>
         </div>
@@ -766,8 +889,26 @@ export const App: React.FC = () => {
           </button>
         </div>
 
-        {/* Action Toolset: 5 Unlabeled-to-Labeled Toolbar Buttons + Right-aligned PRO Pill */}
-        <div className="flex items-center gap-1 sm:gap-1.5">
+        {/* Action Toolset */}
+        <div className="flex flex-wrap items-center gap-1 sm:gap-1.5">
+          {/* Instant Blackout / Panic Button (Hotkey X) */}
+          <button
+            type="button"
+            onClick={handleToggleBlackout}
+            aria-pressed={isBlackout}
+            className={`group flex flex-col items-center justify-center p-1.5 sm:px-2 rounded-xl border transition-all min-w-[48px] cursor-pointer ${
+              isBlackout
+                ? 'bg-fuchsia-500/20 border-fuchsia-400 text-fuchsia-300 shadow-md shadow-fuchsia-500/25'
+                : 'bg-studio-card border-studio-border hover:border-fuchsia-400/60 text-studio-text'
+            }`}
+            title="Blackout / Panic (X): Immediately cut smart-light brightness to 0% and pause audio"
+          >
+            <Power className={`w-4 h-4 ${isBlackout ? 'text-fuchsia-300 animate-pulse' : 'text-fuchsia-400'}`} />
+            <span className="text-[10px] font-mono mt-0.5 leading-none whitespace-nowrap">
+              {isBlackout ? 'Resume' : 'Blackout'}
+            </span>
+          </button>
+
           {/* 1. TV Mode */}
           <button
             onClick={() => {
@@ -898,6 +1039,7 @@ export const App: React.FC = () => {
           {/* Settings & Skins */}
           <button
             onClick={() => setIsSettingsModalOpen(true)}
+            aria-label="Open Studio Settings and Skins"
             className="p-2 rounded-xl bg-studio-card border border-studio-border hover:border-studio-accent text-studio-textMuted hover:text-studio-text transition-all ml-0.5 cursor-pointer"
             title="Studio Settings, Skins & Backup"
           >
@@ -917,7 +1059,7 @@ export const App: React.FC = () => {
         </div>
       </header>
 
-      {/* Web Audio Standby Banner (if browser requires gesture to unlock audio) */}
+      {/* Web Audio Standby Banner */}
       {audioStandbyNotice && (
         <div
           onClick={() => {
@@ -936,9 +1078,8 @@ export const App: React.FC = () => {
 
       {/* MAIN TWO-COLUMN STUDIO WORKBENCH */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-        {/* LEFT COLUMN: Vibe Presets Canvas & Audio Engine (7 Cols) */}
+        {/* LEFT COLUMN: Vibe Presets Canvas & Audio Engine */}
         <section className="lg:col-span-7 flex flex-col gap-5">
-          {/* Preset Cards & Starter Packs */}
           <VibeCanvas
             presets={presets}
             activePresetId={activePresetId}
@@ -948,7 +1089,6 @@ export const App: React.FC = () => {
             onOpenUpgradeModal={() => setIsUpgradeModalOpen(true)}
           />
 
-          {/* Multi-Source Audio Engine & Generative Soundscape Deck */}
           <AudioDeck
             soundscapeMix={activePreset.soundscapeMix}
             onMixChange={handleMixChange}
@@ -957,12 +1097,12 @@ export const App: React.FC = () => {
               setDspCalibration(next);
               saveDspCalibration(next);
             }}
+            onTrackTitleChange={handleTrackTitleChange}
           />
         </section>
 
-        {/* RIGHT COLUMN: Sticky Visualizer Stage, Virtual Room & Telemetry (5 Cols) */}
+        {/* RIGHT COLUMN: Sticky Visualizer Stage, Virtual Room & Telemetry */}
         <section className="lg:col-span-5 flex flex-col gap-5 lg:sticky lg:top-20 lg:self-start">
-          {/* WMP-Style Visualizer Stage (60fps Canvas) */}
           <div className="w-full aspect-video">
             <VisualizerStage
               mode={visualizerMode}
@@ -970,13 +1110,13 @@ export const App: React.FC = () => {
               telemetry={telemetry}
               settings={visualizerSettings}
               isPro={hasStudioAccess}
+              isBlackout={isBlackout}
               onModeChange={(m) => setVisualizerMode(m)}
               onOpenUpgradeModal={() => setIsUpgradeModalOpen(true)}
               onOpenCustomBuilder={() => setIsCustomVisualizerModalOpen(true)}
             />
           </div>
 
-          {/* Virtual 2.5D Room Telemetry */}
           <VirtualRoom
             preset={activePreset}
             telemetry={telemetry}
@@ -984,7 +1124,6 @@ export const App: React.FC = () => {
             onToggleZone={handleToggleZone}
           />
 
-          {/* Live Frequency Telemetry & Light Flux Meter */}
           <AudioPulseMeter
             telemetry={telemetry}
             preset={activePreset}
@@ -993,181 +1132,200 @@ export const App: React.FC = () => {
         </section>
       </main>
 
-      {/* FOOTER */}
-      <footer className="border-t border-studio-border px-6 py-4 flex flex-wrap items-center justify-between gap-4 text-xs font-mono text-studio-textMuted select-none">
+      {/* FOOTER WITH COMPLETE LEGAL & SUPPORT LINKS */}
+      <footer className="border-t border-studio-border px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4 text-xs font-mono text-studio-textMuted select-none">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-400" />
-          <span>OmniVibe Studio • 100% Local-First Web Audio &amp; Lighting Console</span>
+          <span>OmniVibe Studio • 100% Local Audio &amp; Lighting Console</span>
         </div>
-        <div className="flex items-center gap-4">
-          <span>Active Skin: <strong className="text-studio-accent uppercase">{theme}</strong></span>
-          <span>Status: <strong className={proLicense.isPro ? 'text-amber-400' : 'text-studio-text'}>{proLicense.isPro ? 'PRO (LIFETIME)' : 'FREE STARTER'}</strong></span>
-          <span>Zero Server Calls • LocalStorage Persisted</span>
+        <div className="flex flex-wrap items-center gap-4">
+          <span>
+            Skin: <strong className="text-studio-accent uppercase">{theme}</strong>
+          </span>
+          <span>
+            Status:{' '}
+            <strong className={proLicense.isPro ? 'text-emerald-400' : 'text-studio-text'}>
+              {proLicense.isPro ? (proLicense.isTrial ? '3-DAY FREE TRIAL' : 'LICENSED') : 'WEB DEMO'}
+            </strong>
+          </span>
+          <a href="/privacy.html" className="hover:text-studio-accent">
+            Privacy
+          </a>
+          <a href="/terms.html#refunds" className="hover:text-studio-accent">
+            Terms &amp; Refunds
+          </a>
+          <a href="mailto:justin121887@gmail.com" className="hover:text-studio-accent">
+            Support
+          </a>
         </div>
       </footer>
 
-      {/* INTERACTIVE STUDIO DRAWER (SLIDE-OVER) */}
-      <StudioDrawer
-        isOpen={isStudioDrawerOpen}
-        onClose={() => setIsStudioDrawerOpen(false)}
-        activePreset={activePreset}
-        onUpdatePreset={handleUpdateActivePreset}
-        onSaveAsNewPreset={handleSaveAsNewPreset}
-        visualizerSettings={visualizerSettings}
-        onUpdateVisualizerSettings={(s) => {
-          setVisualizerSettings(s);
-          saveVisualizerSettings(s);
-        }}
-        songRules={songRules}
-        onUpdateSongRules={(rules) => {
-          setSongRules(rules);
-          saveSongRules(rules);
-        }}
-        allPresets={presets}
-      />
+      {/* LAZY-LOADED MODALS & SLIDE-OVER DRAWER */}
+      <Suspense fallback={null}>
+        {isStudioDrawerOpen && (
+          <StudioDrawer
+            isOpen={isStudioDrawerOpen}
+            onClose={() => setIsStudioDrawerOpen(false)}
+            activePreset={activePreset}
+            onUpdatePreset={handleUpdateActivePreset}
+            onSaveAsNewPreset={handleSaveAsNewPreset}
+            visualizerSettings={visualizerSettings}
+            onUpdateVisualizerSettings={(s) => {
+              setVisualizerSettings(s);
+              saveVisualizerSettings(s);
+            }}
+            songRules={songRules}
+            onUpdateSongRules={(rules) => {
+              setSongRules(rules);
+              saveSongRules(rules);
+            }}
+            allPresets={presets}
+          />
+        )}
 
-      {/* MODALS */}
-      <SmartHomeBridgeModal
-        isOpen={isBridgeModalOpen}
-        onClose={() => setIsBridgeModalOpen(false)}
-        devices={devices}
-        onUpdateDevices={(d) => {
-          setDevices(d);
-          saveDevices(d);
-        }}
-        zones={zones}
-        isPro={hasStudioAccess}
-        onOpenUpgradeModal={() => {
-          setIsBridgeModalOpen(false);
-          setIsUpgradeModalOpen(true);
-        }}
-      />
+        {isBridgeModalOpen && (
+          <SmartHomeBridgeModal
+            isOpen={isBridgeModalOpen}
+            onClose={() => setIsBridgeModalOpen(false)}
+            devices={devices}
+            onUpdateDevices={(d) => {
+              setDevices(d);
+              saveDevices(d);
+            }}
+            zones={zones}
+            isPro={hasStudioAccess}
+            onOpenUpgradeModal={() => {
+              setIsBridgeModalOpen(false);
+              setIsUpgradeModalOpen(true);
+            }}
+          />
+        )}
 
-      <GuardrailsModal
-        isOpen={isGuardrailsModalOpen}
-        onClose={() => setIsGuardrailsModalOpen(false)}
-        guardrails={guardrails}
-        onUpdateGuardrails={(g) => {
-          setGuardrails(g);
-          saveGuardrails(g);
-        }}
-      />
+        {isGuardrailsModalOpen && (
+          <GuardrailsModal
+            isOpen={isGuardrailsModalOpen}
+            onClose={() => setIsGuardrailsModalOpen(false)}
+            guardrails={guardrails}
+            onUpdateGuardrails={(g) => {
+              setGuardrails(g);
+              saveGuardrails(g);
+            }}
+          />
+        )}
 
-      <CircadianModal
-        isOpen={isCircadianModalOpen}
-        onClose={() => setIsCircadianModalOpen(false)}
-        circadian={circadian}
-        onUpdateCircadian={(c) => {
-          setCircadian(c);
-          saveCircadian(c);
-        }}
-      />
+        {isCircadianModalOpen && (
+          <CircadianModal
+            isOpen={isCircadianModalOpen}
+            onClose={() => setIsCircadianModalOpen(false)}
+            circadian={circadian}
+            onUpdateCircadian={(c) => {
+              setCircadian(c);
+              saveCircadian(c);
+            }}
+          />
+        )}
 
-      <ShareVibeModal
-        isOpen={isShareModalOpen}
-        onClose={() => setIsShareModalOpen(false)}
-        preset={activePreset}
-        allPresets={presets}
-        onSelectPreset={handleSelectPreset}
-      />
+        {isShareModalOpen && (
+          <ShareVibeModal
+            isOpen={isShareModalOpen}
+            onClose={() => setIsShareModalOpen(false)}
+            preset={activePreset}
+            allPresets={presets}
+            onSelectPreset={handleSelectPreset}
+          />
+        )}
 
-      <QuickSetupModal
-        isOpen={isQuickSetupOpen}
-        onClose={() => setIsQuickSetupOpen(false)}
-        activePreset={activePreset}
-        devices={devices}
-        onUpdateDevices={(newDevices) => {
-          setDevices(newDevices);
-          saveDevices(newDevices);
-        }}
-        deferredPrompt={deferredPrompt}
-        onTriggerTestScreenVibe={handleTriggerTestScreenVibe}
-        isWakeLockActive={isWakeLockActive}
-        onToggleWakeLock={handleToggleWakeLock}
-        onOpenAdvancedBridge={() => {
-          setIsQuickSetupOpen(false);
-          setIsBridgeModalOpen(true);
-        }}
-      />
+        {isQuickSetupOpen && (
+          <QuickSetupModal
+            isOpen={isQuickSetupOpen}
+            onClose={() => setIsQuickSetupOpen(false)}
+            activePreset={activePreset}
+            devices={devices}
+            onUpdateDevices={(newDevices) => {
+              setDevices(newDevices);
+              saveDevices(newDevices);
+            }}
+            deferredPrompt={deferredPrompt}
+            onTriggerTestScreenVibe={handleTriggerTestScreenVibe}
+            isWakeLockActive={isWakeLockActive}
+            onToggleWakeLock={handleToggleWakeLock}
+            onOpenAdvancedBridge={() => {
+              setIsQuickSetupOpen(false);
+              setIsBridgeModalOpen(true);
+            }}
+          />
+        )}
 
-      <ZoneManagerModal
-        isOpen={isZoneManagerModalOpen}
-        onClose={() => setIsZoneManagerModalOpen(false)}
-        zones={zones}
-        onUpdateZones={(newZones) => {
-          setZones(newZones);
-          saveZones(newZones);
-        }}
-        isPro={proLicense.isPro}
-        onOpenUpgradeModal={() => setIsUpgradeModalOpen(true)}
-      />
+        {isZoneManagerModalOpen && (
+          <ZoneManagerModal
+            isOpen={isZoneManagerModalOpen}
+            onClose={() => setIsZoneManagerModalOpen(false)}
+            zones={zones}
+            onUpdateZones={(newZones) => {
+              setZones(newZones);
+              saveZones(newZones);
+            }}
+            isPro={hasStudioAccess}
+            onOpenUpgradeModal={() => setIsUpgradeModalOpen(true)}
+          />
+        )}
 
-      <CustomVisualizerModal
-        isOpen={isCustomVisualizerModalOpen}
-        onClose={() => setIsCustomVisualizerModalOpen(false)}
-        settings={visualizerSettings}
-        onSaveConfig={(cfg) => {
-          const updated: VisualizerSettings = {
-            ...visualizerSettings,
-            customConfig: cfg,
-          };
-          setVisualizerSettings(updated);
-          saveVisualizerSettings(updated);
-          setVisualizerMode('custom_user');
-        }}
-      />
+        {isCustomVisualizerModalOpen && (
+          <CustomVisualizerModal
+            isOpen={isCustomVisualizerModalOpen}
+            onClose={() => setIsCustomVisualizerModalOpen(false)}
+            settings={visualizerSettings}
+            onSaveConfig={(cfg) => {
+              const updated: VisualizerSettings = {
+                ...visualizerSettings,
+                customConfig: cfg,
+              };
+              setVisualizerSettings(updated);
+              saveVisualizerSettings(updated);
+              setVisualizerMode('custom_user');
+            }}
+          />
+        )}
 
-      <AboutDownloadModal
-        isOpen={isAboutDownloadModalOpen}
-        onClose={() => setIsAboutDownloadModalOpen(false)}
-        deferredPrompt={deferredPrompt}
-      />
+        {isAboutDownloadModalOpen && (
+          <AboutDownloadModal
+            isOpen={isAboutDownloadModalOpen}
+            onClose={() => setIsAboutDownloadModalOpen(false)}
+            deferredPrompt={deferredPrompt}
+          />
+        )}
 
-      <KeyboardShortcutsModal
-        isOpen={isShortcutsModalOpen}
-        onClose={() => setIsShortcutsModalOpen(false)}
-      />
+        {isShortcutsModalOpen && (
+          <KeyboardShortcutsModal
+            isOpen={isShortcutsModalOpen}
+            onClose={() => setIsShortcutsModalOpen(false)}
+          />
+        )}
 
-      <UpgradeModal
-        isOpen={isUpgradeModalOpen}
-        onClose={() => setIsUpgradeModalOpen(false)}
-        onActivatePro={handleActivatePro}
-        isPro={proLicense.isPro}
-        currentLicenseKey={proLicense.licenseKey}
-        isTrial={proLicense.isTrial}
-        trialStatus={proLicense.trialStatus}
-      />
+        {isUpgradeModalOpen && (
+          <UpgradeModal
+            isOpen={isUpgradeModalOpen}
+            onClose={() => setIsUpgradeModalOpen(false)}
+            onActivatePro={handleActivatePro}
+            isPro={proLicense.isPro}
+            currentLicenseKey={proLicense.licenseKey}
+            isTrial={proLicense.isTrial}
+            trialStatus={proLicense.trialStatus}
+          />
+        )}
 
-      {import.meta.env.DEV && (
-        <AdminKeyGeneratorModal
-          isOpen={isAdminKeygenOpen}
-          onClose={() => setIsAdminKeygenOpen(false)}
-          onApplyKeyToCurrentSession={handleActivatePro}
-        />
-      )}
-
-      <SettingsModal
-        isOpen={isSettingsModalOpen}
-        onClose={() => setIsSettingsModalOpen(false)}
-        currentTheme={theme}
-        isPro={hasStudioAccess}
-        onSelectTheme={(t) => setTheme(t)}
-        onDataResetOrImported={handleDataResetOrImported}
-        onOpenUpgradeModal={() => setIsUpgradeModalOpen(true)}
-        onToggleProMode={
-          import.meta.env.DEV
-            ? (enablePro) => {
-                const newState: ProLicenseState = {
-                  isPro: enablePro,
-                  licenseKey: enablePro ? 'OMNI-FOUNDER-2026-FOREVER' : 'SIMULATED-FREE-TIER',
-                  activatedAt: new Date().toISOString(),
-                };
-                saveProLicense(newState);
-                setProLicense(newState);
-              }
-            : undefined
-        }
-      />
+        {isSettingsModalOpen && (
+          <SettingsModal
+            isOpen={isSettingsModalOpen}
+            onClose={() => setIsSettingsModalOpen(false)}
+            currentTheme={theme}
+            isPro={hasStudioAccess}
+            onSelectTheme={(t) => setTheme(t)}
+            onDataResetOrImported={handleDataResetOrImported}
+            onOpenUpgradeModal={() => setIsUpgradeModalOpen(true)}
+          />
+        )}
+      </Suspense>
     </div>
   );
 };

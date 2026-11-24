@@ -157,7 +157,12 @@ export const CustomVisualizerModal: React.FC<CustomVisualizerModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 select-none animate-in fade-in duration-200">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Make Your Own 3D Visualizer"
+      className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 select-none animate-in fade-in duration-200"
+    >
       <div className="hardware-panel max-w-2xl w-full p-6 rounded-3xl flex flex-col gap-5 border border-studio-border max-h-[92vh] overflow-hidden shadow-2xl bg-[#0D1117]">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-studio-borderSubtle pb-3">

@@ -261,8 +261,12 @@ export const SmartHomeBridgeModal: React.FC<SmartHomeBridgeModalProps> = ({
       return;
     }
     const cleanIp = ip.trim();
-    if (!/^\d{1,3}(\.\d{1,3}){3}$/.test(cleanIp)) {
-      setErrorMessage('Enter a valid local IPv4 address (e.g. 192.168.1.45).');
+    const isPrivateLan =
+      /^(10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})$/.test(
+        cleanIp
+      );
+    if (!isPrivateLan) {
+      setErrorMessage('Enter a valid private LAN IPv4 address (e.g. 192.168.1.45, 10.x.x.x, or 172.16-31.x.x).');
       return;
     }
     setErrorMessage(null);
@@ -330,7 +334,12 @@ export const SmartHomeBridgeModal: React.FC<SmartHomeBridgeModalProps> = ({
   const wizDevices = devices.filter((d) => d.type === 'wiz');
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 select-none animate-in fade-in duration-200">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Local Companion Bridge Hardware Settings"
+      className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 select-none animate-in fade-in duration-200"
+    >
       <div className="hardware-panel max-w-3xl w-full p-6 rounded-3xl flex flex-col gap-4 border border-studio-border max-h-[92vh] overflow-hidden shadow-2xl bg-[#0D1117]">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-studio-borderSubtle pb-3">
@@ -620,7 +629,18 @@ export const SmartHomeBridgeModal: React.FC<SmartHomeBridgeModalProps> = ({
                   <input
                     type="checkbox"
                     checked={goveeRazerEnabled}
-                    onChange={(e) => setGoveeRazerEnabled(e.target.checked)}
+                    onChange={(e) => {
+                      const next = e.target.checked;
+                      setGoveeRazerEnabled(next);
+                      if (bridgeOnline && goveeDevices.length > 0) {
+                        goveeDevices.forEach((d) => {
+                          companionBridge.rpc('govee:razer', { ip: d.ip, enabled: next }).catch(() => {});
+                        });
+                        setStatusMessage(
+                          `${next ? 'Enabled' : 'Disabled'} Govee Razer 0xB1 streaming mode on ${goveeDevices.length} paired device(s).`
+                        );
+                      }
+                    }}
                     className="w-4 h-4 accent-studio-accent cursor-pointer"
                   />
                 </label>

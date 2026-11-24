@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { formatTrialRemaining } from '../src/utils/licenseEngine';
+import { formatTrialRemaining, generateCustomerLicenseKey } from '../src/utils/licenseEngine';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const trialManager = require('../electron/trialManager.cjs');
 
@@ -116,5 +116,36 @@ describe('OmniVibe 3-Day Offline Free Trial Engine', () => {
     expect(tamperedStatus.tampered).toBe(true);
     expect(tamperedStatus.isActive).toBe(false);
     expect(tamperedStatus.isExpired).toBe(true);
+  });
+
+  it('HMAC-signs valid Electron licenses and rejects tampered or copied license files', () => {
+    const validKey = generateCustomerLicenseKey('standard_4');
+    const badSave = trialManager.saveSignedLicense({
+      userDataPath: tempDir,
+      fingerprint: fixedFingerprint,
+      licenseData: { isPro: true, licenseKey: 'FAKE-KEY-1234' },
+    });
+    expect(badSave.success).toBe(false);
+
+    const okSave = trialManager.saveSignedLicense({
+      userDataPath: tempDir,
+      fingerprint: fixedFingerprint,
+      licenseData: { isPro: true, licenseKey: validKey, tier: 'LIFETIME_PRO' },
+    });
+    expect(okSave.success).toBe(true);
+
+    const readOk = trialManager.readVerifiedLicense({
+      userDataPath: tempDir,
+      fingerprint: fixedFingerprint,
+    });
+    expect(readOk?.isPro).toBe(true);
+    expect(readOk?.licenseKey).toBe(validKey);
+
+    // Different machine fingerprint must fail verification
+    const wrongMachine = trialManager.readVerifiedLicense({
+      userDataPath: tempDir,
+      fingerprint: 'different-pc-fingerprint',
+    });
+    expect(wrongMachine).toBeNull();
   });
 });

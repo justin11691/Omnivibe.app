@@ -107,8 +107,8 @@ const SHADER_DEMOS = [
   { id: 'waves', name: 'Liquid Waveforms', tag: 'Harmonic Ribbons', colors: ['#38bdf8', '#10b981', '#818cf8'] },
   { id: 'monolith', name: 'Monolith Matrix', tag: 'Isometric 3D Grid', colors: ['#818cf8', '#38bdf8', '#94a3b8'] },
   { id: 'eq3d', name: '3D Equalizer', tag: 'Peak-Hold Bars', colors: ['#10b981', '#38bdf8', '#f59e0b'] },
-  { id: 'particles', name: 'Particle Field', tag: 'Orbital Core (Pro)', colors: ['#38bdf8', '#c084fc', '#fbbf24'] },
-  { id: 'nebula', name: 'Harmonic Nebula', tag: 'Volumetric (Pro)', colors: ['#6366f1', '#06b6d4', '#34d399'] },
+  { id: 'particles', name: 'Particle Field', tag: 'Orbital Core', colors: ['#38bdf8', '#c084fc', '#fbbf24'] },
+  { id: 'nebula', name: 'Harmonic Nebula', tag: 'Volumetric Cloud', colors: ['#6366f1', '#06b6d4', '#34d399'] },
 ];
 
 // Lightweight auto-playing muted 60fps Canvas preview for each of the 9 shaders
@@ -323,7 +323,7 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
   });
 
   return (
-    <div className="min-h-screen bg-[#0B111A] text-[#E2E8F0] font-sans flex flex-col selection:bg-cyan-400 selection:text-black">
+    <div className="min-h-screen w-full overflow-x-clip bg-[#0B111A] text-[#E2E8F0] font-sans flex flex-col selection:bg-cyan-400 selection:text-black">
       {/* Top Navigation Bar — Consistent OmniVibe Studio Branding */}
       <header className="sticky top-0 z-50 bg-[#0F1724]/95 backdrop-blur-md border-b border-cyan-400/20 px-3 sm:px-6 py-3 flex items-center justify-between gap-3 select-none">
         <div className="flex items-center gap-2.5 min-w-0">
@@ -360,7 +360,7 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
               className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-500/40 bg-emerald-500/15 text-emerald-300 text-xs font-mono font-bold hover:bg-emerald-500/25 transition-all whitespace-nowrap cursor-pointer"
             >
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Pro Active</span>
+              <span>Licensed</span>
             </button>
           ) : (
             <button
@@ -382,13 +382,13 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
       </header>
 
       {/* Hero Section: Clear Separation of Web Studio vs. Desktop App / Local Companion Bridge */}
-      <section className="relative px-4 sm:px-6 py-12 md:py-16 max-w-6xl mx-auto flex flex-col items-center text-center gap-5">
-        <div className="flex items-center gap-2 px-3.5 py-1 rounded-full bg-studio-card/80 border border-studio-border text-xs font-mono text-studio-accent shadow-sm">
-          <ShieldCheck className="w-4 h-4 text-emerald-400" />
+      <section className="relative w-full px-4 sm:px-6 py-12 md:py-16 max-w-6xl mx-auto flex flex-col items-center text-center gap-5">
+        <div className="flex flex-wrap items-center justify-center gap-2 px-3.5 py-1.5 rounded-full bg-studio-card/80 border border-studio-border text-[11px] sm:text-xs font-mono text-studio-accent shadow-sm max-w-full">
+          <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>100% Offline • 3-Day Free Trial • $9.99 Once</span>
         </div>
 
-        <h1 className="text-3xl sm:text-5xl md:text-6xl font-heading tracking-wider uppercase text-white max-w-4xl leading-tight">
+        <h1 className="w-full text-2xl sm:text-5xl md:text-6xl font-heading tracking-wider uppercase text-white max-w-4xl leading-tight">
           Music You Can See. <br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-amber-400">
             Room Lighting That Feels Alive.
@@ -400,10 +400,10 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
         </p>
 
         {/* Dual-Path CTAs */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 mt-2 w-full max-w-3xl">
+        <div className="flex flex-col lg:flex-row items-center justify-center gap-3.5 mt-2 w-full max-w-md lg:max-w-3xl">
           <a
             href="#downloads"
-            className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 via-fuchsia-500 to-amber-500 hover:brightness-110 text-white font-mono font-bold text-xs sm:text-sm uppercase tracking-wider whitespace-nowrap flex items-center justify-center gap-2.5 shadow-xl shadow-fuchsia-500/25 transition-all transform hover:scale-[1.02] active:scale-95 cursor-pointer shrink-0"
+            className="w-full lg:w-auto px-4 sm:px-6 py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 via-fuchsia-500 to-amber-500 hover:brightness-110 text-white font-mono font-bold text-xs sm:text-sm uppercase tracking-wider text-center whitespace-normal lg:whitespace-nowrap flex items-center justify-center gap-2.5 shadow-xl shadow-fuchsia-500/25 transition-all transform hover:scale-[1.02] active:scale-95 cursor-pointer"
           >
             <Download className="w-4 h-4 text-white shrink-0" />
             <span>DOWNLOAD OFFLINE APP (3-DAY FREE TRIAL)</span>
@@ -411,7 +411,7 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
 
           <button
             onClick={onEnterStudio}
-            className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-studio-surface border border-studio-border hover:border-studio-accent text-white font-mono font-bold text-xs sm:text-sm uppercase tracking-wider whitespace-nowrap flex items-center justify-center gap-2 transition-all cursor-pointer shrink-0"
+            className="w-full lg:w-auto px-4 sm:px-6 py-3.5 rounded-2xl bg-studio-surface border border-studio-border hover:border-studio-accent text-white font-mono font-bold text-xs sm:text-sm uppercase tracking-wider text-center whitespace-normal lg:whitespace-nowrap flex items-center justify-center gap-2 transition-all cursor-pointer"
           >
             <Sparkles className="w-4 h-4 text-studio-accent shrink-0" />
             <span>TRY INTERACTIVE WEB DEMO</span>
@@ -481,7 +481,7 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
               playsInline
               className="w-full aspect-video rounded-xl bg-[#07090E] object-cover border border-studio-borderSubtle"
             />
-            <div className="flex items-center justify-between px-1 text-xs font-mono">
+            <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 px-1 text-xs font-mono">
               <span className="text-white font-bold">9-Shader 60fps Showcase Reel</span>
               <span className="text-studio-accent">MilkDrop • Winamp • Tunnel • Lava • Nebula</span>
             </div>
@@ -496,7 +496,7 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
               playsInline
               className="w-full aspect-video rounded-xl bg-[#07090E] object-cover border border-studio-borderSubtle"
             />
-            <div className="flex items-center justify-between px-1 text-xs font-mono">
+            <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 px-1 text-xs font-mono">
               <span className="text-white font-bold">Real-Room Hue / Govee / WiZ Sync Demo</span>
               <span className="text-emerald-300">Sub-50 ms Local Companion Bridge</span>
             </div>
@@ -604,7 +604,7 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
           {/* Path A: Web Studio (Screen + Soundscapes) */}
           <div className="hardware-panel p-6 rounded-2xl border border-studio-accent bg-[#0E121B] flex flex-col justify-between gap-5">
             <div className="flex flex-col gap-3">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="p-3 rounded-xl bg-black/50 border border-white/10 text-emerald-400">
                   <Monitor className="w-6 h-6" />
                 </div>
@@ -619,7 +619,7 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
                 Runs immediately in Chrome, Safari, Edge, and Firefox with 60fps 3D shaders, 8 procedural soundscapes, circadian guardrails, and Screen Wake-Lock.
               </p>
               <ul className="space-y-1.5 text-xs font-mono text-studio-textMuted pt-1">
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" /><span>All 9 WebGL/Canvas visualizers + TV Stage Casting</span></li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" /><span>All 9 60fps 3D-projected Canvas visualizers + TV Stage Casting</span></li>
                 <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" /><span>Integrated Local Audio Player &amp; Noise-Gated Room Mic</span></li>
                 <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" /><span>Installable as a standalone full-screen PWA</span></li>
               </ul>
@@ -685,7 +685,7 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
           {/* Path B: Desktop App & Local Companion Bridge */}
           <div className="hardware-panel p-6 rounded-2xl border border-studio-borderSubtle bg-studio-surface/60 flex flex-col justify-between gap-5">
             <div className="flex flex-col gap-3">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="p-3 rounded-xl bg-black/50 border border-white/10 text-sky-400">
                   <Lightbulb className="w-6 h-6" />
                 </div>
@@ -754,7 +754,7 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
               Searchable Hardware Compatibility Matrix
             </h2>
             <p className="text-xs font-mono text-studio-textMuted">
-              Verify your smart-lighting hardware before purchasing Pro. Unsupported models are flagged upfront.
+              Verify your smart-lighting hardware before purchasing OmniVibe Studio. Unsupported models are flagged upfront.
             </p>
           </div>
           <a href="/compatibility.html" className="text-xs font-mono text-studio-accent hover:underline">
@@ -763,7 +763,7 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <div className="relative flex-1 min-w-[220px]">
+          <div className="relative flex-1 min-w-0 w-full sm:w-auto sm:min-w-[220px]">
             <Search className="w-4 h-4 text-studio-textMuted absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
@@ -773,7 +773,7 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
               className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#0D1117] border border-studio-border text-xs font-mono text-studio-text focus:outline-none focus:border-studio-accent"
             />
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
             {(
               [
                 { id: 'all', label: 'All' },
@@ -903,10 +903,10 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
               <>
                 <button
                   onClick={onEnterStudio}
-                  className="px-6 sm:px-8 py-3.5 rounded-2xl bg-emerald-500/20 border border-emerald-500/50 hover:bg-emerald-500/30 text-emerald-300 font-mono font-bold text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap"
+                  className="px-4 sm:px-8 py-3.5 rounded-2xl bg-emerald-500/20 border border-emerald-500/50 hover:bg-emerald-500/30 text-emerald-300 font-mono font-bold text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer text-center whitespace-normal sm:whitespace-nowrap"
                 >
                   <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>✓ PRO UNLOCKED ON THIS DEVICE</span>
+                  <span>✓ LIFETIME LICENSE ACTIVE</span>
                 </button>
                 <button
                   onClick={onOpenUnlockModal}
@@ -920,7 +920,7 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
                 <button
                   onClick={handleBuyUnlockCode}
                   disabled={isCheckingOut}
-                  className="px-6 sm:px-8 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 text-black font-mono font-bold text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl shadow-amber-500/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-60 cursor-pointer whitespace-nowrap"
+                  className="px-4 sm:px-8 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 text-black font-mono font-bold text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl shadow-amber-500/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-60 cursor-pointer text-center whitespace-normal sm:whitespace-nowrap"
                 >
                   <span>{isCheckingOut ? 'LOADING STRIPE...' : 'BUY LIFETIME KEY — $9.99'}</span>
                   <ExternalLink className="w-4 h-4 shrink-0" />
@@ -942,12 +942,12 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
 
       {/* Footer with Complete Nav & Legal Links */}
       <footer className="px-4 sm:px-6 py-6 border-t border-white/5 bg-[#05070A] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono text-studio-textMuted">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 text-center">
           <span className="text-white font-bold">OmniVibe Studio</span>
           <span>•</span>
           <span>Offline-First Visuals &amp; Local Companion Bridge</span>
         </div>
-        <div className="flex flex-wrap items-center gap-4">
+        <div className="flex flex-wrap items-center justify-center sm:justify-end gap-4">
           <button onClick={onEnterStudio} className="hover:text-studio-accent cursor-pointer">
             Web Studio
           </button>
@@ -960,8 +960,11 @@ export const DownloadPortal: React.FC<DownloadPortalProps> = ({
           <a href="/privacy.html" className="hover:text-studio-accent">
             Privacy Policy
           </a>
-          <a href="/terms.html" className="hover:text-studio-accent">
-            Terms of Service
+          <a href="/terms.html#refunds" className="hover:text-studio-accent">
+            Terms &amp; Refunds
+          </a>
+          <a href="mailto:justin121887@gmail.com" className="hover:text-studio-accent">
+            Support
           </a>
         </div>
       </footer>

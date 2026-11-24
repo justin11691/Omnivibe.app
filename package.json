@@ -2,6 +2,8 @@
   "name": "omnivibe",
   "private": true,
   "version": "1.0.0",
+  "description": "100% offline audio-reactive visualizer, soundscape deck, and Philips Hue / Govee LAN / WiZ smart-lighting studio.",
+  "author": "OmniVibe Studio <justin121887@gmail.com>",
   "type": "module",
   "main": "electron/main.cjs",
   "scripts": {
@@ -62,7 +64,7 @@
       "entitlements": "electron/entitlements.mac.plist",
       "entitlementsInherit": "electron/entitlements.mac.plist",
       "extendInfo": {
-        "NSMicrophoneUsageDescription": "OmniVibe Studio uses audio input to drive real-time 60fps WebGL shaders and smart lighting.",
+        "NSMicrophoneUsageDescription": "OmniVibe Studio uses audio input to drive real-time 60fps 3D-projected visualizers and smart lighting.",
         "NSLocalNetworkUsageDescription": "OmniVibe Studio communicates over your local Wi-Fi network with Philips Hue, Govee, and WiZ smart lights."
       }
     }

@@ -25,7 +25,6 @@ interface SettingsModalProps {
   onSelectTheme: (theme: SkinTheme) => void;
   onDataResetOrImported: () => void;
   onOpenUpgradeModal: () => void;
-  onToggleProMode?: (enablePro: boolean) => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -36,7 +35,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onSelectTheme,
   onDataResetOrImported,
   onOpenUpgradeModal,
-  onToggleProMode,
 }) => {
   const [importStatus, setImportStatus] = useState<string | null>(null);
   const [showConfirmReset, setShowConfirmReset] = useState(false);
@@ -162,7 +160,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 select-none">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Studio Settings and Skins"
+      className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 select-none"
+    >
       <div className="hardware-panel max-w-lg w-full p-6 rounded-2xl flex flex-col gap-5 border border-studio-border max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-studio-borderSubtle pb-3">
@@ -179,6 +182,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
           <button
             onClick={onClose}
+            aria-label="Close settings modal"
             className="p-1.5 rounded-lg text-studio-textMuted hover:text-studio-text hover:bg-studio-surface"
           >
             <X className="w-5 h-5" />
@@ -187,31 +191,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
         {/* Content */}
         <div className="flex flex-col gap-4">
-          {import.meta.env.DEV && (
-
-          <div className="hardware-card p-4 rounded-xl flex items-center justify-between border border-amber-500/30 bg-amber-500/5">
-            <div>
-              <div className="text-xs font-mono font-bold text-amber-400 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Beta Testing Mode</span>
-              </div>
-              <div className="text-[11px] text-studio-textMuted font-mono mt-0.5">
-                {isPro ? 'All features & presets are 100% unlocked' : 'Currently simulating Free Starter Deck'}
-              </div>
-            </div>
-
-            <button
-              onClick={() => onToggleProMode && onToggleProMode(!isPro)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all ${
-                isPro
-                  ? 'bg-amber-400 text-black shadow-sm'
-                  : 'bg-studio-card border border-studio-border text-studio-text hover:border-amber-400'
-              }`}
-            >
-              {isPro ? 'Unlocked (Active)' : 'Unlock All Features'}
-            </button>
-          </div>
-)}
 
           {/* Swappable App Skins */}
           <div className="flex flex-col gap-2">
@@ -243,7 +222,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         {isSelected && <Check className="w-3.5 h-3.5 text-studio-accent" />}
                         {isLocked && (
                           <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-[9px] text-amber-400 font-bold">
-                            <Lock className="w-2.5 h-2.5" /> PRO
+                            <Lock className="w-2.5 h-2.5" /> KEY
                           </span>
                         )}
                       </div>

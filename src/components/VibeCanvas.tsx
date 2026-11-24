@@ -169,7 +169,7 @@ export const VibeCanvas: React.FC<VibeCanvasProps> = ({
                     ) : isLocked ? (
                       <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-[10px] font-mono text-amber-400 font-bold shrink-0 mt-0.5">
                         <Lock className="w-2.5 h-2.5" />
-                        <span>PRO</span>
+                        <span>KEY</span>
                       </div>
                     ) : null}
                   </div>
@@ -214,7 +214,7 @@ export const VibeCanvas: React.FC<VibeCanvasProps> = ({
           {!isPro && (
             <div className="absolute top-2.5 right-2.5 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-[9px] font-mono text-amber-400 font-bold">
               <Lock className="w-2.5 h-2.5" />
-              <span>PRO</span>
+              <span>KEY</span>
             </div>
           )}
           <div className="w-8 h-8 rounded-full bg-studio-surface border border-studio-border flex items-center justify-center text-studio-accent">
@@ -225,7 +225,7 @@ export const VibeCanvas: React.FC<VibeCanvasProps> = ({
               Design Custom Vibe
             </div>
             <div className="text-[10px] text-studio-textMuted font-mono">
-              {isPro ? 'Open Interactive Studio Drawer' : 'Unlock with OmniVibe Pro'}
+              {isPro ? 'Open Interactive Studio Drawer' : 'Unlock with OmniVibe Offline Key'}
             </div>
           </div>
         </div>

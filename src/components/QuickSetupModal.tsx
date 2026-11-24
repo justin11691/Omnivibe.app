@@ -16,6 +16,10 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { SmartDevice, VibePreset } from '../types';
+import { companionBridge } from '../utils/companionBridgeClient';
+
+const PRIVATE_LAN_IP_REGEX =
+  /^(10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})$/;
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -99,29 +103,53 @@ export const QuickSetupModal: React.FC<QuickSetupModalProps> = ({
     setFlashFeedback(null);
     const cleanIp = bridgeIp.trim();
 
-    if (!cleanIp) {
+    if (!cleanIp || !PRIVATE_LAN_IP_REGEX.test(cleanIp)) {
       setFlashFeedback({
         type: 'info',
-        message: 'Please enter your light or bridge local IP address (e.g. 192.168.1.50) first.',
+        message: 'Enter a valid private LAN IPv4 address (e.g. 192.168.1.50 or 10.0.0.25) first.',
       });
       return;
     }
 
-    setIsFlashing(true);
-    const targetUrl = cleanIp.startsWith('http') ? cleanIp : `http://${cleanIp}`;
+    if (selectedBrand === 'hue') {
+      setFlashFeedback({
+        type: 'info',
+        message:
+          'Philips Hue requires pressing the Link button + selecting an Entertainment Area for DTLS 1.2 PSK. Opening Advanced Bridge settings to finish pairing.',
+      });
+      onOpenAdvancedBridge?.();
+      return;
+    }
 
+    setIsFlashing(true);
     try {
-      // Direct LAN test ping with timeout
-      await fetch(targetUrl, {
-        mode: 'no-cors',
-        signal: AbortSignal.timeout(3000),
+      const connected = companionBridge.isConnected || (await companionBridge.connect(1200));
+      if (!connected) {
+        setFlashFeedback({
+          type: 'error',
+          message:
+            'Local Companion Bridge is offline. Download the Desktop App (3-day free trial) or run the portable Companion Bridge so OmniVibe can send UDP/DTLS packets to your LAN lights.',
+        });
+        return;
+      }
+
+      const hex = (activePreset.colors[0] || '#22d3ee').replace('#', '');
+      const r = Number.parseInt(hex.slice(0, 2), 16) || 34;
+      const g = Number.parseInt(hex.slice(2, 4), 16) || 211;
+      const b = Number.parseInt(hex.slice(4, 6), 16) || 238;
+
+      await companionBridge.rpc('sync:frame', {
+        r,
+        g,
+        b,
+        brightness: 90,
+        goveeIps: selectedBrand === 'govee' ? [cleanIp] : [],
+        wizIps: selectedBrand === 'wiz' ? [cleanIp] : [],
+        smoothing: 0.85,
       });
 
-      // Register or update device
-      const brandName =
-        selectedBrand === 'hue' ? 'Philips Hue Bridge' : selectedBrand === 'govee' ? 'Govee LAN Light' : 'WiZ / Matter Bulb';
-      const deviceType =
-        selectedBrand === 'hue' ? 'philips_hue' : selectedBrand === 'govee' ? 'govee' : 'wiz';
+      const brandName = selectedBrand === 'govee' ? 'Govee LAN Light' : 'WiZ Wi-Fi Bulb';
+      const deviceType = selectedBrand === 'govee' ? 'govee' : 'wiz';
 
       const existingIndex = devices.findIndex((d) => d.ip === cleanIp);
       if (existingIndex >= 0) {
@@ -148,12 +176,15 @@ export const QuickSetupModal: React.FC<QuickSetupModalProps> = ({
 
       setFlashFeedback({
         type: 'success',
-        message: `✅ Test signal sent to ${cleanIp}! Your lights should pulse now. Device saved to your deck.`,
+        message: `Test UDP pulse dispatched via Local Companion Bridge to ${cleanIp}! Device saved to your deck.`,
       });
-    } catch {
+    } catch (err) {
       setFlashFeedback({
         type: 'error',
-        message: `⚠️ Could not reach ${cleanIp}. Please ensure this device and your lights are on the same Wi-Fi network and LAN Control is turned on.`,
+        message:
+          err instanceof Error
+            ? err.message
+            : `Could not dispatch UDP pulse to ${cleanIp}. Confirm your Local Companion Bridge is running on this Wi-Fi network.`,
       });
     } finally {
       setIsFlashing(false);
@@ -175,7 +206,12 @@ export const QuickSetupModal: React.FC<QuickSetupModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 select-none animate-in fade-in duration-200">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Quick Setup and Atmosphere Modes"
+      className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 select-none animate-in fade-in duration-200"
+    >
       <div className="hardware-panel max-w-2xl w-full p-5 sm:p-6 rounded-3xl flex flex-col gap-5 border border-studio-border max-h-[92vh] overflow-y-auto shadow-2xl bg-[#0D1117] text-studio-text">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-studio-borderSubtle pb-3">
@@ -396,7 +432,7 @@ export const QuickSetupModal: React.FC<QuickSetupModalProps> = ({
                 onClick={onOpenAdvancedBridge}
                 className="self-start text-[11px] font-mono text-studio-accent hover:underline flex items-center gap-1 mt-1"
               >
-                <span>Open Advanced Subnet &amp; Bluetooth BLE Scanner &rarr;</span>
+                <span>Open Advanced Hue DTLS, Govee Diagnostics &amp; WiZ Bridge &rarr;</span>
               </button>
             )}
           </div>
@@ -446,7 +482,7 @@ export const QuickSetupModal: React.FC<QuickSetupModalProps> = ({
                   className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-black font-mono font-bold text-xs shadow-md shadow-cyan-500/20 transition-all"
                 >
                   <Download className="w-4 h-4" />
-                  <span>Install Omnivibe App</span>
+                  <span>Install OmniVibe App</span>
                 </button>
                 <span className="text-[11px] font-mono text-studio-textMuted">
                   Works on Chrome, Edge, and Android

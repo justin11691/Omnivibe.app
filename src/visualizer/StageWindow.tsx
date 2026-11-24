@@ -56,7 +56,11 @@ export const StageWindow: React.FC = () => {
   }, []);
 
   const handleReturnToDashboard = () => {
-    window.location.href = '/';
+    if (window.opener && !window.opener.closed) {
+      window.close();
+      return;
+    }
+    window.location.href = '/studio';
   };
 
   return (

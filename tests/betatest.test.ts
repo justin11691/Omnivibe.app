@@ -21,7 +21,8 @@ import {
   encodeVibeToUrlHash,
   decodeVibeFromUrlHash,
 } from '../src/utils/storage';
-import { DEFAULT_PRESETS, DEMO_PRO_TEST_KEY } from '../src/data/defaultPresets';
+import { DEFAULT_PRESETS } from '../src/data/defaultPresets';
+import { generateCustomerLicenseKey } from '../src/utils/licenseEngine';
 import { VibePreset, SmartDevice } from '../src/types';
 
 // Mock localStorage for test environment
@@ -199,35 +200,31 @@ describe('OmniVibe 100% Functionality Beta Test Suite', () => {
     });
   });
 
-  describe('5. Freemium Monetization & Stripe Checkout Auto-Activation', () => {
-    it('defaults to Free Starter Deck for new visitors until unlocked', () => {
+  describe('5. Licensing & Stripe Checkout Auto-Activation', () => {
+    it('defaults to locked/demo state for new visitors until unlocked', () => {
       const lic = loadProLicense();
       expect(lic.isPro).toBe(false);
       expect(lic.licenseKey).toBe('');
     });
 
-    it('validates the built-in demo founder test key', () => {
-      expect(validateLicenseKey(DEMO_PRO_TEST_KEY)).toBe(true);
-    });
-
-    it('validates standard Stripe customer license key format', () => {
-      expect(validateLicenseKey('OMNI-PRO-7890-ABCD')).toBe(true);
-      expect(validateLicenseKey('OMNI-PRO-1122-3344')).toBe(true);
+    it('validates cryptographically signed license keys and rejects arbitrary formats', () => {
+      const generated = generateCustomerLicenseKey('standard_4');
+      expect(validateLicenseKey(generated)).toBe(true);
       expect(validateLicenseKey('BAD-KEY-FORMAT')).toBe(false);
+      expect(validateLicenseKey('OMNI-FOUNDER-2026-FOREVER')).toBe(false);
     });
 
-    it('simulates Stripe checkout return parameter activation', () => {
-      // User returns with ?pro_activated=true or ?session_id=...
-      const simulatedSessionId = 'cs_test_a1b2c3d4e5f6g7';
+    it('saves verified license key upon verified checkout activation', () => {
+      const generatedKey = generateCustomerLicenseKey('standard_4');
       saveProLicense({
         isPro: true,
-        licenseKey: simulatedSessionId,
+        licenseKey: generatedKey,
         activatedAt: new Date().toISOString(),
       });
 
       const lic = loadProLicense();
       expect(lic.isPro).toBe(true);
-      expect(lic.licenseKey).toBe(simulatedSessionId);
+      expect(lic.licenseKey).toBe(generatedKey);
     });
   });
 
@@ -245,12 +242,13 @@ describe('OmniVibe 100% Functionality Beta Test Suite', () => {
     });
 
     it('exports complete snapshot and restores from JSON backup without data loss', () => {
+      const generatedKey = generateCustomerLicenseKey('standard_4');
       saveTheme('signal-industrial');
-      saveProLicense({ isPro: true, licenseKey: 'BACKUP-TEST' });
+      saveProLicense({ isPro: true, licenseKey: generatedKey });
 
       const jsonStr = exportAllToJson();
       expect(jsonStr).toContain('signal-industrial');
-      expect(jsonStr).toContain('BACKUP-TEST');
+      expect(jsonStr).toContain(generatedKey);
 
       // Clear storage
       globalThis.localStorage.clear();
@@ -264,8 +262,9 @@ describe('OmniVibe 100% Functionality Beta Test Suite', () => {
     });
 
     it('resets entire workspace to factory defaults cleanly', () => {
+      const generatedKey = generateCustomerLicenseKey('standard_4');
       saveTheme('nordic-pine');
-      saveProLicense({ isPro: true });
+      saveProLicense({ isPro: true, licenseKey: generatedKey });
       resetToFactoryDefaults();
 
       expect(loadTheme()).toBe('obsidian');

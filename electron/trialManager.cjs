@@ -6,7 +6,126 @@ const crypto = require('node:crypto');
 const TRIAL_DURATION_MS = 3 * 24 * 60 * 60 * 1000; // 3 days in ms
 const CLOCK_ROLLBACK_TOLERANCE_MS = 60 * 60 * 1000; // 1 hour DST/NTP drift allowance
 const TRIAL_SECRET = 'OMNIVIBE_OFFLINE_TRIAL_2026_HMAC_KEY';
+const LICENSE_CHECKSUM_SALT = 'OMNIVIBE_OFFLINE_SECRET_2026_ATMOSPHERE_STUDIO';
 const TRIAL_FILENAME = 'omnivibe_trial.json';
+const LICENSE_FILENAME = 'omnivibe_license.json';
+
+function normalizeOfflineKey(rawKey) {
+  if (!rawKey || typeof rawKey !== 'string') return '';
+  const cleaned = rawKey.trim().replace(/[\r\n\t\s]+/g, '');
+  if (cleaned.toLowerCase().startsWith('omnitoken.')) {
+    const parts = cleaned.split('.');
+    return `OMNITOKEN.${parts[1] || ''}.${(parts[2] || '').toUpperCase()}`;
+  }
+  return cleaned.toUpperCase();
+}
+
+function computeLicenseChecksum(payload) {
+  let hash = 0x811c9dc5;
+  const combined = `${payload}:${LICENSE_CHECKSUM_SALT}`;
+  for (let i = 0; i < combined.length; i++) {
+    hash ^= combined.charCodeAt(i);
+    hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
+  }
+  return (hash >>> 0).toString(16).toUpperCase().padStart(8, '0').slice(-4);
+}
+
+function isValidOfflineLicenseKey(rawKey) {
+  const key = normalizeOfflineKey(rawKey);
+  if (!key) return false;
+
+  if (key.startsWith('OMNITOKEN.')) {
+    const parts = key.split('.');
+    if (parts.length === 3 && parts[2] === computeLicenseChecksum(parts[1])) {
+      try {
+        JSON.parse(Buffer.from(parts[1], 'base64').toString('utf8'));
+        return true;
+      } catch {
+        return false;
+      }
+    }
+    return false;
+  }
+
+  const clean = key.startsWith('OMNI-') ? key.slice(5) : key;
+  const segments = clean.split('-');
+  if (segments.length >= 2) {
+    const checksum = segments[segments.length - 1];
+    const payload = segments.slice(0, -1).join('-');
+    return checksum === computeLicenseChecksum(payload);
+  }
+
+  return false;
+}
+
+function signLicenseRecord(record, fingerprint) {
+  const canonical = JSON.stringify({
+    isPro: Boolean(record.isPro),
+    licenseKey: normalizeOfflineKey(record.licenseKey),
+    unlockedAt: String(record.unlockedAt || ''),
+    tier: String(record.tier || 'LIFETIME_PRO'),
+    buyerName: String(record.buyerName || ''),
+    fingerprint,
+  });
+  return crypto
+    .createHmac('sha256', `${TRIAL_SECRET}:${fingerprint}:LICENSE`)
+    .update(canonical)
+    .digest('hex');
+}
+
+function saveSignedLicense({ userDataPath, licenseData, fingerprint } = {}) {
+  const dir = userDataPath || os.tmpdir();
+  const fp = fingerprint || getMachineFingerprint();
+  if (!licenseData || !licenseData.isPro || !isValidOfflineLicenseKey(licenseData.licenseKey)) {
+    return { success: false, error: 'Invalid offline license key signature.' };
+  }
+  const normalizedRecord = {
+    isPro: true,
+    licenseKey: normalizeOfflineKey(licenseData.licenseKey),
+    unlockedAt: String(licenseData.unlockedAt || new Date().toISOString()),
+    tier: String(licenseData.tier || 'LIFETIME_PRO'),
+    buyerName: String(licenseData.buyerName || 'Licensed Customer'),
+  };
+  const signedPayload = {
+    ...normalizedRecord,
+    hmac: signLicenseRecord(normalizedRecord, fp),
+  };
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+  fs.writeFileSync(path.join(dir, LICENSE_FILENAME), JSON.stringify(signedPayload, null, 2), 'utf8');
+  return { success: true };
+}
+
+function readVerifiedLicense({ userDataPath, fingerprint } = {}) {
+  const dir = userDataPath || os.tmpdir();
+  const fp = fingerprint || getMachineFingerprint();
+  const filePath = path.join(dir, LICENSE_FILENAME);
+  try {
+    if (!fs.existsSync(filePath)) return null;
+    const parsed = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    if (!parsed || !parsed.isPro || typeof parsed.hmac !== 'string') return null;
+    if (!isValidOfflineLicenseKey(parsed.licenseKey)) return null;
+
+    const expectedHmac = signLicenseRecord(parsed, fp);
+    if (
+      parsed.hmac.length !== expectedHmac.length ||
+      !crypto.timingSafeEqual(Buffer.from(parsed.hmac, 'utf8'), Buffer.from(expectedHmac, 'utf8'))
+    ) {
+      return null;
+    }
+
+    return {
+      isPro: true,
+      licenseKey: normalizeOfflineKey(parsed.licenseKey),
+      unlockedAt: String(parsed.unlockedAt || ''),
+      tier: parsed.tier || 'LIFETIME_PRO',
+      buyerName: parsed.buyerName || 'Licensed Customer',
+    };
+  } catch {
+    return null;
+  }
+}
 
 function getMachineFingerprint() {
   const cpuModel = (os.cpus() && os.cpus()[0] && os.cpus()[0].model) || 'generic-cpu';
@@ -144,4 +263,8 @@ module.exports = {
   getMachineFingerprint,
   signTrialPayload,
   getOrInitTrialStatus,
+  isValidOfflineLicenseKey,
+  signLicenseRecord,
+  saveSignedLicense,
+  readVerifiedLicense,
 };

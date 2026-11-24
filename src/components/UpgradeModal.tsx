@@ -85,8 +85,8 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
         ],
         {
           total: {
-            label: 'OmniVibe Pro Lifetime License',
-            amount: { currency: 'USD', value: '19.00' },
+            label: 'OmniVibe Studio — Lifetime License',
+            amount: { currency: 'USD', value: '9.99' },
           },
         }
       );
@@ -104,7 +104,10 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
       await response.complete(verifyRes.ok ? 'success' : 'fail');
       if (verifyRes.ok) {
         const data = await verifyRes.json();
-        onActivatePro(data.licenseKey || 'OMNI-FOUNDER-2026-FOREVER');
+        if (!data?.licenseKey) {
+          throw new Error('Store verification did not return a license key.');
+        }
+        onActivatePro(data.licenseKey);
         setJustUnlocked(true);
         setTimeout(() => {
           setJustUnlocked(false);
@@ -205,16 +208,6 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
     } else {
       setKeyError(validation.error || 'Invalid or unrecognized unlock code.');
     }
-  };
-
-  const handleUseFounderTestKey = () => {
-    const key = 'OMNI-FOUNDER-2026-FOREVER';
-    onActivatePro(key);
-    setJustUnlocked(true);
-    setTimeout(() => {
-      setJustUnlocked(false);
-      onClose();
-    }, 1800);
   };
 
   const handleCopyExistingKey = () => {
@@ -324,7 +317,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
               </div>
 
               {[
-                { feature: 'All 9 60fps 3D WebGL Shaders & Custom Shader Studio', icon: <Tv className="w-3.5 h-3.5 text-studio-accent" /> },
+                { feature: 'All 9 60fps 3D-Projected Visualizers & Custom Shader Studio', icon: <Tv className="w-3.5 h-3.5 text-studio-accent" /> },
                 { feature: '1-Click System Audio Loopback (Spotify, YouTube, Games)', icon: <Zap className="w-3.5 h-3.5 text-studio-accent" /> },
                 { feature: 'Built-in Local Hardware Bridge (Hue DTLS, Govee LAN, WiZ UDP)', icon: <Layers className="w-3.5 h-3.5 text-studio-accent" /> },
                 { feature: '8 Generative Soundscapes, Circadian Guardrails & Multi-Zone Sync', icon: <Sun className="w-3.5 h-3.5 text-studio-accent" /> },
@@ -368,15 +361,23 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
                   <p className="text-[11px] font-mono text-amber-400 text-center">{keyError}</p>
                 )}
 
-                <div className="flex items-center justify-center gap-4 text-[10px] font-mono text-studio-textMuted">
-                  <span className="flex items-center gap-1">
+                <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[10px] font-mono text-studio-textMuted pt-1">
+                  <a href="/terms.html#refunds" className="flex items-center gap-1 hover:text-studio-accent underline">
                     <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                    14-Day Money Back Guarantee
-                  </span>
+                    14-Day Refund Policy
+                  </a>
                   <span>•</span>
-                  <span>Instant Offline Key</span>
+                  <a href="/privacy.html" className="hover:text-studio-accent underline">
+                    Privacy Policy
+                  </a>
                   <span>•</span>
-                  <span>100% Offline Capable</span>
+                  <a href="/terms.html" className="hover:text-studio-accent underline">
+                    Terms
+                  </a>
+                  <span>•</span>
+                  <a href="mailto:justin121887@gmail.com" className="hover:text-studio-accent underline">
+                    Support
+                  </a>
                 </div>
               </div>
             )}
@@ -400,7 +401,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
                   <div className="flex items-center gap-2">
                     <input
                       type="text"
-                      placeholder="Paste unlock code of any length (e.g. OMNI-XXXX...)"
+                      placeholder="Paste offline license key (e.g. OMNI-XXXX...)"
                       value={licenseKeyInput}
                       onChange={(e) => {
                         setLicenseKeyInput(e.target.value);
@@ -410,28 +411,14 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
                     />
                     <button
                       type="submit"
-                      className="px-4 py-2 rounded-xl bg-studio-accent text-black font-mono font-bold text-xs shrink-0 hover:bg-sky-300 transition-colors"
+                      disabled={isVerifying}
+                      className="px-4 py-2 rounded-xl bg-studio-accent text-black font-mono font-bold text-xs shrink-0 hover:bg-sky-300 transition-colors disabled:opacity-60"
                     >
-                      Unlock Pro
+                      {isVerifying ? 'Checking...' : 'Activate License'}
                     </button>
                   </div>
 
                   {keyError && <span className="text-[10px] font-mono text-amber-400">{keyError}</span>}
-
-                  {import.meta.env.DEV && (
-
-                  <div className="flex items-center justify-between text-[11px] font-mono text-studio-textMuted pt-1">
-                    <span>Quick Founder Testing:</span>
-                    <button
-                      type="button"
-                      onClick={handleUseFounderTestKey}
-                      className="text-amber-400 font-semibold hover:underline flex items-center gap-1"
-                    >
-                      <span>1-Click Founder Key (OMNI-FOUNDER-2026-FOREVER)</span>
-                      <ArrowRight className="w-3 h-3" />
-                    </button>
-                  </div>
-)}
                 </form>
               )}
             </div>

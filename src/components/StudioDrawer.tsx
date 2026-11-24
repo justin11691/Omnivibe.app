@@ -118,7 +118,12 @@ export const StudioDrawer: React.FC<StudioDrawerProps> = ({
   };
 
   return (
-    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-xl bg-studio-surface border-l border-studio-border shadow-2xl flex flex-col select-none animate-in slide-in-from-right duration-300">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Interactive Studio Drawer"
+      className="fixed inset-y-0 right-0 z-50 w-full max-w-xl bg-studio-surface border-l border-studio-border shadow-2xl flex flex-col select-none animate-in slide-in-from-right duration-300"
+    >
       {/* Drawer Header */}
       <div className="p-4 border-b border-studio-border flex items-center justify-between bg-studio-bg/60 backdrop-blur-md">
         <div className="flex items-center gap-2.5">
